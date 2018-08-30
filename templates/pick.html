@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+    {% block content %}
+        <a href="/{{ link }}/{{ year }}">Back</a>
+        <br><br>
+        Week {{ "%02d" % (week) }}<br><br>
+        Current Pick: {{ pick }}<br>
+        <form action="/{{ link }}/{{ year }}/{{ week }}" method="POST">
+            Choose Pick:
+            <select name="pick">
+                {% for each in c %}
+                    <option value="{{ each }}">{{ each }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <input type="submit" value="Submit" />
+        </form>
+    {% endblock %}

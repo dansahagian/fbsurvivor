@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+    {% block content %}
+        <form action="/survive" method="POST">
+            username<br>
+            <input class="resizedTextBox" name="username" type="text" 
+                placeholder="username" />
+            <br><br>
+            email (not displayed)<br>
+            <input class="resizedTextBox" name="email" type="text" 
+                placeholder="email" />
+            <br><br>
+            <input type="submit" value="Create User" />
+        </form>
+        <br><br>
+        <div class="rules">
+        Rules!<br><br>
+        
+        Each Week<br>
+        Pick one team to win. Ties are losses.<br>
+        Each team can only be used one time.<br>
+        Submit your pick by deadline shown.<br>
+        Picks will lock at the deadline.<br>
+        If technical issues, email your pick.<br>
+        <br>
+        Payouts are dependent on participation!<br>
+        <br>
+        2nd Best Record will get 1-2x the buy in.<br>
+        Best Record will get 2-4x the buy in.<br>
+        Survivor will get 7x+ the buy in.<br>
+        <br>
+        Tie for Survivor, split or playoff (TBD).<br>
+        Tie for Best Record, split payouts.<br>
+        Tie for 2nd Best Record, split payout.<br>
+        Multi person ties will go to playoffs (TBD).<br>
+        </div>
+    {% endblock %}

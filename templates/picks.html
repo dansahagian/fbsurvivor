@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+    {% block content %}
+        <a href="/{{ link }}">Back</a>
+        <br><br>
+        {% if not lock and not picks %}
+            <a href="/{{ link }}/{{ year }}/play">Play {{ year }}!</a>
+            <br><br>
+        {% endif %}
+        {% if picks %}
+            Record: {{ ws }} - {{ ls }}
+            <br><br>
+            <table>
+                <tr>
+                    <th>Wk</th>
+                    <th>W/L</th>
+                    <th>Status</th>
+                    <th>Deadline</th>
+                </tr>
+            {% for pick in picks %}
+                <tr>
+                    <td>{{ "%02d" % (pick[0]) }}</td>
+                    <td
+                        {% if pick[2] == "W" %}
+                            class="win"
+                        {% elif pick[2] == "L" %}
+                            class="loss"
+                        {% endif %}
+                    >{{ pick[1] }}</td>
+                
+                    <td>
+                        {% if pick[4] %}
+                            <a href="/{{ link }}/{{ year }}/{{ pick[0] }}">
+                                edit
+                            </a>
+                        {% else %}
+                            locked
+                        {% endif %}
+                    </td>
+                    <td>{{ pick[3] }}</td>
+                </tr>
+            {% endfor %}
+            </table>
+        {% else %}
+            No pick data available for {{ year }}!
+        {% endif %}
+    {% endblock %}
