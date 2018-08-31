@@ -54,6 +54,9 @@ def add_user(username, email):
     char_set = string.ascii_lowercase + string.digits
     link = ''.join(secrets.choice(char_set) for _ in range(44))
 
+    while link in [x[0] for x in query_db('SELECT link FROM users')]:
+        link = ''.join(secrets.choice(char_set) for _ in range(44))
+
     sql = """
           INSERT INTO users (username, email, link)
           VALUES (%s, %s, %s);
