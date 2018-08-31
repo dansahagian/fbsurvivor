@@ -95,10 +95,17 @@ def pick(link, year, week):
 @app.route('/<link>/<year>/play', methods=['GET'])
 def play_year(link, year):
     if db.valid_link(link):
-        db.add_user_picks(link, year)
-        db.add_paid_status(link, year)
-        flash('You are playing in the %s league. Good luck!' % (year))
-        return redirect('/%s' % (link))
+        if db.year_locked(year):
+            flash('%s is locked! Come back next year!' % (year))
+            return redirect('/%s' % (link))
+        elif db.user_playing(link, year):
+            flash('You are already playing for %s' % (year))
+            return redirect('/%s' % (link))
+        else:
+            db.add_user_picks(link, year)
+            db.add_paid_status(link, year)
+            flash('You are playing in the %s league. Good luck!' % (year))
+            return redirect('/%s' % (link))
     else:
         abort(404)
 

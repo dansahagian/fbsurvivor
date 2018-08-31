@@ -216,3 +216,14 @@ def get_board(year):
 
 def get_current_year():
     return query_db('SELECT year from current')[0][0]
+
+
+def user_playing(link, year):
+    sql = """
+          SELECT p.paid FROM paid p
+          JOIN users u ON u.id = p.user_id
+          WHERE u.link = '%s'
+          AND p.year = %s
+          """ % (link, year)
+
+    return query_db(sql)[0][0]
