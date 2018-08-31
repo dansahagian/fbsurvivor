@@ -39,7 +39,8 @@ def signup():
 def user(link):
     if db.valid_link(link):
         data = db.get_board(db.get_current_year())
-        return rt('user.html', years=db.get_years(), link=link, data=data)
+        return rt('user.html', years=db.get_years(), link=link, data=data,
+                  admin=db.user_admin(link))
     else:
         abort(404)
 
@@ -105,6 +106,18 @@ def play_year(link, year):
             db.add_user_picks(link, year)
             db.add_paid_status(link, year)
             flash('You are playing in the %s league. Good luck!' % (year))
+            return redirect('/%s' % (link))
+    else:
+        abort(404)
+
+
+@app.route('/<link>/admin', methods=['GET'])
+def admin(link):
+    if db.valid_link(link):
+        if db.user_admin(link):
+            return 'admin page'
+        else:
+            flash('You do NOT have access to that page!')
             return redirect('/%s' % (link))
     else:
         abort(404)

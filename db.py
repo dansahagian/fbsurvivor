@@ -58,10 +58,10 @@ def add_user(username, email):
         link = ''.join(secrets.choice(char_set) for _ in range(44))
 
     sql = """
-          INSERT INTO users (username, email, link)
-          VALUES (%s, %s, %s);
+          INSERT INTO users (username, email, link, admin)
+          VALUES (%s, %s, %s, %s);
           """
-    values = (username, email, link)
+    values = (username, email, link, False)
 
     insert_db(sql, values)
     return link
@@ -230,3 +230,7 @@ def user_playing(link, year):
           """ % (link, year)
 
     return query_db(sql)[0][0]
+
+
+def user_admin(link):
+    return query_db("SELECT admin FROM users where link = '%s'" % (link))[0][0]
