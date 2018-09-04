@@ -229,7 +229,10 @@ def user_playing(link, year):
           AND p.year = %s
           """ % (link, year)
 
-    return query_db(sql)[0][0]
+    data = query_db(sql)
+    if data:
+        return True
+    return False
 
 
 def user_admin(link):
