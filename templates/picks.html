@@ -3,7 +3,9 @@
         <a href="/{{ link }}">Back</a>
         <br><br>
         {% if not lock and not picks %}
-            <a href="/{{ link }}/{{ year }}/play">Play {{ year }}!</a>
+            <a href="/{{ link }}/{{ year }}/play">
+                <h2><--Click to Play in {{ year }}--></h2>
+            </a>
             <br><br>
         {% endif %}
         {% if picks %}
