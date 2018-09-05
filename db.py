@@ -139,19 +139,38 @@ def valid_link(link):
     return False
 
 
+def valid_year(year):
+    sql = """SELECT year from years"""
+
+    if year in [str(x[0]) for x in query_db(sql)]:
+        return True
+    return False
+
+
+def valid_week(week):
+    if int(week) in range(1, 18):
+        return True
+    return False
+
+
 def get_user_id(link):
     sql = """SELECT id from users WHERE link = '%s'""" % (link)
     return query_db(sql)[0][0]
 
 
 def get_team_choices(link, year, week):
+    user_id = get_user_id(link)
+
     sql = """
           SELECT team FROM teams
           WHERE year = %s AND bye_week != %s
           """ % (year, week)
     teams = set([x[0] for x in query_db(sql)])
 
-    sql = "SELECT team FROM picks WHERE year = %s" % (year)
+    sql = """SELECT team FROM picks
+             WHERE year = %s AND user_id = %s
+          """ % (year, user_id)
+
     used = set([x[0] for x in query_db(sql)])
 
     return sorted(list(teams - used) + ['--'])
@@ -208,11 +227,10 @@ def get_board(year):
         line = [row[1], row[2], row[3], wins, loss, picks]
         data.append(line)
 
-        data.sort(key=lambda x: x[0])
-        data.sort(key=lambda x: x[1], reverse=True)
-        data.sort(key=lambda x: x[3], reverse=True)
-        data.sort(key=lambda x: x[4])
-        data.sort(key=lambda x: x[2])
+        data.sort(key=lambda x: x[0].lower())  # sort by username
+        data.sort(key=lambda x: x[3], reverse=True)  # sort by wins
+        data.sort(key=lambda x: x[4])  # sort by losses
+        data.sort(key=lambda x: x[2])  # sort by player status
 
     return data
 
@@ -237,3 +255,8 @@ def user_playing(link, year):
 
 def user_admin(link):
     return query_db("SELECT admin FROM users where link = '%s'" % (link))[0][0]
+
+
+def get_username(link):
+    sql = "SELECT username FROM users where link = '%s'" % (link)
+    return query_db(sql)[0][0]

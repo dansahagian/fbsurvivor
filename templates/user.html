@@ -1,12 +1,7 @@
 {% extends "base.html" %}
     {% block content %}
-    Your personal link to this page is:<br>
-        <a href="/{{ link }}">https://fbsurvivor.com/{{ link }}</a>
+    {{ username }}
         <br><br>
-        {% if admin %}
-            <a href="/{{ link }}/admin">admin</a>
-            <br><br>
-        {% endif %}
         Your picks:<br>
         {% for year in years %}
             <a href="/{{ link }}/{{ year }}">{{ year }}</a>

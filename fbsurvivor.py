@@ -38,16 +38,17 @@ def signup():
 @app.route('/<link>', methods=['GET'])
 def user(link):
     if db.valid_link(link):
+        username = db.get_username(link)
         data = db.get_board(db.get_current_year())
         return rt('user.html', years=db.get_years(), link=link, data=data,
-                  admin=db.user_admin(link))
+                  admin=db.user_admin(link), username=username)
     else:
         abort(404)
 
 
 @app.route('/<link>/previous/<year>', methods=['GET'])
 def previous(link, year):
-    if db.valid_link(link):
+    if db.valid_link(link) and db.valid_year(year):
         data = db.get_board(year)
         return rt('board.html', link=link, year=year, data=data,
                   years=db.get_years())
@@ -57,7 +58,7 @@ def previous(link, year):
 
 @app.route('/<link>/<year>', methods=['GET'])
 def picks(link, year):
-    if db.valid_link(link):
+    if db.valid_link(link) and db.valid_year(year):
         picks = db.get_user_picks(link, year)
         wins = len([x[2] for x in picks if x[2] == 'W'])
         loss = len([x[2] for x in picks if x[2] == 'L'])
@@ -69,7 +70,7 @@ def picks(link, year):
 
 @app.route('/<link>/<year>/<week>', methods=['GET', 'POST'])
 def pick(link, year, week):
-    if db.valid_link(link):
+    if db.valid_link(link) and db.valid_year(year) and db.valid_week(week):
         if request.method == 'GET':
             if db.week_locked(year, week):
                 flash('Week %s is locked! Cannot Edit!' % (week))
@@ -95,7 +96,7 @@ def pick(link, year, week):
 
 @app.route('/<link>/<year>/play', methods=['GET'])
 def play_year(link, year):
-    if db.valid_link(link):
+    if db.valid_link(link) and db.valid_year(year):
         if db.year_locked(year):
             flash('%s is locked! Come back next year!' % (year))
             return redirect('/%s' % (link))
