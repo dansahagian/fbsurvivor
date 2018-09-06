@@ -71,9 +71,9 @@ def main():
     week_day = datetime.datetime.today().weekday()
     if week_day == 3:
         who_to = get_players_without_picks()
+        who_to.append(WHO_FROM)
     else:
         who_to = get_players()
-        who_to.append(WHO_FROM)
 
     send_email(subject, who_to, message)
 
