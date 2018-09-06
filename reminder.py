@@ -65,7 +65,7 @@ def send_email(subject, who_to, message):
 
 def main():
 
-    lock_date = get_lock_date().strftime("%m-%d %I:%M %p PST")
+    lock_date = get_lock_date().strftime("%m-%d %I:%M %p")
     subject = 'Survivor Picks Reminder'
     message = "Picks are due by %s PST!" % lock_date
     week_day = datetime.datetime.today().weekday()
@@ -73,6 +73,7 @@ def main():
         who_to = get_players_without_picks()
     else:
         who_to = get_players()
+        who_to.append(WHO_FROM)
 
     send_email(subject, who_to, message)
 
