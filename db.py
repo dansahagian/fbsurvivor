@@ -253,6 +253,18 @@ def user_playing(link, year):
     return False
 
 
+def set_retired(link, year):
+    sql = """
+          UPDATE paid
+          SET result = 'R'
+          WHERE user_id = %s AND year = %s
+          """
+
+    values = (get_user_id(link), year)
+
+    insert_db(sql, values)
+
+
 def user_admin(link):
     return query_db("SELECT admin FROM users where link = '%s'" % (link))[0][0]
 

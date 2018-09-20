@@ -112,6 +112,19 @@ def play_year(link, year):
         abort(404)
 
 
+@app.route('/<link>/<year>/retire', methods=['GET'])
+def retire(link, year):
+    if db.valid_link(link) and db.valid_year(year):
+        if db.user_playing(link, year):
+            db.set_retired(link, year)
+            flash('You retired! See you next year!')
+            return redirect('/%s' % (link))
+        flash('You can not retire since you are not playing!')
+        return redirect('/%s' % (link))
+    else:
+        abort(404)
+
+
 @app.route('/<link>/admin', methods=['GET'])
 def admin(link):
     if db.valid_link(link):

@@ -17,6 +17,7 @@ def get_players():
           FROM users u
           JOIN paid p ON p.user_id = u.id
           WHERE p.year = (SELECT year FROM current)
+          AND p.result != 'R'
           """
 
     return [x[0] for x in db.query_db(sql)]
@@ -33,6 +34,7 @@ def get_players_without_picks():
           AND pk.week = (SELECT min(week) FROM locks WHERE
                          lock_date > CURRENT_TIMESTAMP)
           AND pk.team = '--'
+          AND pd.result != 'R'
           """
 
     return [x[0] for x in db.query_db(sql)]
