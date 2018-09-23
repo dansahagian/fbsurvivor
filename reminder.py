@@ -1,14 +1,6 @@
-import os
-import smtplib
 import datetime
 import db
-
-from email.mime.text import MIMEText
-
-WHO_FROM = os.environ['WHO_FROM']
-SMTP_SER = os.environ['SMTP_SER']
-USERNAME = os.environ['USERNAME']
-PASSWORD = os.environ['PASSWORD']
+import emailer
 
 
 def get_players():
@@ -18,6 +10,7 @@ def get_players():
           JOIN paid p ON p.user_id = u.id
           WHERE p.year = (SELECT year FROM current)
           AND p.result != 'R'
+          AND u.validated = True
           """
 
     return [x[0] for x in db.query_db(sql)]
@@ -35,6 +28,7 @@ def get_players_without_picks():
                          lock_date > CURRENT_TIMESTAMP)
           AND pk.team = '--'
           AND pd.result != 'R'
+          AND u.validated = True
           """
 
     return [x[0] for x in db.query_db(sql)]
@@ -51,20 +45,6 @@ def get_lock_date():
     return min([x[0] for x in db.query_db(sql) if x[0] > current_date])
 
 
-def send_email(subject, who_to, message):
-    msg = MIMEText(message)
-    msg['Subject'] = subject
-    msg['From'] = WHO_FROM
-    msg['To'] = WHO_FROM
-
-    cnxn = smtplib.SMTP_SSL(SMTP_SER)
-    cnxn.login(USERNAME, PASSWORD)
-    try:
-        cnxn.sendmail(WHO_FROM, who_to, msg.as_string())
-    finally:
-        cnxn.quit()
-
-
 def main():
 
     lock_date = get_lock_date().strftime("%m-%d %I:%M %p")
@@ -73,11 +53,10 @@ def main():
     week_day = datetime.datetime.today().weekday()
     if week_day == 3:
         who_to = get_players_without_picks()
-        who_to.append(WHO_FROM)
     else:
         who_to = get_players()
 
-    send_email(subject, who_to, message)
+    emailer.send_email(subject, who_to, message)
 
 
 if __name__ == '__main__':

@@ -50,6 +50,20 @@ def username_available(username):
     return False
 
 
+def get_user_id(link):
+    sql = """SELECT id from users WHERE link = '%s'""" % (link)
+    return query_db(sql)[0][0]
+
+
+def get_username(link):
+    sql = "SELECT username FROM users where link = '%s'" % (link)
+    return query_db(sql)[0][0]
+
+
+def user_admin(link):
+    return query_db("SELECT admin FROM users where link = '%s'" % (link))[0][0]
+
+
 def add_user(username, email):
     char_set = string.ascii_lowercase + string.digits
     link = ''.join(secrets.choice(char_set) for _ in range(44))
@@ -58,10 +72,10 @@ def add_user(username, email):
         link = ''.join(secrets.choice(char_set) for _ in range(44))
 
     sql = """
-          INSERT INTO users (username, email, link, admin)
-          VALUES (%s, %s, %s, %s);
+          INSERT INTO users (username, email, link, admin, validated)
+          VALUES (%s, %s, %s, %s, %s);
           """
-    values = (username, email, link, False)
+    values = (username, email, link, False, False)
 
     insert_db(sql, values)
     return link
@@ -110,6 +124,44 @@ def get_user_picks(link, year):
     return picks
 
 
+def validate_link(link):
+    sql = """
+          UPDATE users
+          SET validated = %s
+          WHERE link = %s
+          """
+
+    values = (True, link)
+
+    insert_db(sql, values)
+
+
+def set_retired(link, year):
+    sql = """
+          UPDATE paid
+          SET result = 'R'
+          WHERE user_id = %s AND year = %s
+          """
+
+    values = (get_user_id(link), year)
+
+    insert_db(sql, values)
+
+
+def user_playing(link, year):
+    sql = """
+          SELECT p.paid FROM paid p
+          JOIN users u ON u.id = p.user_id
+          WHERE u.link = '%s'
+          AND p.year = %s
+          """ % (link, year)
+
+    data = query_db(sql)
+    if data:
+        return True
+    return False
+
+
 def get_years():
     sql = """SELECT year from years order by year desc"""
     return [x[0] for x in query_db(sql)]
@@ -151,11 +203,6 @@ def valid_week(week):
     if int(week) in range(1, 18):
         return True
     return False
-
-
-def get_user_id(link):
-    sql = """SELECT id from users WHERE link = '%s'""" % (link)
-    return query_db(sql)[0][0]
 
 
 def get_team_choices(link, year, week):
@@ -237,38 +284,3 @@ def get_board(year):
 
 def get_current_year():
     return query_db('SELECT year from current')[0][0]
-
-
-def user_playing(link, year):
-    sql = """
-          SELECT p.paid FROM paid p
-          JOIN users u ON u.id = p.user_id
-          WHERE u.link = '%s'
-          AND p.year = %s
-          """ % (link, year)
-
-    data = query_db(sql)
-    if data:
-        return True
-    return False
-
-
-def set_retired(link, year):
-    sql = """
-          UPDATE paid
-          SET result = 'R'
-          WHERE user_id = %s AND year = %s
-          """
-
-    values = (get_user_id(link), year)
-
-    insert_db(sql, values)
-
-
-def user_admin(link):
-    return query_db("SELECT admin FROM users where link = '%s'" % (link))[0][0]
-
-
-def get_username(link):
-    sql = "SELECT username FROM users where link = '%s'" % (link)
-    return query_db(sql)[0][0]

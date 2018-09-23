@@ -3,6 +3,7 @@ from flask import Flask, flash, redirect, request, abort
 from flask import render_template as rt
 from flask import send_from_directory as sfd
 import db
+import emailer
 
 
 app = Flask(__name__)
@@ -29,7 +30,15 @@ def signup():
 
         if db.username_available(username):
             link = db.add_user(username, email)
-            return redirect('/%s' % (link))
+            subject = 'Football Survivor'
+            message = 'Thank you for registering for Football Survivor!\n\n'
+            message += 'If this was not you, you can ignore this email. \n\n'
+            message += 'If this was you, click the link below to confirm. \n\n'
+            message += 'https://fbsurvivor.com/%s\n\n' % (link)
+            message += 'You will use this link to make your picks.'
+
+            emailer.send_email(subject, [email], message)
+            return rt('email.html')
 
         flash('Username already exists! Pick another!')
         return redirect('/survive')
@@ -38,6 +47,7 @@ def signup():
 @app.route('/<link>', methods=['GET'])
 def user(link):
     if db.valid_link(link):
+        db.validate_link(link)
         username = db.get_username(link)
         data = db.get_board(db.get_current_year())
         return rt('user.html', years=db.get_years(), link=link, data=data,
