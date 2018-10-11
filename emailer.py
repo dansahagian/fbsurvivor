@@ -13,10 +13,7 @@ def send_email(subject, who_to, message):
     msg = MIMEText(message)
     msg['Subject'] = subject
     msg['From'] = WHO_FROM
-    if len(who_to) == 1:
-        msg['To'] = who_to[0]
-    else:
-        msg['To'] = WHO_FROM
+    msg['To'] = WHO_FROM
 
     cnxn = smtplib.SMTP_SSL(SMTP_SER)
     cnxn.login(USERNAME, PASSWORD)

@@ -18,7 +18,7 @@ def get_players():
 
 def get_players_without_picks():
     sql = """
-          SELECT u.email, pk.team
+          SELECT u.email
           FROM users u
           JOIN paid pd ON pd.user_id = u.id
           JOIN picks pk ON pk.user_id = u.id
@@ -26,7 +26,7 @@ def get_players_without_picks():
           AND pk.year = (SELECT year FROM current)
           AND pk.week = (SELECT min(week) FROM locks WHERE
                          lock_date > CURRENT_TIMESTAMP)
-          AND pk.team = '--'
+          AND (pk.team = '--' or u.username = 'DanTheAutomator')
           AND pd.result != 'R'
           AND u.validated = True
           """
