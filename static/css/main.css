@@ -82,6 +82,11 @@ li {
     background: #890101;
 }
 
+.black {
+    color: black;
+    background: black;
+}
+
 .paid {
     background: #96c2ff;
 }

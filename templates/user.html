@@ -34,7 +34,9 @@
                     
                 {% for e in d[5] %}
                     <td
-                        {% if e[1] == "W" %}
+                        {% if e[0] == "--" and e[1] == "R" %}
+                            class="black"
+                        {% elif e[1] == "W" %}
                             class="win"
                         {% elif e[1] == "L" %}
                             class="loss"
