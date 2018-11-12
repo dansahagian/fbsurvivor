@@ -275,8 +275,8 @@ def get_board(year):
         data.append(line)
 
         data.sort(key=lambda x: x[0].lower())  # sort by username
-        data.sort(key=lambda x: x[3], reverse=True)  # sort by wins
         data.sort(key=lambda x: x[4])  # sort by losses
+        data.sort(key=lambda x: x[3], reverse=True)  # sort by wins
         data.sort(key=lambda x: x[2])  # sort by player status
 
     return data
