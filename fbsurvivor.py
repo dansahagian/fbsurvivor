@@ -44,6 +44,13 @@ def signup():
         return redirect('/survive')
 
 
+@app.route('/board/<year>', methods=['GET'])
+def boards(year):
+    if request.method == 'GET':
+        data = db.get_board(year)
+        return rt('boards.html', years=db.get_years(), data=data)
+
+
 @app.route('/<link>', methods=['GET'])
 def user(link):
     if db.valid_link(link):
