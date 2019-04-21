@@ -12,7 +12,7 @@ app.secret_key = os.environ['FLASK_KEY']
 
 @app.route('/', methods=['GET'])
 def index():
-    return rt('index.html')
+    abort(404)
 
 
 @app.route('/survive', methods=['GET', 'POST'])

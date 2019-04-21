@@ -107,3 +107,8 @@ li {
     max-width: 30em;;
     text-align: center;
 }
+
+.notfound {
+    font-size: 1.50em;
+    font-weight: 800;
+}
