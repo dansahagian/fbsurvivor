@@ -90,7 +90,7 @@ def pick(link, year, week):
     if db.valid_link(link) and db.valid_year(year) and db.valid_week(week):
         if request.method == 'GET':
             if db.week_locked(year, week):
-                flash('Week %s is locked! Cannot Edit!' % (week))
+                flash('Week %s is locked! Cannot Edit!' % week)
                 return redirect('/%s/%s' % (link, year))
             teams = db.get_team_choices(link, year, week)
             pick = db.get_current_pick(link, year, week)
@@ -102,7 +102,7 @@ def pick(link, year, week):
             pick = request.form['pick']
 
             if pick in picks and pick != '--':
-                flash('Pick NOT updated! %s already used.' % (pick))
+                flash('Pick NOT updated! %s already used.' % pick)
             else:
                 db.update_pick(link, year, week, pick)
                 flash('Pick updated! Week %s: %s' % (week, pick))
@@ -115,16 +115,16 @@ def pick(link, year, week):
 def play_year(link, year):
     if db.valid_link(link) and db.valid_year(year):
         if db.year_locked(year):
-            flash('%s is locked! Come back next year!' % (year))
-            return redirect('/%s' % (link))
+            flash('%s is locked! Come back next year!' % year)
+            return redirect('/%s' % link)
         elif db.user_playing(link, year):
-            flash('You are already playing for %s' % (year))
-            return redirect('/%s' % (link))
+            flash('You are already playing for %s' % year)
+            return redirect('/%s' % link)
         else:
             db.add_user_picks(link, year)
             db.add_paid_status(link, year)
-            flash('You are playing in the %s league. Good luck!' % (year))
-            return redirect('/%s' % (link))
+            flash('You are playing in the %s league. Good luck!' % year)
+            return redirect('/%s' % link)
     else:
         abort(404)
 
@@ -135,21 +135,9 @@ def retire(link, year):
         if db.user_playing(link, year):
             db.set_retired(link, year)
             flash('You retired! See you next year!')
-            return redirect('/%s' % (link))
+            return redirect('/%s' % link)
         flash('You can not retire since you are not playing!')
-        return redirect('/%s' % (link))
-    else:
-        abort(404)
-
-
-@app.route('/<link>/admin', methods=['GET'])
-def admin(link):
-    if db.valid_link(link):
-        if db.user_admin(link):
-            return 'admin page'
-        else:
-            flash('You do NOT have access to that page!')
-            return redirect('/%s' % (link))
+        return redirect('/%s' % link)
     else:
         abort(404)
 
