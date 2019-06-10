@@ -4,7 +4,7 @@
         <br><br>
         {% if play %}
             <a href="/{{ link }}/{{ year }}/picks">Picks</a>
-            {% if not retired %}
+            {% if not retired and year == current_year%}
                 <a href="/{{ link }}/{{ year }}/retire">Retire</a>
             {% endif %}
         {%  else %}

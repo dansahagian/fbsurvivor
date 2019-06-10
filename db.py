@@ -183,7 +183,7 @@ def get_years():
 
 
 def year_locked(year):
-    sql = """SELECT lock FROM years WHERE year = %s""" % (year)
+    sql = """SELECT lock FROM years WHERE year = %s""" % year
     return query_db(sql)[0][0]
 
 
