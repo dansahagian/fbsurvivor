@@ -139,7 +139,7 @@ def play_year(link, year):
 @valid_year
 @app.route('/<link>/<year>/retire', methods=['GET'])
 def retire_year(link, year):
-    if db.user_playing(link, year) and year == db.get_current_year():
+    if db.user_playing(link, year) and int(year) == db.get_current_year():
         db.set_retired(link, year)
         flash('You retired! See you next year!')
         return redirect('/%s/%s' % (link, year))
