@@ -64,25 +64,25 @@ def signup():
 
 
 @valid_link
-@valid_year
-@app.route('/<link>/previous/<year>', methods=['GET'])
-def previous(link, year):
-    data = db.get_board(year)
-    return rt('board.html', link=link, year=year, data=data, years=db.get_years())
-
-
-
-@valid_link
 @app.route('/<link>', methods=['GET'])
 def user(link):
-    username = db.get_username(link)
-    data = db.get_board(db.get_current_year())
-    return rt('user.html', years=db.get_years(), link=link, data=data, username=username)
+    year = db.get_current_year()
+    return redirect('/%s/%s' % (link, year))
 
 
 @valid_link
 @valid_year
 @app.route('/<link>/<year>', methods=['GET'])
+def picks(link, year):
+    username = db.get_username(link)
+    data = db.get_board(year)
+    years = [x for x in db.get_years() if x != year]
+    return rt('user.html', years=years, link=link, data=data, username=username)
+
+
+@valid_link
+@valid_year
+@app.route('/<link>/<year>/picks', methods=['GET'])
 def picks(link, year):
     user_picks = db.get_user_picks(link, year)
     wins = len([x[2] for x in user_picks if x[2] == 'W'])
@@ -93,7 +93,7 @@ def picks(link, year):
 @valid_link
 @valid_year
 @valid_week
-@app.route('/<link>/<year>/<week>', methods=['GET', 'POST'])
+@app.route('/<link>/<year>/picks/<week>', methods=['GET', 'POST'])
 def pick(link, year, week):
     if request.method == 'GET':
         if db.week_locked(year, week):
@@ -112,7 +112,7 @@ def pick(link, year, week):
         else:
             db.update_pick(link, year, week, user_pick)
             flash('Pick updated! Week %s: %s' % (week, user_pick))
-            return redirect('/%s/%s' % (link, year))
+            return redirect('/%s/%s/picks' % (link, year))
 
 
 @valid_link

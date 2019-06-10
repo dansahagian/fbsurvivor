@@ -1,17 +1,9 @@
 {% extends "base.html" %}
     {% block content %}
-        <a href="/{{ link }}">Back</a>
+        <a href="/{{ link }}/{{ year }}">Back</a>
         <br><br>
-        {% if not lock and not picks %}
-            <a href="/{{ link }}/{{ year }}/play">
-                <h2><--Click to Play in {{ year }}--></h2>
-            </a>
-            <br><br>
-        {% endif %}
         {% if picks %}
             Record: {{ ws }} - {{ ls }}
-            <br><br>
-            <a href="/{{ link }}/{{ year }}/retire">Retire</a>
             <br><br>
             <table>
                 <tr>
@@ -33,7 +25,7 @@
                 
                     <td>
                         {% if pick[4] %}
-                            <a href="/{{ link }}/{{ year }}/{{ pick[0] }}">
+                            <a href="/{{ link }}/{{ year }}/picks/{{ pick[0] }}">
                                 edit
                             </a>
                         {% else %}

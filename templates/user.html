@@ -2,16 +2,17 @@
     {% block content %}
     <strong>{{ username }}</strong>
         <br><br>
-        Picks:
-        {% for year in years %}
-            <a href="/{{ link }}/{{ year }}">{{ year }}</a>
-        {% endfor %}
+        {{ year }}
         <br><br>
-        Board:
-        {% for year in years %}
-            <a href="/{{ link }}/{{ year }}/board">{{ year }}</a>
-        {% endfor %}
+        <a href="/{{ link }}/{{ year }}/picks">Picks</a>
         <br><br>
+        {% if not lock and not picks %}
+            <a href="#">
+                <h2>Play {{  year }}</h2>
+            </a>
+            <br><br>
+        {% endif %}
+         <a href="#e">Retire {{ year }}</a>
         <table>
             <tr>
                 <th>Username</th>
