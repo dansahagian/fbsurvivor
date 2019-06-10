@@ -85,8 +85,8 @@ def user(link):
 @app.route('/<link>/<year>', methods=['GET'])
 def picks(link, year):
     user_picks = db.get_user_picks(link, year)
-    wins = len([x[2] for x in picks if x[2] == 'W'])
-    loss = len([x[2] for x in picks if x[2] == 'L'])
+    wins = len([x[2] for x in user_picks if x[2] == 'W'])
+    loss = len([x[2] for x in user_picks if x[2] == 'L'])
     return rt('picks.html', link=link, year=year, lock=db.year_locked(year), picks=user_picks, ws=wins, ls=loss)
 
 
