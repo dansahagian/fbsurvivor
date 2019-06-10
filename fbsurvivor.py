@@ -10,12 +10,31 @@ app = Flask(__name__)
 app.secret_key = os.environ['FLASK_KEY']
 
 
-@app.route('/', methods=['GET'])
-def index():
-    abort(404)
+def valid_link(func):
+    def inner(link):
+        if db.valid_link(link):
+            return func
+        abort(404)
+    return inner
 
 
-@app.route('/survive', methods=['GET', 'POST'])
+def valid_year(func):
+    def inner(year):
+        if db.valid_year(year):
+            return func
+        abort(404)
+    return inner
+
+
+def valid_week(func):
+    def inner(week):
+        if db.valid_week(week):
+            return func
+        abort(404)
+    return inner
+
+
+@app.route('/', methods=['GET', 'POST'])
 def signup():
     if request.method == 'GET':
         return rt('signup.html')
@@ -24,122 +43,105 @@ def signup():
         username = request.form['username']
         email = request.form['email'].lower()
 
-        if len(username) > 20:
+        if len(str(username)) > 20:
             flash('Username is greater than 20 characters! Choose again.')
-            return redirect('/survive')
+            return redirect('/')
 
         if db.username_available(username):
             link = db.add_user(username, email)
-            subject = 'Football Survivor'
+            subject = 'Confirm your Email - Football Survivor'
             message = 'Thank you for registering for Football Survivor!\n\n'
-            message += 'If this was not you, you can ignore this email. \n\n'
-            message += 'If this was you, click the link below to confirm. \n\n'
-            message += 'https://fbsurvivor.com/%s\n\n' % (link)
-            message += 'You will use this link to make your picks.'
+            message += 'If this was not you, you can ignore this email.\n\n'
+            message += 'If this was you, click the link below to confirm.\n\n'
+            message += 'You will use this link to submit your picks.\n\n'
+            message += 'https://fbsurvivor.com/%s' % link
 
             emailer.send_email(subject, [email], message)
             return rt('email.html')
 
         flash('Username already exists! Pick another!')
-        return redirect('/survive')
+        return redirect('/')
 
 
-@app.route('/board/<year>', methods=['GET'])
-def boards(year):
-    if request.method == 'GET':
-        data = db.get_board(year)
-        return rt('boards.html', years=db.get_years(), data=data)
-
-
-@app.route('/<link>', methods=['GET'])
-def user(link):
-    if db.valid_link(link):
-        db.validate_link(link)
-        username = db.get_username(link)
-        data = db.get_board(db.get_current_year())
-        return rt('user.html', years=db.get_years(), link=link, data=data,
-                  admin=db.user_admin(link), username=username)
-    else:
-        abort(404)
-
-
+@valid_link
+@valid_year
 @app.route('/<link>/previous/<year>', methods=['GET'])
 def previous(link, year):
-    if db.valid_link(link) and db.valid_year(year):
-        data = db.get_board(year)
-        return rt('board.html', link=link, year=year, data=data,
-                  years=db.get_years())
-    else:
-        abort(404)
+    data = db.get_board(year)
+    return rt('board.html', link=link, year=year, data=data, years=db.get_years())
 
 
+
+@valid_link
+@app.route('/<link>', methods=['GET'])
+def user(link):
+    username = db.get_username(link)
+    data = db.get_board(db.get_current_year())
+    return rt('user.html', years=db.get_years(), link=link, data=data, username=username)
+
+
+@valid_link
+@valid_year
 @app.route('/<link>/<year>', methods=['GET'])
 def picks(link, year):
-    if db.valid_link(link) and db.valid_year(year):
-        picks = db.get_user_picks(link, year)
-        wins = len([x[2] for x in picks if x[2] == 'W'])
-        loss = len([x[2] for x in picks if x[2] == 'L'])
-        return rt('picks.html', link=link, year=year,
-                  lock=db.year_locked(year), picks=picks, ws=wins, ls=loss)
-    else:
-        abort(404)
+    user_picks = db.get_user_picks(link, year)
+    wins = len([x[2] for x in picks if x[2] == 'W'])
+    loss = len([x[2] for x in picks if x[2] == 'L'])
+    return rt('picks.html', link=link, year=year, lock=db.year_locked(year), picks=user_picks, ws=wins, ls=loss)
 
 
+@valid_link
+@valid_year
+@valid_week
 @app.route('/<link>/<year>/<week>', methods=['GET', 'POST'])
 def pick(link, year, week):
-    if db.valid_link(link) and db.valid_year(year) and db.valid_week(week):
-        if request.method == 'GET':
-            if db.week_locked(year, week):
-                flash('Week %s is locked! Cannot Edit!' % week)
-                return redirect('/%s/%s' % (link, year))
-            teams = db.get_team_choices(link, year, week)
-            pick = db.get_current_pick(link, year, week)
-            return rt('pick.html', link=link, year=year, week=int(week),
-                      pick=pick, c=teams)
+    if request.method == 'GET':
+        if db.week_locked(year, week):
+            flash('Week %s is locked! Cannot Edit!' % week)
+            return redirect('/%s/%s' % (link, year))
+        teams = db.get_team_choices(link, year, week)
+        user_pick = db.get_current_pick(link, year, week)
+        return rt('pick.html', link=link, year=year, week=int(week), pick=user_pick, c=teams)
 
-        if request.method == 'POST':
-            picks = [x[1] for x in db.get_user_picks(link, year)]
-            pick = request.form['pick']
+    if request.method == 'POST':
+        user_picks = [x[1] for x in db.get_user_picks(link, year)]
+        user_pick = request.form['pick']
 
-            if pick in picks and pick != '--':
-                flash('Pick NOT updated! %s already used.' % pick)
-            else:
-                db.update_pick(link, year, week, pick)
-                flash('Pick updated! Week %s: %s' % (week, pick))
-                return redirect('/%s/%s' % (link, year))
-    else:
-        abort(404)
+        if user_pick in user_picks and user_pick != '--':
+            flash('Pick NOT updated! %s already used.' % user_pick)
+        else:
+            db.update_pick(link, year, week, user_pick)
+            flash('Pick updated! Week %s: %s' % (week, user_pick))
+            return redirect('/%s/%s' % (link, year))
 
 
+@valid_link
+@valid_year
 @app.route('/<link>/<year>/play', methods=['GET'])
 def play_year(link, year):
-    if db.valid_link(link) and db.valid_year(year):
-        if db.year_locked(year):
-            flash('%s is locked! Come back next year!' % year)
-            return redirect('/%s' % link)
-        elif db.user_playing(link, year):
-            flash('You are already playing for %s' % year)
-            return redirect('/%s' % link)
-        else:
-            db.add_user_picks(link, year)
-            db.add_paid_status(link, year)
-            flash('You are playing in the %s league. Good luck!' % year)
-            return redirect('/%s' % link)
-    else:
-        abort(404)
-
-
-@app.route('/<link>/<year>/retire', methods=['GET'])
-def retire(link, year):
-    if db.valid_link(link) and db.valid_year(year):
-        if db.user_playing(link, year):
-            db.set_retired(link, year)
-            flash('You retired! See you next year!')
-            return redirect('/%s' % link)
-        flash('You can not retire since you are not playing!')
+    if db.year_locked(year):
+        flash('%s is locked! Come back next year!' % year)
+        return redirect('/%s' % link)
+    elif db.user_playing(link, year):
+        flash('You are already playing for %s' % year)
         return redirect('/%s' % link)
     else:
-        abort(404)
+        db.add_user_picks(link, year)
+        db.add_paid_status(link, year)
+        flash('You are playing in the %s league. Good luck!' % year)
+        return redirect('/%s' % link)
+
+
+@valid_link
+@valid_year
+@app.route('/<link>/<year>/retire', methods=['GET'])
+def retire(link, year):
+    if db.user_playing(link, year):
+        db.set_retired(link, year)
+        flash('You retired! See you next year!')
+        return redirect('/%s' % link)
+    flash('You can not retire since you are not playing!')
+    return redirect('/%s' % link)
 
 
 @app.route('/favicon.ico')
@@ -167,5 +169,5 @@ def font_ttf():
 
 
 @app.errorhandler(404)
-def page_not_found(error):
+def page_not_found():
     return rt('404.html'), 404

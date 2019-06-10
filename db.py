@@ -60,10 +60,6 @@ def get_username(link):
     return query_db(sql)[0][0]
 
 
-def user_admin(link):
-    return query_db("SELECT admin FROM users where link = '%s'" % (link))[0][0]
-
-
 def add_user(username, email):
     char_set = string.ascii_lowercase + string.digits
     link = ''.join(secrets.choice(char_set) for _ in range(44))
@@ -124,11 +120,16 @@ def get_user_picks(link, year):
     return picks
 
 
+def not_validated(link):
+    sql = "SELECT validated FROM users WHERE link = %s" % link
+    return query_db(sql)[0][0]
+
+
 def validate_link(link):
     sql = """
           UPDATE users
           SET validated = %s
-          WHERE link = %s
+          WHERE link = %s AND validated = FALSE
           """
 
     values = (True, link)

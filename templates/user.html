@@ -2,12 +2,15 @@
     {% block content %}
     <strong>{{ username }}</strong>
         <br><br>
-        Your picks:<br>
+        Your picks:
         {% for year in years %}
             <a href="/{{ link }}/{{ year }}">{{ year }}</a>
         {% endfor %}
         <br><br>
-        Current Board
+        Boards:
+        {% for year in years %}
+            <a href="/{{ link }}/{{ year }}/board">{{ year }}</a>
+        {% endfor %}
         <br><br>
         <table>
             <tr>
@@ -46,11 +49,6 @@
                 {% endfor %}                 
                 </tr>
             {% endfor %}
-        </table>
-        <br><br>
-        Other Boards:<br>
-        {% for year in years %}
-            <a href="/{{ link }}/previous/{{ year }}">{{ year }}</a>
-        {% endfor %}
+        </table><br><br>
     {% endblock %}
         
