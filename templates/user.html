@@ -10,6 +10,12 @@
         {%  else %}
             <a href="/{{ link }}/{{ year }}/play">Play</a>
         {% endif %}
+        <br><br>
+        Years:
+        {% for year in years %}
+            <a href="/{{ link }}/{{ year }}">{{ year }}</a>
+        {% endfor %}
+        <br><br>
         <table>
             <tr>
                 <th>Username</th>
