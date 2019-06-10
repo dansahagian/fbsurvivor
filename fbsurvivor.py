@@ -78,7 +78,7 @@ def user(link, year):
     data = db.get_board(year)
     years = [x for x in db.get_years() if x != int(year)]
     play = db.user_playing(link, year)
-    retire = not db.user_retired(link, year) and int(year) == db.get_current_year()
+    retire = (not db.user_retired(link, year)) and (int(year) == db.get_current_year())
 
     return rt('user.html', years=years, link=link, data=data, username=username, year=year, play=play, retire=retire)
 
