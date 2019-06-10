@@ -65,7 +65,7 @@ def signup():
 
 @valid_link
 @app.route('/<link>', methods=['GET'])
-def user(link):
+def dash(link):
     year = db.get_current_year()
     return redirect('/%s/%s' % (link, year))
 
@@ -73,11 +73,11 @@ def user(link):
 @valid_link
 @valid_year
 @app.route('/<link>/<year>', methods=['GET'])
-def picks(link, year):
+def user(link, year):
     username = db.get_username(link)
     data = db.get_board(year)
     years = [x for x in db.get_years() if x != year]
-    return rt('user.html', years=years, link=link, data=data, username=username)
+    return rt('user.html', years=years, link=link, data=data, username=username, year=year)
 
 
 @valid_link
