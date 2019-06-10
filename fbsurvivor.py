@@ -102,7 +102,7 @@ def pick(link, year, week):
     if request.method == 'GET':
         if db.week_locked(year, week):
             flash('Week %s is locked! Cannot Edit!' % week)
-            return redirect('/%s/%s' % (link, year))
+            return redirect('/%s/%s/picks' % (link, year))
         teams = db.get_team_choices(link, year, week)
         user_pick = db.get_current_pick(link, year, week)
         return rt('pick.html', link=link, year=year, week=int(week), pick=user_pick, c=teams)

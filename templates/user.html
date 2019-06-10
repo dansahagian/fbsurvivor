@@ -2,16 +2,14 @@
     {% block content %}
     <strong>{{ username }} : {{ year }}</strong>
         <br><br>
-        <a href="/{{ link }}/{{ year }}/picks">Picks</a>
-        <br><br>
-        {% if not lock and not picks %}
-            <a href="/{{ link }}/{{ year }}/play">Play {{  year }}</a>
-            <br><br>
+        {% if play %}
+            <a href="/{{ link }}/{{ year }}/picks">Picks</a>
+            {% if not retired %}
+                <a href="/{{ link }}/{{ year }}/retire">Retire</a>
+            {% endif %}
+        {%  else %}
+            <a href="/{{ link }}/{{ year }}/play">Play</a>
         {% endif %}
-        {% if play and not retired %}
-            <a href="/{{ link }}/{{ year }}/retire">Retire {{ year }}</a>
-            <br><br>
-        {%  endif %}
         <table>
             <tr>
                 <th>Username</th>
