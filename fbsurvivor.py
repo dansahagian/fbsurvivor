@@ -77,12 +77,10 @@ def user(link, year):
     username = db.get_username(link)
     data = db.get_board(year)
     years = [x for x in db.get_years() if x != int(year)]
-    lock = db.year_locked(year)
     play = db.user_playing(link, year)
-    retired = db.user_retired(link, year)
-    current_year = db.get_current_year()
-    return rt('user.html', years=years, link=link, data=data, username=username, year=year, lock=lock,
-              play=play, retired=retired, current_year=current_year)
+    retire = db.user_retired(link, year) and int(year) == db.get_current_year()
+
+    return rt('user.html', years=years, link=link, data=data, username=username, year=year, play=play, retire=retire)
 
 
 @valid_link
@@ -140,7 +138,7 @@ def play_year(link, year):
 @valid_link
 @valid_year
 @app.route('/<link>/<year>/retire', methods=['GET'])
-def retire(link, year):
+def retire_year(link, year):
     if db.user_playing(link, year) and year == db.get_current_year():
         db.set_retired(link, year)
         flash('You retired! See you next year!')
