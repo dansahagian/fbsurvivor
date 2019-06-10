@@ -1,18 +1,17 @@
 {% extends "base.html" %}
     {% block content %}
-    <strong>{{ username }}</strong>
-        <br><br>
-        {{ year }}
+    <strong>{{ username }} : {{ year }}</strong>
         <br><br>
         <a href="/{{ link }}/{{ year }}/picks">Picks</a>
         <br><br>
         {% if not lock and not picks %}
-            <a href="#">
-                <h2>Play {{  year }}</h2>
-            </a>
+            <a href="/{{ link }}/{{ year }}/play">Play {{  year }}</a>
             <br><br>
         {% endif %}
-         <a href="#e">Retire {{ year }}</a>
+        {% if play and not retired %}
+            <a href="/{{ link }}/{{ year }}/retire">Retire {{ year }}</a>
+            <br><br>
+        {%  endif %}
         <table>
             <tr>
                 <th>Username</th>

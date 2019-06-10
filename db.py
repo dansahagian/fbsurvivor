@@ -163,6 +163,20 @@ def user_playing(link, year):
     return False
 
 
+def user_retired(link, year):
+    sql = """
+          SELECT p.result FROM paid p 
+          JOIN users u ON u.id = p.user_id
+          WHERE u.link = '%s'
+          AND p.year = %s
+          """ % (link, year)
+
+    data = query_db(sql)
+    if data[0][0] == 'R':
+        return True
+    return False
+
+
 def get_years():
     sql = """SELECT year from years order by year desc"""
     return [x[0] for x in query_db(sql)]

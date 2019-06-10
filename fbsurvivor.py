@@ -77,7 +77,11 @@ def user(link, year):
     username = db.get_username(link)
     data = db.get_board(year)
     years = [x for x in db.get_years() if x != year]
-    return rt('user.html', years=years, link=link, data=data, username=username, year=year)
+    lock = db.year_locked(year)
+    play = db.user_playing(link, year)
+    retired = db.user_retired(link, year)
+    return rt('user.html', years=years, link=link, data=data, username=username, year=year, lock=lock,
+              play=play, retired=retired)
 
 
 @valid_link
