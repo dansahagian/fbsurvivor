@@ -172,8 +172,9 @@ def user_retired(link, year):
           """ % (link, year)
 
     data = query_db(sql)
-    if data[0][0] == 'R':
-        return True
+    if data:
+        if data[0][0] == 'R':
+            return True
     return False
 
 
