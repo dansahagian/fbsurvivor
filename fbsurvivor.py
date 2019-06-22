@@ -67,7 +67,7 @@ def signup():
 @app.route('/<link>', methods=['GET'])
 def dash(link):
     year = db.get_current_year()
-    return redirect('/%s/%s' % (link, year))
+    return redirect(f'/{link}/{year}')
 
 
 @valid_link
@@ -100,8 +100,8 @@ def picks(link, year):
 def pick(link, year, week):
     if request.method == 'GET':
         if db.week_locked(year, week):
-            flash('Week %s is locked! Cannot Edit!' % week)
-            return redirect('/%s/%s/picks' % (link, year))
+            flash(f'Week {week} is locked! Cannot Edit!')
+            return redirect(f'/{link}/{year}/picks')
         teams = db.get_team_choices(link, year, week)
         user_pick = db.get_current_pick(link, year, week)
         return rt('pick.html', link=link, year=year, week=int(week), pick=user_pick, c=teams)
@@ -111,11 +111,11 @@ def pick(link, year, week):
         user_pick = request.form['pick']
 
         if user_pick in user_picks and user_pick != '--':
-            flash('Pick NOT updated! %s already used.' % user_pick)
+            flash(f'Pick NOT updated! {user_pick} already used.')
         else:
             db.update_pick(link, year, week, user_pick)
-            flash('Pick updated! Week %s: %s' % (week, user_pick))
-            return redirect('/%s/%s/picks' % (link, year))
+            flash(f'Pick updated! Week {week}: {user_pick}')
+            return redirect(f'/{link}/{year}/picks')
 
 
 @valid_link
@@ -123,16 +123,16 @@ def pick(link, year, week):
 @app.route('/<link>/<year>/play', methods=['GET'])
 def play_year(link, year):
     if db.year_locked(year):
-        flash('%s is locked! Come back next year!' % year)
-        return redirect('/%s/%s' % (link, year))
+        flash(f'{year} is locked! Come back next year!')
+        return redirect(f'/{link}/{year}')
     elif db.user_playing(link, year):
-        flash('You are already playing for %s' % year)
-        return redirect('/%s/%s' % (link, year))
+        flash(f'You are already playing for {year}')
+        return redirect(f'/{link}/{year}')
     else:
         db.add_user_picks(link, year)
         db.add_paid_status(link, year)
-        flash('You are playing in the %s league. Good luck!' % year)
-        return redirect('/%s/%s' % (link, year))
+        flash(f'You are playing in the {year} league. Good luck!')
+        return redirect(f'/{link}/{year}')
 
 
 @valid_link
@@ -142,9 +142,9 @@ def retire_year(link, year):
     if db.user_playing(link, year) and int(year) == db.get_current_year():
         db.set_retired(link, year)
         flash('You retired! See you next year!')
-        return redirect('/%s/%s' % (link, year))
+        return redirect(f'/{link}/{year}')
     flash('You can not retire since you are not playing!')
-    return redirect('/%s/%s' % (link, year))
+    return redirect(f'/{link}/{year}')
 
 
 @app.route('/favicon.ico')
