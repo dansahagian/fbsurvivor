@@ -1,6 +1,7 @@
 {% extends "base.html" %}
     {% block content %}
-        <a href="/{{ link }}/{{ year }}/picks">Picks</a>
+        Week {{ week }} - {{ year }} Pick
+        <a href="/{{ link }}/{{ year }}/picks">Back</a>
         <br><br>
         Week {{ "%02d" % (week) }}<br><br>
         Current Pick: {{ pick }}<br>

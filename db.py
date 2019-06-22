@@ -80,6 +80,13 @@ def get_username(link):
     return run_query(sql, values)[0][0]
 
 
+def get_email(link):
+    sql = 'SELECT email FROM users where link = %s'
+    values = (link, )
+
+    return run_query(sql, values)[0][0]
+
+
 def add_user(username, email):
     char_set = string.ascii_lowercase + string.digits
     link = ''.join(secrets.choice(char_set) for _ in range(44))
@@ -87,7 +94,7 @@ def add_user(username, email):
     while link in get_links():
         link = ''.join(secrets.choice(char_set) for _ in range(44))
 
-    sql = 'INSERT INTO users (username, email, link, admin, validated) VALUES (%s, %s, %s, %s, %s);'
+    sql = 'INSERT INTO users (username, email, link, admin, confirmed) VALUES (%s, %s, %s, %s, %s);'
     values = (username, email, link, False, False)
     run_query(sql, values)
 
@@ -134,15 +141,15 @@ def get_user_picks(link, year):
     return picks
 
 
-def not_validated(link):
-    sql = 'SELECT validated FROM users WHERE link = %s'
+def confirmed(link):
+    sql = 'SELECT confirmed FROM users WHERE link = %s'
     values = (link, )
     return run_query(sql, values)[0][0]
 
 
-def validate_link(link):
-    sql = 'UPDATE users SET validated = %s WHERE link = %s AND validated = FALSE'
-    values = (True, link)
+def confirm_email(link):
+    sql = 'UPDATE users SET confirmed = TRUE WHERE link = %s'
+    values = (link, )
     run_query(sql, values)
 
 

@@ -10,7 +10,7 @@ def get_players():
           JOIN paid p ON p.user_id = u.id
           WHERE p.year = (SELECT year FROM current)
           AND p.result != 'R'
-          AND u.validated = True
+          AND u.confirmed = True
           """
 
     return [x[0] for x in db.query_db(sql)]
@@ -28,7 +28,7 @@ def get_players_without_picks():
                          lock_date > CURRENT_TIMESTAMP)
           AND (pk.team = '--' or u.username = 'DanTheAutomator')
           AND pd.result != 'R'
-          AND u.validated = True
+          AND u.confirmed = True
           """
 
     return [x[0] for x in db.query_db(sql)]
