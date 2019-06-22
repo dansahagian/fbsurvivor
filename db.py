@@ -105,7 +105,7 @@ def add_user(username, email):
 
 def add_user_picks(link, year):
     year = int(year)
-    
+
     user_id = get_user_id(link)
 
     for i in range(0, 17):
@@ -123,6 +123,8 @@ def add_paid_status(link, year):
 
 
 def get_user_picks(link, year):
+    year = int(year)
+    
     sql = """
           SELECT p.week, p.team, p.result, l.lock_date
           FROM picks p
@@ -133,7 +135,6 @@ def get_user_picks(link, year):
           ORDER BY p.week
           """
     values = (link, year)
-    year = int(year)
 
     data = run_query(sql, values)
     picks = []
