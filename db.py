@@ -104,6 +104,8 @@ def add_user(username, email):
 
 
 def add_user_picks(link, year):
+    year = int(year)
+    
     user_id = get_user_id(link)
 
     for i in range(0, 17):
@@ -113,6 +115,8 @@ def add_user_picks(link, year):
 
 
 def add_paid_status(link, year):
+    year = int(year)
+
     sql = 'INSERT INTO paid (user_id, year, paid, result) VALUES (%s, %s, %s, %s);'
     values = (get_user_id(link), year, False, 'A')
     run_query(sql, values)
@@ -129,6 +133,7 @@ def get_user_picks(link, year):
           ORDER BY p.week
           """
     values = (link, year)
+    year = int(year)
 
     data = run_query(sql, values)
     picks = []
@@ -154,6 +159,8 @@ def confirm_email(link):
 
 
 def set_retired(link, year):
+    year = int(year)
+
     user_id = get_user_id(link)
     sql = "UPDATE paid SET result = 'R' WHERE user_id = %s AND year = %s"
     values = (user_id, year)
@@ -161,6 +168,8 @@ def set_retired(link, year):
 
 
 def user_playing(link, year):
+    year = int(year)
+
     sql = 'SELECT p.paid FROM paid p JOIN users u ON u.id = p.user_id WHERE u.link = %s AND p.year = %s'
     values = (link, year)
     data = run_query(sql, values)
@@ -171,6 +180,8 @@ def user_playing(link, year):
 
 
 def user_retired(link, year):
+    year = int(year)
+
     sql = 'SELECT p.result FROM paid p JOIN users u ON u.id = p.user_id WHERE u.link = %s AND p.year = %s'
     values = (link, year)
     data = run_query(sql, values)
@@ -182,12 +193,17 @@ def user_retired(link, year):
 
 
 def year_locked(year):
+    year = int(year)
+
     sql = 'SELECT lock FROM years WHERE year = %s'
     values = (year, )
     return run_query(sql, values)[0][0]
 
 
 def week_locked(year, week):
+    year = int(year)
+    week = int(week)
+
     sql = 'SELECT lock_date FROM locks WHERE year = %s AND week = %s'
     values = (year, week)
 
@@ -215,6 +231,8 @@ def valid_week(week):
 
 
 def get_team_choices(link, year, week):
+    year = int(year)
+    week = int(week)
     user_id = get_user_id(link)
 
     sql = 'SELECT team FROM teams WHERE year = %s AND bye_week != %s'
@@ -229,6 +247,8 @@ def get_team_choices(link, year, week):
 
 
 def get_current_pick(link, year, week):
+    year = int(year)
+    week = int(week)
     user_id = get_user_id(link)
 
     sql = 'SELECT team from picks WHERE user_id = %s AND year = %s AND week = %s'
@@ -238,6 +258,8 @@ def get_current_pick(link, year, week):
 
 
 def update_pick(link, year, week, pick):
+    year = int(year)
+    week = int(week)
     user_id = get_user_id(link)
 
     sql = 'UPDATE picks SET team = %s WHERE user_id = %s AND year = %s and week = %s'
@@ -246,6 +268,7 @@ def update_pick(link, year, week, pick):
 
 
 def get_board(year):
+    year = int(year)
     sql = """
           SELECT u.id, u.username, p.paid, p.result
           FROM users u
