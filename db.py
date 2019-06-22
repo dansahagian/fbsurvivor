@@ -22,9 +22,9 @@ def run_query(sql, values=None):
         else:
             cursor.execute(sql)
 
-        if sql[0:5] == 'SELECT':
+        if sql[0:6] == 'SELECT':
             data = cursor.fetchall()
-        if sql[0:5] in ['UPDATE', 'INSERT']:
+        if sql[0:6] in ['UPDATE', 'INSERT']:
             cnxn.commit()
             
     except (Exception, psycopg2.DatabaseError) as error:
