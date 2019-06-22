@@ -11,32 +11,26 @@ app.secret_key = os.environ['FLASK_KEY']
 
 
 def valid_link(func):
-    def inner(link):
+    def inner(link, *args):
         if db.valid_link(link):
-
-            return func
+            return func(link, args)
         abort(404)
-
     return inner
 
 
 def valid_year(func):
-    def inner(year):
+    def inner(link, year, *args):
         if db.valid_year(year):
-
-            return func
+            return func(link, year, args)
         abort(404)
-
     return inner
 
 
 def valid_week(func):
-    def inner(week):
+    def inner(link, year, week, *args):
         if db.valid_week(week):
-
-            return func
+            return func(link, year, week, args)
         abort(404)
-
     return inner
 
 
