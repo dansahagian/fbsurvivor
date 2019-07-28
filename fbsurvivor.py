@@ -1,43 +1,51 @@
 import os
+
+from functools import wraps
+
 from flask import Flask, flash, redirect, request, abort
 from flask import render_template as rt
 from flask import send_from_directory as sfd
+
 import db
 import emailer
 
+from settings import *
 
 app = Flask(__name__)
-app.secret_key = os.environ['FLASK_KEY']
+app.secret_key = SECRET_KEY
+app.debug = DEBUG
 
 
-def valid_link(func):
-    def inner(link, *args):
-        if db.valid_link(link):
-            return func(link, args)
-        abort(404)
-    return inner
+def validate_link(func):
+    @wraps(func)
+    def wrapper(**kwargs):
+        if db.valid_link(kwargs['link']):
+            return func(**kwargs)
+        return abort(404)
+    return wrapper
 
 
-def valid_year(func):
-    def inner(link, year, *args):
-        if db.valid_year(year):
-            return func(link, year, args)
-        abort(404)
-    return inner
+def validate_year(func):
+    @wraps(func)
+    def wrapper(**kwargs):
+        if db.valid_year(kwargs['year']):
+            return func(**kwargs)
+        return abort(404)
+    return wrapper
 
 
-def valid_week(func):
-    def inner(link, year, week, *args):
-        if db.valid_week(week):
-            return func(link, year, week, args)
-        abort(404)
-    return inner
+def validate_week(func):
+    @wraps(func)
+    def wrapper(**kwargs):
+        if db.valid_week(kwargs['week']):
+            return func(**kwargs)
+        return abort(404)
+    return wrapper
 
 
 @app.route('/', methods=['GET', 'POST'])
 def signup():
     if request.method == 'GET':
-
         return rt('signup.html')
 
     if request.method == 'POST':
@@ -46,7 +54,6 @@ def signup():
 
         if len(str(username)) > 20:
             flash('Username is greater than 20 characters! Choose again.')
-
             return redirect('/')
 
         if db.username_available(username):
@@ -56,24 +63,21 @@ def signup():
             message = f'Confirm your email address by clicking the link below:\n{confirm_link}'
 
             emailer.send_email(subject, [email], message)
-
             return rt('email.html')
 
         flash('Username already exists! Pick another!')
-
         return redirect('/')
 
 
-@valid_link
 @app.route('/<link>', methods=['GET'])
+@validate_link
 def dash(link):
     year = db.get_current_year()
-
     return redirect(f'/{link}/{year}')
 
 
-@valid_link
 @app.route('/<link>/confirm', methods=['GET'])
+@validate_link
 def confirm(link):
     year = db.get_current_year()
     email = db.get_email(link)
@@ -86,38 +90,35 @@ def confirm(link):
     emailer.send_email(subject, [email], message)
 
     flash('Email Confirmed! We have sent your custom link to your email.')
-
     return redirect(f'/{link}/{year}')
 
 
-@valid_link
-@valid_year
 @app.route('/<link>/<year>', methods=['GET'])
+@validate_link
+@validate_year
 def user(link, year):
     username = db.get_username(link)
     data = db.get_board(year)
     years = db.get_years()
     play = db.user_playing(link, year)
     retire = (not db.user_retired(link, year)) and (int(year) == db.get_current_year())
-
     return rt('user.html', years=years, link=link, data=data, username=username, year=year, play=play, retire=retire)
 
 
-@valid_link
-@valid_year
 @app.route('/<link>/<year>/picks', methods=['GET'])
+@validate_link
+@validate_year
 def picks(link, year):
     user_picks = db.get_user_picks(link, year)
     wins = len([x[2] for x in user_picks if x[2] == 'W'])
     loss = len([x[2] for x in user_picks if x[2] == 'L'])
-
     return rt('picks.html', link=link, year=year, lock=db.year_locked(year), picks=user_picks, ws=wins, ls=loss)
 
 
-@valid_link
-@valid_year
-@valid_week
 @app.route('/<link>/<year>/picks/<week>', methods=['GET', 'POST'])
+@validate_link
+@validate_year
+@validate_week
 def pick(link, year, week):
     teams = db.get_team_choices(link, year, week)
 
@@ -126,7 +127,6 @@ def pick(link, year, week):
             flash(f'Week {week} is locked! Cannot Edit!')
             return redirect(f'/{link}/{year}/picks')
         user_pick = db.get_current_pick(link, year, week)
-
         return rt('pick.html', link=link, year=year, week=int(week), pick=user_pick, c=teams)
 
     if request.method == 'POST':
@@ -145,71 +145,63 @@ def pick(link, year, week):
         return redirect(f'/{link}/{year}/picks')
 
 
-@valid_link
-@valid_year
 @app.route('/<link>/<year>/play', methods=['GET'])
+@validate_link
+@validate_year
 def play_year(link, year):
     if db.year_locked(year):
         flash(f'{year} is locked! Come back next year!')
-
         return redirect(f'/{link}/{year}')
 
     elif db.user_playing(link, year):
         flash(f'You are already playing for {year}')
-
         return redirect(f'/{link}/{year}')
 
     else:
         db.add_user_picks(link, year)
         db.add_paid_status(link, year)
         flash(f'You are playing in the {year} league. Good luck!')
-
         return redirect(f'/{link}/{year}')
 
 
-@valid_link
-@valid_year
 @app.route('/<link>/<year>/retire', methods=['GET'])
+@validate_link
+@validate_year
 def retire_year(link, year):
     if db.user_playing(link, year) and int(year) == db.get_current_year():
         db.set_retired(link, year)
         flash('You retired! See you next year!')
-
         return redirect(f'/{link}/{year}')
-    flash('You can not retire since you are not playing!')
 
+    flash('You can not retire since you are not playing!')
     return redirect(f'/{link}/{year}')
 
 
 @app.route('/favicon.ico')
 def favicon():
     root = os.path.join(app.root_path, 'static')
-
     return sfd(root, 'favicon.ico')
 
 
 @app.route('/css/main.css')
 def css():
     root = os.path.join(app.root_path, 'static/css')
-
     return sfd(root, 'main.css')
 
 
 @app.route('/fonts/OpenSans-Regular.eot')
 def font_eot():
     root = os.path.join(app.root_path, 'static/fonts')
-
     return sfd(root, 'OpenSans-Regular.eot')
 
 
 @app.route('/fonts/OpenSans-Regular.ttf')
 def font_ttf():
     root = os.path.join(app.root_path, 'static/fonts')
-
     return sfd(root, 'OpenSans-Regular.ttf')
 
 
 @app.errorhandler(404)
-def page_not_found():
-
+def page_not_found(error):
+    print(error)
     return rt('404.html'), 404

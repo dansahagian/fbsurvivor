@@ -2,10 +2,12 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-WHO_FROM = os.environ['WHO_FROM']
-SMTP_SER = os.environ['SMTP_SER']
-USERNAME = os.environ['USERNAME']
-PASSWORD = os.environ['PASSWORD']
+from settings import *
+
+WHO_FROM = SMTP_SENDER
+SMTP_SER = SMTP_SERVER
+USERNAME = SMTP_USER
+PASSWORD = SMTP_PASSWORD
 
 
 def send_email(subject, who_to, message):

@@ -1,65 +1,81 @@
-import os
+import datetime
 import secrets
 import string
-import datetime
+
 import psycopg2
 
+from settings import *
 
-def run_query(sql, values=None):
-    db = 'survivor'
-    user = 'sv_user'
-    pw = os.environ['PG_DB']
-    host = 'localhost'
-    cnxn = None
+
+def get_db_conn():
+    db = DATABASE
+    user = PG_USER
+    pw = PG_PASSWORD
+    host = PG_HOST
+
+    return psycopg2.connect(host=host, database=db, user=user, password=pw)
+
+
+def select(sql, values=None):
     data = []
-    
-    try:
-        cnxn = psycopg2.connect(host=host, database=db, user=user, password=pw)
-        cursor = cnxn.cursor()
+    conn = get_db_conn()
 
+    try:
+        cursor = conn.cursor()
         if values:
             cursor.execute(sql, values)
         else:
             cursor.execute(sql)
-
-        if sql[0:6] == 'SELECT':
-            data = cursor.fetchall()
-        if sql[0:6] in ['UPDATE', 'INSERT']:
-            cnxn.commit()
-            
+        data = cursor.fetchall()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-    
     finally:
-        if cnxn is not None:
-            cnxn.close()
+        if conn is not None:
+            conn.close()
 
     return data
+
+
+def update(sql, values=None):
+    conn = get_db_conn()
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute(sql, values)
+        conn.commit()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 def get_usernames():
     """ Returns a list of usernames from the database"""
     sql = 'SELECT username from users'
-    data = run_query(sql)
-
+    data = select(sql)
     if data:
         return [x[0] for x in data]
-    return False
+    return []
 
 
 def get_links():
     """ Returns a list of links from the database"""
     sql = 'SELECT link from users'
-    data = run_query(sql)
+    data = select(sql)
 
     if data:
         return [x[0] for x in data]
-    return False
+    return []
 
 
 def get_years():
     sql = """SELECT year from years order by year desc"""
-    return [x[0] for x in run_query(sql)]
+    data = select(sql)
+
+    if data:
+        return [x[0] for x in data]
+    return []
 
 
 def username_available(username):
@@ -71,20 +87,28 @@ def username_available(username):
 def get_user_id(link):
     sql = 'SELECT id from users WHERE link = %s'
     values = (link, )
-    return run_query(sql, values)[0][0]
+    data = select(sql, values)
+    if data:
+        return data[0][0]
+    return 0
 
 
 def get_username(link):
     sql = 'SELECT username FROM users where link = %s'
     values = (link, )
-    return run_query(sql, values)[0][0]
+    data = select(sql, values)
+    if data:
+        return data[0][0]
+    return ''
 
 
 def get_email(link):
     sql = 'SELECT email FROM users where link = %s'
     values = (link, )
-
-    return run_query(sql, values)[0][0]
+    data = select(sql, values)
+    if data:
+        return data[0][0]
+    return ''
 
 
 def add_user(username, email):
@@ -96,11 +120,11 @@ def add_user(username, email):
 
     sql = 'INSERT INTO users (username, email, link, admin, confirmed) VALUES (%s, %s, %s, %s, %s);'
     values = (username, email, link, False, False)
-    run_query(sql, values)
+    update(sql, values)
 
     if get_username(link):
         return link
-    return None
+    return ''
 
 
 def add_user_picks(link, year):
@@ -111,7 +135,7 @@ def add_user_picks(link, year):
     for i in range(0, 17):
         sql = 'INSERT INTO picks (user_id, year, week, team) VALUES (%s, %s, %s, %s);'
         values = (user_id, year, i + 1, '--')
-        run_query(sql, values)
+        update(sql, values)
 
 
 def add_paid_status(link, year):
@@ -119,7 +143,7 @@ def add_paid_status(link, year):
 
     sql = 'INSERT INTO paid (user_id, year, paid, result) VALUES (%s, %s, %s, %s);'
     values = (get_user_id(link), year, False, 'A')
-    run_query(sql, values)
+    update(sql, values)
 
 
 def get_user_picks(link, year):
@@ -136,7 +160,7 @@ def get_user_picks(link, year):
           """
     values = (link, year)
 
-    data = run_query(sql, values)
+    data = select(sql, values)
     picks = []
     for row in data:
         dl = row[3].strftime("%m-%d %I:%M PST")
@@ -150,13 +174,16 @@ def get_user_picks(link, year):
 def confirmed(link):
     sql = 'SELECT confirmed FROM users WHERE link = %s'
     values = (link, )
-    return run_query(sql, values)[0][0]
+    data = select(sql, values)
+    if data:
+        return data[0][0]
+    return []
 
 
 def confirm_email(link):
     sql = 'UPDATE users SET confirmed = TRUE WHERE link = %s'
     values = (link, )
-    run_query(sql, values)
+    update(sql, values)
 
 
 def set_retired(link, year):
@@ -165,7 +192,7 @@ def set_retired(link, year):
     user_id = get_user_id(link)
     sql = "UPDATE paid SET result = 'R' WHERE user_id = %s AND year = %s"
     values = (user_id, year)
-    run_query(sql, values)
+    update(sql, values)
 
 
 def user_playing(link, year):
@@ -173,7 +200,7 @@ def user_playing(link, year):
 
     sql = 'SELECT p.paid FROM paid p JOIN users u ON u.id = p.user_id WHERE u.link = %s AND p.year = %s'
     values = (link, year)
-    data = run_query(sql, values)
+    data = select(sql, values)
 
     if data:
         return True
@@ -185,7 +212,7 @@ def user_retired(link, year):
 
     sql = 'SELECT p.result FROM paid p JOIN users u ON u.id = p.user_id WHERE u.link = %s AND p.year = %s'
     values = (link, year)
-    data = run_query(sql, values)
+    data = select(sql, values)
 
     if data:
         if data[0][0] == 'R':
@@ -198,7 +225,10 @@ def year_locked(year):
 
     sql = 'SELECT lock FROM years WHERE year = %s'
     values = (year, )
-    return run_query(sql, values)[0][0]
+    data = select(sql, values)
+    if data:
+        return data[0][0]
+    return []
 
 
 def week_locked(year, week):
@@ -207,9 +237,9 @@ def week_locked(year, week):
 
     sql = 'SELECT lock_date FROM locks WHERE year = %s AND week = %s'
     values = (year, week)
-
-    if datetime.datetime.now() > run_query(sql, values)[0][0]:
-        return True
+    data = select(sql, values)
+    if data:
+        return datetime.datetime.now() > select(sql, values)[0][0]
     return False
 
 
@@ -238,11 +268,11 @@ def get_team_choices(link, year, week):
 
     sql = 'SELECT team FROM teams WHERE year = %s AND bye_week != %s'
     values = (year, week)
-    teams = set([x[0] for x in run_query(sql, values)])
+    teams = set([x[0] for x in select(sql, values)])
 
     sql = 'SELECT team FROM picks WHERE year = %s AND user_id = %s'
     values = (year, user_id)
-    used = set([x[0] for x in run_query(sql, values)])
+    used = set([x[0] for x in select(sql, values)])
 
     return sorted(teams - used) + ['--']
 
@@ -254,8 +284,10 @@ def get_current_pick(link, year, week):
 
     sql = 'SELECT team from picks WHERE user_id = %s AND year = %s AND week = %s'
     values = (user_id, year, week)
-
-    return run_query(sql, values)[0][0]
+    data = select(sql, values)
+    if data:
+        return data[0][0]
+    return []
 
 
 def update_pick(link, year, week, pick):
@@ -265,7 +297,7 @@ def update_pick(link, year, week, pick):
 
     sql = 'UPDATE picks SET team = %s WHERE user_id = %s AND year = %s and week = %s'
     values = (pick, user_id, year, week)
-    run_query(sql, values)
+    update(sql, values)
 
 
 def get_board(year):
@@ -278,7 +310,7 @@ def get_board(year):
           ORDER BY p.result, u.username, p.paid
           """
     values = (year, )
-    rows = run_query(sql, values)
+    rows = select(sql, values)
 
     data = []
     for row in rows:
@@ -293,7 +325,7 @@ def get_board(year):
               ORDER BY p.week ASC
               """
         values = (row[0], year, year)
-        picks = run_query(sql, values)
+        picks = select(sql, values)
 
         wins = len([x[1] for x in picks if x[1] == 'W'])
         loss = len([x[1] for x in picks if x[1] == 'L'])
@@ -310,4 +342,4 @@ def get_board(year):
 
 
 def get_current_year():
-    return run_query('SELECT year from current')[0][0]
+    return select('SELECT year from current')[0][0]
