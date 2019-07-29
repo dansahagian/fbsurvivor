@@ -43,6 +43,15 @@ def validate_week(func):
     return wrapper
 
 
+def validate_email(func):
+    @wraps(func)
+    def wrapper(**kwargs):
+        if db.email_confirmed(kwargs['link']):
+            return func(**kwargs)
+        return rt('not-confirmed.html')
+    return wrapper
+
+
 @app.route('/', methods=['GET', 'POST'])
 def signup():
     if request.method == 'GET':
@@ -69,11 +78,23 @@ def signup():
         return redirect('/')
 
 
-@app.route('/<link>', methods=['GET'])
-@validate_link
-def dash(link):
-    year = db.get_current_year()
-    return redirect(f'/{link}/{year}')
+@app.route('/forgot', methods=['GET', 'POST'])
+def forgot():
+    if request.method == 'GET':
+        return rt('forgot.html')
+
+    if request.method == 'POST':
+        email = request.form['email'].lower()
+
+        links = db.get_links_from_email(email)
+        if links:
+            subject = 'Survivor Links'
+            message = 'We found the following links associated with your email address:\n\n'
+            for link in links:
+                message += f'https://fbsurvivor.com/{link}\n\n'
+
+            emailer.send_email(subject, [email], message)
+        return rt('forgot-sent.html')
 
 
 @app.route('/<link>/confirm', methods=['GET'])
@@ -93,8 +114,17 @@ def confirm(link):
     return redirect(f'/{link}/{year}')
 
 
+@app.route('/<link>', methods=['GET'])
+@validate_link
+@validate_email
+def dash(link):
+    year = db.get_current_year()
+    return redirect(f'/{link}/{year}')
+
+
 @app.route('/<link>/<year>', methods=['GET'])
 @validate_link
+@validate_email
 @validate_year
 def user(link, year):
     username = db.get_username(link)
@@ -107,6 +137,7 @@ def user(link, year):
 
 @app.route('/<link>/<year>/picks', methods=['GET'])
 @validate_link
+@validate_email
 @validate_year
 def picks(link, year):
     user_picks = db.get_user_picks(link, year)
@@ -117,6 +148,7 @@ def picks(link, year):
 
 @app.route('/<link>/<year>/picks/<week>', methods=['GET', 'POST'])
 @validate_link
+@validate_email
 @validate_year
 @validate_week
 def pick(link, year, week):
@@ -147,6 +179,7 @@ def pick(link, year, week):
 
 @app.route('/<link>/<year>/play', methods=['GET'])
 @validate_link
+@validate_email
 @validate_year
 def play_year(link, year):
     if db.year_locked(year):
@@ -166,6 +199,7 @@ def play_year(link, year):
 
 @app.route('/<link>/<year>/retire', methods=['GET'])
 @validate_link
+@validate_email
 @validate_year
 def retire_year(link, year):
     if db.user_playing(link, year) and int(year) == db.get_current_year():

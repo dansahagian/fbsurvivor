@@ -50,38 +50,26 @@ def update(sql, values=None):
             conn.close()
 
 
-def get_usernames():
-    """ Returns a list of usernames from the database"""
-    sql = 'SELECT username from users'
-    data = select(sql)
+def select_list(sql, values=None):
+    data = select(sql, values)
     if data:
         return [x[0] for x in data]
     return []
+
+
+def get_usernames():
+    sql = 'SELECT username from users'
+    return select_list(sql)
 
 
 def get_links():
-    """ Returns a list of links from the database"""
     sql = 'SELECT link from users'
-    data = select(sql)
-
-    if data:
-        return [x[0] for x in data]
-    return []
+    return select_list(sql)
 
 
 def get_years():
-    sql = """SELECT year from years order by year desc"""
-    data = select(sql)
-
-    if data:
-        return [x[0] for x in data]
-    return []
-
-
-def username_available(username):
-    if username not in get_usernames():
-        return True
-    return False
+    sql = 'SELECT year from years order by year desc'
+    return select_list(sql)
 
 
 def get_user_id(link):
@@ -109,6 +97,12 @@ def get_email(link):
     if data:
         return data[0][0]
     return ''
+
+
+def get_links_from_email(email):
+    sql = 'SELECT link FROM users where email = %s'
+    values = (email, )
+    return select_list(sql, values)
 
 
 def add_user(username, email):
@@ -171,13 +165,13 @@ def get_user_picks(link, year):
     return picks
 
 
-def confirmed(link):
+def email_confirmed(link):
     sql = 'SELECT confirmed FROM users WHERE link = %s'
     values = (link, )
     data = select(sql, values)
     if data:
         return data[0][0]
-    return []
+    return False
 
 
 def confirm_email(link):
@@ -228,7 +222,7 @@ def year_locked(year):
     data = select(sql, values)
     if data:
         return data[0][0]
-    return []
+    return True
 
 
 def week_locked(year, week):
@@ -257,6 +251,12 @@ def valid_year(year):
 
 def valid_week(week):
     if int(week) in range(1, 18):
+        return True
+    return False
+
+
+def username_available(username):
+    if username not in get_usernames():
         return True
     return False
 

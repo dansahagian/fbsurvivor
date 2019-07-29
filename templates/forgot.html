@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+    {% block content %}
+        <div class="rules">
+            Enter your email address and we will send you your links if there is a match.
+        </div><br>
+        <form action="/forgot" method="POST">
+            email<br>
+            <input class="resizedTextBox" name="email" type="text"
+                placeholder="email" />
+            <br><br>
+            <input type="submit" value="Send" />
+        </form>
+    {% endblock %}
