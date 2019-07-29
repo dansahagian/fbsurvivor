@@ -1,55 +1,19 @@
 import os
 
-from functools import wraps
-
-from flask import Flask, flash, redirect, request, abort
+from flask import Flask, flash, redirect, request
 from flask import render_template as rt
 from flask import send_from_directory as sfd
 
 import db
 import emailer
 
+from validators import validate_link, validate_year, validate_week, validate_email
+
 from settings import *
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 app.debug = DEBUG
-
-
-def validate_link(func):
-    @wraps(func)
-    def wrapper(**kwargs):
-        if db.valid_link(kwargs['link']):
-            return func(**kwargs)
-        return abort(404)
-    return wrapper
-
-
-def validate_year(func):
-    @wraps(func)
-    def wrapper(**kwargs):
-        if db.valid_year(kwargs['year']):
-            return func(**kwargs)
-        return abort(404)
-    return wrapper
-
-
-def validate_week(func):
-    @wraps(func)
-    def wrapper(**kwargs):
-        if db.valid_week(kwargs['week']):
-            return func(**kwargs)
-        return abort(404)
-    return wrapper
-
-
-def validate_email(func):
-    @wraps(func)
-    def wrapper(**kwargs):
-        if db.email_confirmed(kwargs['link']):
-            return func(**kwargs)
-        return rt('not-confirmed.html')
-    return wrapper
 
 
 @app.route('/', methods=['GET', 'POST'])
