@@ -1,12 +1,9 @@
 {% extends "base.html" %}
     {% block content %}
-        {{ year }} Board -
+        {{ username }} - {{ year }} - Board<br><br>
         {% if play %}
             <a href="/{{ link }}/{{ year }}/picks">Picks</a>
-            {% if retire %}
-                <a href="/{{ link }}/{{ year }}/retire">Retire</a>
-            {% endif %}
-        {%  else %}
+        {% else %}
             <a href="/{{ link }}/{{ year }}/play">Play</a>
         {% endif %}
         <br><br>
@@ -51,7 +48,12 @@
             {% endfor %}
         </table><br><br>
         {% for year in years %}
-            <a href="/{{ link }}/{{ year }}">{{ year }}</a>
-        {% endfor %}
+            <span class="space">
+                <a href="/{{ link }}/{{ year }}">{{ year }}</a>
+            </span>
+        {% endfor %}<br><br>
+        {% if retire %}
+            <a href="/{{ link }}/{{ year }}/retire">Retire</a>
+        {% endif %}
     {% endblock %}
         

@@ -94,11 +94,14 @@ def dash(link):
 @validate_email
 @validate_year
 def user(link, year):
+    retired = db.user_retired(link, year)
+    if retired:
+        flash('Reminder: You retired!')
     username = db.get_username(link)
     data = db.get_board(year)
     years = db.get_years()
     play = db.user_playing(link, year)
-    retire = (not db.user_retired(link, year)) and (int(year) == db.get_current_year())
+    retire = (not retired) and (int(year) == db.get_current_year())
     return rt('user.html', years=years, link=link, data=data, username=username, year=year, play=play, retire=retire)
 
 
@@ -107,10 +110,12 @@ def user(link, year):
 @validate_email
 @validate_year
 def picks(link, year):
+    username = db.get_username(link)
     user_picks = db.get_user_picks(link, year)
+    lock = db.year_locked(year)
     wins = len([x[2] for x in user_picks if x[2] == 'W'])
     loss = len([x[2] for x in user_picks if x[2] == 'L'])
-    return rt('picks.html', link=link, year=year, lock=db.year_locked(year), picks=user_picks, ws=wins, ls=loss)
+    return rt('picks.html', username=username, link=link, year=year, lock=lock, picks=user_picks, ws=wins, ls=loss)
 
 
 @app.route('/<link>/<year>/picks/<week>', methods=['GET', 'POST'])
