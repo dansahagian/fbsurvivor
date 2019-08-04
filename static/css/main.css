@@ -49,7 +49,8 @@ table a {
 }
 
 th, td {
-    padding: .33em;
+    padding-left: .33em;
+    padding-right: .33em;
     text-align: left;
 }
 
