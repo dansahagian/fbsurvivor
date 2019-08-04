@@ -1,5 +1,7 @@
 from decouple import config
 
+ROOT_URL = config('ROOT_URL')
+
 DEBUG = config('DEBUG')
 SECRET_KEY = config('SECRET_KEY')
 

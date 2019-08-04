@@ -31,7 +31,7 @@ def signup():
 
         if db.username_available(username):
             link = db.add_user(username, email)
-            confirm_link = f'https://fbsurvivor.com/{link}/confirm'
+            confirm_link = f'{ROOT_URL}/{link}/confirm'
             subject = 'Confirm your Email - Football Survivor'
             message = f'Confirm your email address by clicking the link below:\n{confirm_link}'
 
@@ -55,7 +55,7 @@ def forgot():
             subject = 'Survivor Links'
             message = 'We found the following links associated with your email address:\n\n'
             for link in links:
-                message += f'https://fbsurvivor.com/{link}\n\n'
+                message += f'{ROOT_URL}/{link}\n\n'
 
             emailer.send_email(subject, [email], message)
         return rt('forgot-sent.html')
@@ -68,7 +68,7 @@ def confirm(link):
     email = db.get_email(link)
     db.confirm_email(link)
 
-    user_link = f'https://fbsurvivor.com/{link}'
+    user_link = f'{ROOT_URL}/{link}'
     subject = 'Football Survivor Link'
     message = f'Use this link to make your picks and check the board:\n{user_link}'
 

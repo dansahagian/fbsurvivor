@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source ~/.fbsurvivor
-source ~/.venvs/srv/bin/activate
-cd ~/d/code/fbsurvivor
-python reminder.py
+cd ~/prod/fbsurvivor
+pipenv sync
+pipenv run python reminder.py
