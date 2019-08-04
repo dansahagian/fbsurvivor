@@ -66,6 +66,9 @@ def forgot():
 def confirm(link):
     year = db.get_current_year()
     email = db.get_email(link)
+    if db.email_confirmed(link):
+        return redirect(f'/{link}/{year}')
+
     db.confirm_email(link)
 
     user_link = f'{ROOT_URL}/{link}'
