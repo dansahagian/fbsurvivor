@@ -77,7 +77,7 @@ def confirm(link):
 
     emailer.send_email(subject, [email], message)
 
-    flash('Email Confirmed! We have sent your custom link to your email.')
+    flash('Email Confirmed! Bookmark this page or check your email for your link.')
     return redirect(f'/{link}/{year}')
 
 
@@ -101,7 +101,7 @@ def user(link, year):
     data = db.get_board(year)
     years = db.get_years()
     play = db.user_playing(link, year)
-    retire = (not retired) and (int(year) == db.get_current_year())
+    retire = (not retired) and (int(year) == db.get_current_year()) and play
     return rt('user.html', years=years, link=link, data=data, username=username, year=year, play=play, retire=retire)
 
 
@@ -149,7 +149,7 @@ def pick(link, year, week):
         return redirect(f'/{link}/{year}/picks')
 
 
-@app.route('/<link>/<year>/play', methods=['GET'])
+@app.route('/<link>/<year>/play', methods=['GET', 'POST'])
 @validate_link
 @validate_email
 @validate_year
@@ -157,12 +157,14 @@ def play_year(link, year):
     if db.year_locked(year):
         flash(f'{year} is locked! Come back next year!')
         return redirect(f'/{link}/{year}')
-
     elif db.user_playing(link, year):
-        flash(f'You are already playing for {year}')
+        flash(f'You are already playing for {year}!')
         return redirect(f'/{link}/{year}')
 
-    else:
+    if request.method == 'GET':
+        return rt('rules.html', confirm_link=f'/{link}/{year}/play')
+
+    if request.method == 'POST':
         db.add_user_picks(link, year)
         db.add_paid_status(link, year)
         flash(f'You are playing in the {year} league. Good luck!')
