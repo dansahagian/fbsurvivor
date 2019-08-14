@@ -343,3 +343,48 @@ def get_board(year):
 
 def get_current_year():
     return select('SELECT year from current')[0][0]
+
+
+def get_players():
+    sql = """
+          SELECT email
+          FROM users u
+          JOIN paid p ON p.user_id = u.id
+          WHERE p.year = %s
+          AND p.result != %s
+          AND u.confirmed = %s
+          """
+
+    values = (get_current_year(), 'R', True)
+    return select_list(sql, values)
+
+
+def get_players_without_picks():
+    year = get_current_year()
+
+    sql = """
+          SELECT u.email
+          FROM users u
+          JOIN paid pd ON pd.user_id = u.id
+          JOIN picks pk ON pk.user_id = u.id
+          WHERE pd.year = %s
+          AND pk.year = %s
+          AND pk.week = (SELECT min(week) FROM locks WHERE
+                         lock_date > CURRENT_TIMESTAMP)
+          AND (pk.team = '--' or u.username = 'DanTheAutomator')
+          AND pd.result != %s
+          AND u.confirmed = %s
+          """
+
+    values = (year, year, 'R', True)
+    return select_list(sql, values)
+
+
+def get_lock_date():
+    sql = """
+          SELECT MIN(lock_date)
+          FROM locks
+          WHERE lock_date > %s
+          """
+    values = (datetime.datetime.now(),)
+    return select(sql, values)[0][0]
