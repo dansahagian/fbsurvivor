@@ -41,6 +41,7 @@ table {
 table, th, td {
     border: 2px solid lightgray;
     border-radius: .25em;
+    border-collapse: collapse;
 }
 
 table a {
