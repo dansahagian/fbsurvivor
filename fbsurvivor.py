@@ -1,15 +1,13 @@
 import os
 
-from flask import Flask, flash, redirect, request
+from flask import Flask, flash, redirect, request, abort
 from flask import render_template as rt
 from flask import send_from_directory as sfd
 
 import db
 import emailer
-
-from validators import validate_link, validate_year, validate_week, validate_email
-
 from settings import *
+from validators import validate_link, validate_year, validate_week, validate_email, validate_admin
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -94,6 +92,7 @@ def dash(link):
 @validate_email
 @validate_year
 def user(link, year):
+    is_admin = db.is_admin(link)
     retired = db.user_retired(link, year)
     if retired:
         flash('Reminder: You retired!')
@@ -102,7 +101,36 @@ def user(link, year):
     years = db.get_years()
     play = db.user_playing(link, year)
     retire = (not retired) and (int(year) == db.get_current_year()) and play
-    return rt('user.html', years=years, link=link, data=data, username=username, year=year, play=play, retire=retire)
+    return rt(
+        'user.html',
+        years=years,
+        link=link,
+        data=data,
+        username=username,
+        year=year,
+        play=play,
+        retire=retire,
+        admin=is_admin
+    )
+
+
+@app.route('/<link>/<year>/paid', methods=['GET'])
+@validate_link
+@validate_admin
+def admin_paid(link, year):
+    year = int(year)
+    statuses = db.get_paid_statuses(year)
+    return rt('paid.html', link=link, year=year, statuses=statuses)
+
+
+@app.route('/<link>/<year>/paid/<username>', methods=['GET'])
+@validate_link
+@validate_admin
+def admin_paid_update(link, year, username):
+    year = int(year)
+    db.update_paid_status(year, username)
+    flash(f'{username} marked as PAID!')
+    return redirect(f'/{link}/{year}/paid')
 
 
 @app.route('/<link>/<year>/picks', methods=['GET'])

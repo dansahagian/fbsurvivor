@@ -40,3 +40,12 @@ def validate_email(func):
             return func(**kwargs)
         return render_template('not-confirmed.html')
     return wrapper
+
+
+def validate_admin(func):
+    @wraps(func)
+    def wrapper(**kwargs):
+        if db.is_admin(kwargs['link']):
+            return func(**kwargs)
+        return abort(404)
+    return wrapper

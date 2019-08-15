@@ -81,6 +81,15 @@ def get_user_id(link):
     return 0
 
 
+def get_user_id_from_username(username):
+    sql = 'SELECT id from users WHERE username = %s'
+    values = (username, )
+    data = select(sql, values)
+    if data:
+        return data[0][0]
+    return 0
+
+
 def get_username(link):
     sql = 'SELECT username FROM users where link = %s'
     values = (link, )
@@ -97,6 +106,15 @@ def get_email(link):
     if data:
         return data[0][0]
     return ''
+
+
+def is_admin(link):
+    sql = 'SELECT admin FROM users where link = %s'
+    values = (link, )
+    data = select(sql, values)
+    if data:
+        return data[0][0]
+    return False
 
 
 def get_links_from_email(email):
@@ -388,3 +406,20 @@ def get_lock_date():
           """
     values = (datetime.datetime.now(),)
     return select(sql, values)[0][0]
+
+
+def get_paid_statuses(year):
+    sql = """
+          SELECT username, p.paid
+          FROM users u 
+          JOIN paid p ON p.user_id = u.id
+          WHERE p.year = %s
+          """
+    values = (year, )
+    return select(sql, values)
+
+
+def update_paid_status(year, username):
+    sql = 'UPDATE paid SET paid = TRUE WHERE year = %s and user_id = %s'
+    values = (year, get_user_id_from_username(username))
+    update(sql, values)

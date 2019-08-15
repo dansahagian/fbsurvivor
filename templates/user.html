@@ -2,10 +2,15 @@
     {% block content %}
         {{ username }} - {{ year }} - Board<br><br>
         {% if play %}
-            <a href="/{{ link }}/{{ year }}/picks">Picks</a>
+            <span class="space"><a href="/{{ link }}/{{ year }}/picks">Picks</a></span>
         {% else %}
-            <a href="/{{ link }}/{{ year }}/play">Play</a>
+            <span class="space"><a href="/{{ link }}/{{ year }}/play">Play</a></span>
         {% endif %}
+        {%  if admin %}
+            <span class="space"><a href="/{{ link }}/{{ year }}/paid">Paid</a></span>
+            <span class="space"><a href="/{{ link }}/{{ year }}/results">Results</a></span>
+        {% endif %}
+
         <br><br>
         <table>
             <tr>
