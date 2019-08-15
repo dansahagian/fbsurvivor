@@ -414,6 +414,7 @@ def get_paid_statuses(year):
           FROM users u 
           JOIN paid p ON p.user_id = u.id
           WHERE p.year = %s
+          ORDER BY p.paid, username
           """
     values = (year, )
     return select(sql, values)
