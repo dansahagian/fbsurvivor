@@ -11,6 +11,7 @@ psycopg2-binary = "*"
 python-dotenv = "*"
 python-decouple = "*"
 gunicorn = "*"
+black = "*"
 
 [requires]
 python_version = "3.7"

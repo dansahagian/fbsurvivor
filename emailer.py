@@ -12,9 +12,9 @@ PASSWORD = SMTP_PASSWORD
 def send_email(subject, who_to, message):
 
     msg = MIMEText(message)
-    msg['Subject'] = subject
-    msg['From'] = WHO_FROM
-    msg['To'] = WHO_FROM
+    msg["Subject"] = subject
+    msg["From"] = WHO_FROM
+    msg["To"] = WHO_FROM
 
     cnxn = smtplib.SMTP_SSL(SMTP_SER)
     cnxn.login(USERNAME, PASSWORD)
