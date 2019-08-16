@@ -420,6 +420,12 @@ def get_paid_statuses(year):
     return select(sql, values)
 
 
+def is_paid(link, year):
+    sql = "SELECT p.paid FROM paid p WHERE year = %s and user_id = %s"
+    values = (year, get_user_id(link))
+    return select(sql, values)[0][0]
+
+
 def update_paid_status(year, username):
     sql = "UPDATE paid SET paid = TRUE WHERE year = %s and user_id = %s"
     values = (year, get_user_id_from_username(username))
