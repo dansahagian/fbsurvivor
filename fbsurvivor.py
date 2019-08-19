@@ -109,7 +109,7 @@ def user(link, year):
     years = db.get_years()
     play = db.user_playing(link, year)
     retire = (not retired) and (int(year) == db.get_current_year()) and play
-    if not db.is_paid(link, year):
+    if play and not db.is_paid(link, year):
         flash("Unpaid! Venmo $30 to @dansah or email picks@fbsurvivor.com.")
     return rt(
         "user.html",
