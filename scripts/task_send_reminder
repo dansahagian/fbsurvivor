@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd ~/prod/fbsurvivor
+pipenv run python -c "from survivor.tasks import send_reminder; send_reminder()"
