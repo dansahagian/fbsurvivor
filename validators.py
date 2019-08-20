@@ -3,7 +3,7 @@ from functools import wraps
 from flask import abort
 from flask import render_template
 
-from survivor import db
+import db
 
 
 def validate_link(func):

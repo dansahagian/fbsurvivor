@@ -4,7 +4,7 @@ import string
 
 import psycopg2
 
-from survivor.settings import *
+from settings import *
 
 
 def get_db_conn():

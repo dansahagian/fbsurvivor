@@ -1,4 +1,0 @@
-#!/bin/bash
-
-cd ~/prod/fbsurvivor
-pipenv run python -c "from survivor.tasks import retired_picks; retired_picks()"

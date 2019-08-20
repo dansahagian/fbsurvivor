@@ -1,16 +1,19 @@
 import os
 
-from flask import Flask, flash, redirect, request
+from flask import Flask, flash, redirect, request, abort
 from flask import render_template as rt
 from flask import send_from_directory as sfd
 
-from survivor import db
-from survivor.tasks import send_email
-from survivor.validators import (
-    validate_admin, validate_email, validate_link, validate_week, validate_year
+import db
+import emailer
+from settings import *
+from validators import (
+    validate_link,
+    validate_year,
+    validate_week,
+    validate_email,
+    validate_admin,
 )
-
-from survivor.settings import *
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -36,7 +39,7 @@ def signup():
             subject = "Confirm your Email - Football Survivor"
             message = f"Confirm your email address by clicking the link below:\n{confirm_link}"
 
-            send_email(subject, [email], message)
+            emailer.send_email(subject, [email], message)
             return rt("email.html")
 
         flash("Username already exists! Pick another!")
@@ -60,7 +63,7 @@ def forgot():
             for link in links:
                 message += f"{ROOT_URL}/{link}\n\n"
 
-            send_email(subject, [email], message)
+            emailer.send_email(subject, [email], message)
         return rt("forgot-sent.html")
 
 
@@ -78,7 +81,7 @@ def confirm(link):
     subject = "Football Survivor Link"
     message = f"Use this link to make your picks and check the board:\n{user_link}"
 
-    send_email(subject, [email], message)
+    emailer.send_email(subject, [email], message)
 
     flash("Email Confirmed! Bookmark this page or check your email for your link.")
     return redirect(f"/{link}/{year}")
