@@ -130,7 +130,10 @@ def add_user(username, email):
     while link in get_links():
         link = "".join(secrets.choice(char_set) for _ in range(44))
 
-    sql = "INSERT INTO users (username, email, link, admin, confirmed) VALUES (%s, %s, %s, %s, %s);"
+    sql = """
+          INSERT INTO users (username, email, link, admin, confirmed)
+          VALUES (%s, %s, %s, %s, %s);
+          """
     values = (username, email, link, False, False)
     update(sql, values)
 
@@ -193,7 +196,7 @@ def email_confirmed(link):
 
 
 def confirm_email(link):
-    sql = "UPDATE users SET confirmed = TRUE WHERE link = %s"
+    sql = "UPDATE users SET confirmed = TRUE WHERE link = %s;"
     values = (link,)
     update(sql, values)
 
@@ -202,7 +205,7 @@ def set_retired(link, year):
     year = int(year)
 
     user_id = get_user_id(link)
-    sql = "UPDATE paid SET result = 'R' WHERE user_id = %s AND year = %s"
+    sql = "UPDATE paid SET result = 'R' WHERE user_id = %s AND year = %s;"
     values = (user_id, year)
     update(sql, values)
 
@@ -210,7 +213,11 @@ def set_retired(link, year):
 def user_playing(link, year):
     year = int(year)
 
-    sql = "SELECT p.paid FROM paid p JOIN users u ON u.id = p.user_id WHERE u.link = %s AND p.year = %s"
+    sql = """
+          SELECT p.paid FROM paid p 
+          JOIN users u ON u.id = p.user_id
+          WHERE u.link = %s AND p.year = %s
+          """
     values = (link, year)
     data = select(sql, values)
 
@@ -222,7 +229,11 @@ def user_playing(link, year):
 def user_retired(link, year):
     year = int(year)
 
-    sql = "SELECT p.result FROM paid p JOIN users u ON u.id = p.user_id WHERE u.link = %s AND p.year = %s"
+    sql = """
+          SELECT p.result FROM paid p
+          JOIN users u ON u.id = p.user_id
+          WHERE u.link = %s AND p.year = %s
+          """
     values = (link, year)
     data = select(sql, values)
 
@@ -313,8 +324,14 @@ def update_pick(link, year, week, pick):
     week = int(week)
     user_id = get_user_id(link)
 
-    sql = "UPDATE picks SET team = %s WHERE user_id = %s AND year = %s and week = %s"
+    sql = "UPDATE picks SET team = %s WHERE user_id = %s AND year = %s AND week = %s"
     values = (pick, user_id, year, week)
+    update(sql, values)
+
+
+def update_pick_result(user_id, year, week, result):
+    sql = "UPDATE picks SET result = %s WHERE user_id = %s AND year = %s AND week = %s"
+    values = (result, user_id, year, week)
     update(sql, values)
 
 
@@ -377,6 +394,20 @@ def get_players():
     return select_list(sql, values)
 
 
+def get_retired_players():
+    sql = """
+          SELECT u.id
+          FROM users u
+          JOIN paid p ON P.user_id = u.id
+          WHERE p.year = %s
+          AND p.result = %s
+          AND u.confirmed = %s
+          """
+
+    values = (get_current_year(), "R", True)
+    return select_list(sql, values)
+
+
 def get_players_without_picks():
     year = get_current_year()
 
@@ -399,13 +430,16 @@ def get_players_without_picks():
 
 
 def get_lock_date():
-    sql = """
-          SELECT MIN(lock_date)
-          FROM locks
-          WHERE lock_date > %s
-          """
+    sql = "SELECT MIN(lock_date) FROM locks WHERE lock_date > %s"
     values = (datetime.datetime.now(),)
     return select(sql, values)[0][0]
+
+
+def get_current_week():
+    sql = "SELECT week FROM locks WHERE lock_date = %s"
+
+    values = (get_lock_date(),)
+    return select(sql, values)[0][0] - 1
 
 
 def get_paid_statuses(year):

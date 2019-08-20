@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd ~/prod/fbsurvivor
+git pull origin master
+pipenv sync
+pipenv run python retired.py
