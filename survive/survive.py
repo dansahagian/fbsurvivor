@@ -14,10 +14,6 @@ from survive.db import *
 from survive.settings import *
 from survive.tasks import send_email
 
-app = Flask(__name__)
-app.secret_key = SECRET_KEY
-app.debug = DEBUG
-
 bp = Blueprint("survive", __name__, template_folder="templates/")
 
 
