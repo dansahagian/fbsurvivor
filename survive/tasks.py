@@ -3,8 +3,13 @@ import smtplib
 from email.mime.text import MIMEText
 
 from survive.db import (
-    get_lock_date, get_players, get_players_without_picks, get_current_week,
-    get_current_year, get_retired_players, update_pick_result
+    get_lock_date,
+    get_players,
+    get_players_without_picks,
+    get_current_week,
+    get_current_year,
+    get_retired_players,
+    update_pick_result,
 )
 from survive.settings import *
 
@@ -39,7 +44,7 @@ def send_reminder():
     else:
         who_to = get_players()
     if FLASK_ENV == "development":
-        who_to = ['dan@dansahagian.com']
+        who_to = ["dan@dansahagian.com"]
 
     send_email(subject, who_to, message)
 

@@ -7,4 +7,3 @@ app.secret_key = SECRET_KEY
 app.debug = DEBUG
 
 app.register_blueprint(survive.bp)
-
