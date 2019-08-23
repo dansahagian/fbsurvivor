@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd ../
+pipenv run python -c "from survive import tasks; tasks.update_retired_picks()"
