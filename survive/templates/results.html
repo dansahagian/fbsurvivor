@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+    {% block content %}
+        <a href="/{{ link }}/{{ year }}">Back</a>
+        <br><br>
+        {% for team in teams %}
+            {{ team }}
+            <a href="/{{ link }}/{{ year }}/results/{{ team }}/W">Won</a>
+            <a href="/{{ link }}/{{ year }}/results/{{ team }}/L">Lost</a>
+            <br><br>
+        {% endfor %}
+    {% endblock %}

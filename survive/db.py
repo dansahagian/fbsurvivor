@@ -465,3 +465,37 @@ def update_paid_status(year, username):
     sql = "UPDATE paid SET paid = TRUE WHERE year = %s and user_id = %s"
     values = (year, get_user_id_from_username(username))
     update(sql, values)
+
+
+def get_teams_picked(year):
+    sql = """
+          SELECT DISTINCT(p.team)
+          FROM picks p 
+          JOIN locks l ON l.week = p.week AND l.year = p.year
+          WHERE p.year = %s AND p.week = 
+          (SELECT max(week) FROM locks
+           WHERE CURRENT_TIMESTAMP > lock_date AND year = %s
+          ) AND p.team != '--' AND p.result IS NULL
+          """
+
+    values = (year, year)
+    picks = select_list(sql, values)
+
+    if picks:
+        return picks
+    return []
+
+
+def update_results(year, team, result):
+    year = int(year)
+    sql = """
+          SELECT MAX(week)
+          FROM locks
+          WHERE CURRENT_TIMESTAMP > lock_date AND year = %s
+          """
+    values = (year,)
+    week = select(sql, values)[0][0]
+
+    sql = "UPDATE picks SET result = %s WHERE year = %s AND week = %s AND team = %s"
+    values = (result, year, week, team)
+    update(sql, values)

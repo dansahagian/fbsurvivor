@@ -142,6 +142,24 @@ def admin_paid_update(link, year, username):
     return redirect(f"/{link}/{year}/paid")
 
 
+@bp.route("/<link>/<year>/results", methods=["GET"])
+@validate_link
+@validate_admin
+def admin_results(link, year):
+    year = int(year)
+    teams = get_teams_picked(year)
+    return render_template("results.html", link=link, year=year, teams=teams)
+
+
+@bp.route("/<link>/<year>/results/<team>/<result>", methods=["GET"])
+@validate_link
+@validate_admin
+def admin_results_update(link, year, team, result):
+    update_results(year, team, result)
+    flash(f"{team} took the {result}")
+    return redirect(f"/{link}/{year}/results")
+
+
 @bp.route("/<link>/<year>/picks", methods=["GET"])
 @validate_link
 @validate_email
