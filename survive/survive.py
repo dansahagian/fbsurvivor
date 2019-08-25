@@ -1,9 +1,6 @@
 import os
-from functools import wraps
 
-from flask import abort
 from flask import Blueprint
-from flask import Flask
 from flask import flash
 from flask import redirect
 from flask import request
@@ -17,54 +14,7 @@ from survive.tasks import send_email
 bp = Blueprint("survive", __name__, template_folder="templates/")
 
 
-def validate_link(func):
-    @wraps(func)
-    def wrapper(**kwargs):
-        if valid_link(kwargs["link"]):
-            return func(**kwargs)
-        return abort(404)
 
-    return wrapper
-
-
-def validate_year(func):
-    @wraps(func)
-    def wrapper(**kwargs):
-        if valid_year(kwargs["year"]):
-            return func(**kwargs)
-        return abort(404)
-
-    return wrapper
-
-
-def validate_week(func):
-    @wraps(func)
-    def wrapper(**kwargs):
-        if valid_week(kwargs["week"]):
-            return func(**kwargs)
-        return abort(404)
-
-    return wrapper
-
-
-def validate_email(func):
-    @wraps(func)
-    def wrapper(**kwargs):
-        if email_confirmed(kwargs["link"]):
-            return func(**kwargs)
-        return render_template("not-confirmed.html")
-
-    return wrapper
-
-
-def validate_admin(func):
-    @wraps(func)
-    def wrapper(**kwargs):
-        if is_admin(kwargs["link"]):
-            return func(**kwargs)
-        return abort(404)
-
-    return wrapper
 
 
 @bp.route("/", methods=["GET", "POST"])
