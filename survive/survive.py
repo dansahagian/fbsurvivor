@@ -3,18 +3,20 @@ import os
 from flask import Blueprint
 from flask import flash
 from flask import redirect
-from flask import request
 from flask import render_template
+from flask import request
 from flask import send_from_directory
 
 from survive.db import *
 from survive.settings import *
 from survive.tasks import send_email
+from survive.validators import validate_admin
+from survive.validators import validate_email
+from survive.validators import validate_link
+from survive.validators import validate_week
+from survive.validators import validate_year
 
 bp = Blueprint("survive", __name__, template_folder="templates/")
-
-
-
 
 
 @bp.route("/", methods=["GET", "POST"])
@@ -34,7 +36,7 @@ def signup():
             link = add_user(username, email)
             confirm_link = f"{ROOT_URL}/{link}/confirm"
             subject = "Confirm your Email - Football Survivor"
-            message = f"Confirm your email address by clicking the link below:\n{confirm_link}"
+            message = f"Confirm your email address with this link:\n{confirm_link}"
 
             send_email(subject, [email], message)
             return render_template("email.html")

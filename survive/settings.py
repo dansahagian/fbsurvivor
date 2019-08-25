@@ -18,3 +18,4 @@ SMTP_PASSWORD = config("SMTP_PASSWORD")
 SMTP_PORT = config("SMTP_PORT")
 
 FLASK_ENV = config("FLASK_ENV")
+DEV_EMAIL = config("DEV_EMAIL")
