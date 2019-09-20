@@ -475,7 +475,7 @@ def get_teams_picked(year):
           WHERE p.year = %s AND p.week = 
           (SELECT max(week) FROM locks
            WHERE CURRENT_TIMESTAMP > lock_date AND year = %s
-          ) AND p.team != '--' AND p.result IS NULL
+          ) AND p.result IS NULL
           """
 
     values = (year, year)
