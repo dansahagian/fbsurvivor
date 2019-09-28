@@ -157,7 +157,7 @@ def add_paid_status(link, year):
     year = int(year)
 
     sql = "INSERT INTO paid (user_id, year, paid, result) VALUES (%s, %s, %s, %s);"
-    values = (get_user_id(link), year, False, "A")
+    values = (get_user_id(link), year, False, "B")
     update(sql, values)
 
 
