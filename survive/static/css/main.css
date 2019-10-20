@@ -23,7 +23,8 @@ a {
     background: lightgray;
     color: black;
 	text-decoration: none;
-    padding: 1.0em;
+    padding-left: 1.0em;
+    padding-right: 1.0em;
     border-radius: .25em;
 }
 
@@ -116,8 +117,7 @@ li {
 }
 
 .space {
-    padding-left: .5em;
-    padding-right: .5em;
+    padding: .5em;
 }
 
 .title {
