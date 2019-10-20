@@ -117,7 +117,8 @@ li {
 }
 
 .space {
-    padding: .5em;
+    padding-left: .5em;
+    padding-right: .5em;
 }
 
 .title {
