@@ -12,6 +12,7 @@ python-dotenv = "*"
 python-decouple = "*"
 gunicorn = "*"
 black = "*"
+twilio = "*"
 
 [requires]
 python_version = "3.7"

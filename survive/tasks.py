@@ -1,6 +1,8 @@
 import smtplib
 from email.mime.text import MIMEText
 
+from twilio.rest import Client
+
 from survive.db import *
 from survive.settings import *
 
@@ -24,7 +26,7 @@ def send_email(subject, recipients, message):
         cnxn.quit()
 
 
-def send_reminder():
+def send_email_reminders():
     lock_date = get_lock_date().strftime("%m-%d %I:%M %p")
     subject = "Survivor Picks Reminder"
     message = f"Picks are due by {lock_date} PST!"
@@ -38,6 +40,22 @@ def send_reminder():
         recipients = [DEV_EMAIL]
 
     send_email(subject, recipients, message)
+
+
+def send_sms_reminders():
+    lock_date = get_lock_date().strftime("%m-%d %I:%M %p")
+    client = Client(TWILIO_SID, TWILIO_KEY)
+
+    phones_numbers = get_phones_without_picks()
+
+    for phone_number in phones_numbers:
+        message = client.messages.create(
+            to=phone_number,
+            from_=TWILIO_NUM,
+            body=f"Survivor Final Reminder. Picks are due by {lock_date} PST"
+        )
+
+        print(message.sid)
 
 
 def update_retired_picks():

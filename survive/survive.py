@@ -9,7 +9,7 @@ from flask import send_from_directory
 
 from survive.db import *
 from survive.settings import *
-from survive.tasks import send_email
+from survive.tasks import send_email, send_email_reminders, send_sms_reminders
 from survive.validators import validate_admin
 from survive.validators import validate_email
 from survive.validators import validate_link
@@ -158,6 +158,16 @@ def admin_results_update(link, year, team, result):
     update_results(year, team, result)
     flash(f"{team} took the {result}")
     return redirect(f"/{link}/{year}/results")
+
+
+@bp.route("/<link>/remind", methods=["GET"])
+@validate_link
+@validate_admin
+def admin_send_reminder(link):
+    send_email_reminders()
+    send_sms_reminders()
+    flash("Send Reminders")
+    return redirect(f"/{link}")
 
 
 @bp.route("/<link>/<year>/picks", methods=["GET"])

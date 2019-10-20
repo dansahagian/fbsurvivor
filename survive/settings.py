@@ -19,3 +19,7 @@ SMTP_PORT = config("SMTP_PORT")
 
 FLASK_ENV = config("FLASK_ENV")
 DEV_EMAIL = config("DEV_EMAIL")
+
+TWILIO_SID = config("TWILIO_SID")
+TWILIO_KEY = config("TWILIO_KEY")
+TWILIO_NUM = config("TWILIO_NUM")
