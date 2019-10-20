@@ -166,7 +166,7 @@ def admin_results_update(link, year, team, result):
 def admin_send_reminder(link):
     send_email_reminders()
     send_sms_reminders()
-    flash("Send Reminders")
+    flash("Reminders Sent!")
     return redirect(f"/{link}")
 
 
