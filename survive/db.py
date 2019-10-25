@@ -518,6 +518,10 @@ def update_results(year, team, result):
     values = (year,)
     week = select(sql, values)[0][0]
 
-    sql = "UPDATE picks SET result = %s WHERE year = %s AND week = %s AND team = %s"
+    sql = """
+          UPDATE picks SET result = %s
+          WHERE year = %s AND week = %s AND team = %s
+          AND result is NULL
+          """
     values = (result, year, week, team)
     update(sql, values)
