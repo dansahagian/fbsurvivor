@@ -525,3 +525,11 @@ def update_results(year, team, result):
           """
     values = (result, year, week, team)
     update(sql, values)
+
+
+def signups_locked():
+    sql = "SELECT locked FROM signups WHERE id = %s"
+    values = (1,)
+    data = select(sql, values)
+
+    return data[0][0]

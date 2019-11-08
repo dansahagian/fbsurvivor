@@ -21,6 +21,9 @@ bp = Blueprint("survive", __name__, template_folder="templates/")
 
 @bp.route("/", methods=["GET", "POST"])
 def signup():
+    if signups_locked():
+        return render_template("locked.html")
+
     if request.method == "GET":
         return render_template("signup.html")
 
