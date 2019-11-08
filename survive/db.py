@@ -273,16 +273,21 @@ def valid_link(link):
 
 
 def valid_year(year):
-    if int(year) in get_years():
-        return True
+    try:
+        if int(year) in get_years():
+            return True
+    except ValueError:
+        return False
     return False
 
 
 def valid_week(week):
-    if int(week) in range(1, 18):
-        return True
+    try:
+        if int(week) in range(1, 18):
+            return True
+    except ValueError:
+        return False
     return False
-
 
 def username_available(username):
     if username not in get_usernames():
