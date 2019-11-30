@@ -178,7 +178,7 @@ def get_user_picks(link, year):
     data = select(sql, values)
     picks = []
     for row in data:
-        dl = row[3].strftime("%m-%d %I:%M PST")
+        dl = row[3].strftime("%m-%d %I:%M %p PST")
         if datetime.datetime.now() > row[3]:
             picks.append([row[0], row[1], row[2], dl, False])
         else:
@@ -288,6 +288,7 @@ def valid_week(week):
     except ValueError:
         return False
     return False
+
 
 def username_available(username):
     if username not in get_usernames():
