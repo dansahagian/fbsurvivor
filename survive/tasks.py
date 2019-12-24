@@ -55,8 +55,6 @@ def send_sms_reminders():
             body=f"Survivor Final Reminder. Picks are due by {lock_date} PST"
         )
 
-        print(message.sid)
-
 
 def update_retired_picks():
     week = get_current_week()
