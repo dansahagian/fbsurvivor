@@ -467,7 +467,10 @@ def get_current_week():
     sql = "SELECT week FROM locks WHERE lock_date = %s"
 
     values = (get_lock_date(),)
-    return select(sql, values)[0][0] - 1
+    try:
+        return select(sql, values)[0][0] - 1
+    except IndexError:
+        return 17
 
 
 def get_paid_statuses(year):
