@@ -1,0 +1,145 @@
+@font-face {
+    font-family: 'Roboto Mono';
+    src: url('../fonts/RobotoMono-Regular.woff2') format('woff2'),
+         url('../fonts/RobotoMono-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    background: var(--background);
+    font-family: 'Roboto Mono';
+    letter-spacing: .01em;
+}
+
+body {
+    font-size: .93em;
+    color: var(--body-color);
+    line-height: 1.5em;
+    padding-left: 1.0em;
+    padding-right: 1.0em;
+}
+
+a {
+    padding-left: .50em;
+    padding-right: .50em;
+    color: var(--link-color);
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table th {
+    border-bottom: 2px solid var(--body-color);
+}
+
+table tr {
+    padding-top: 1.0em;
+}
+
+table, th, td {
+    border-bottom: 1px solid var(--body-color);
+    border-collapse: collapse;
+}
+
+th, td {
+    padding-left: .75em;
+    padding-right: .75em;
+    text-align: left;
+}
+
+th {
+    text-align: center;
+}
+
+ul {
+    list-style-type: none;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    padding: 0;
+    color: white;
+}
+
+li {
+    float: left;
+}
+
+li a {
+    text-align: center;
+    text-decoration: none;
+    padding-right: 1.5em;
+}
+
+.messages {
+    color: var(--message-color);
+}
+
+.win {
+    color: var(--win-color);
+}
+
+.loss {
+    color: var(--loss-color);
+}
+
+.none {
+    color: var(--body-color);
+}
+
+.small {
+    font-size: .8em;
+}
+
+.resizedTextBox {
+    width: 15em;
+    height: 1.5em;
+}
+
+.notfound {
+    font-size: 1.50em;
+    font-weight: 800;
+}
+
+.red-button {
+    padding: .75em 1.0em;
+    text-decoration: none;
+    border-radius: 5em;
+    background-color: var(--red-button);
+    color: white;
+    border: none;
+}
+
+.blue-button {
+    padding: .75em 1.0em;
+    text-decoration: none;
+    border-radius: 5em;
+    background-color: var(--blue-button);
+    color: white;
+    border: none;
+}
+
+.logo {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--body-color);
+}
+
+.logo a {
+    text-decoration: none;
+    padding-left: 0px;
+}
+
+.vertical-links li {
+    padding-top: 2.0em;
+    text-align: left;
+    float: none;
+}
+
+.center {
+    padding-top: 2.0em;
+    text-align: center;
+}

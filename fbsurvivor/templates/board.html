@@ -1,0 +1,78 @@
+{% extends "./base.html" %}
+{% load templatetags %}
+    {% block content %}
+        {% if can_play %}
+            <strong>{{ player_count }}</strong> players have joined! Will you?<br><br><br>
+                <a class="blue-button" href="{% url 'play' season.year %}">Play</a>
+            <br><br><br><br>
+        {% else %}
+            {% if playable and playable not in years %}
+                <a href="{% url 'board' playable %}">Join the {{ playable }} season!</a>
+                <br><br>
+            {% endif %}
+        {% endif %}
+        {% if player_status %}
+            {% if not player_status.is_paid %}
+                <div class="messages">
+                    <strong>Unpaid - Venmo $30 to {{ venmo }}</strong>
+                </div>
+                <br>
+            {% endif %}
+            {% if next_week and next_pick%}
+                Week {{ next_week|stringformat:"02d" }} Pick: <a href="{% url 'pick' season.year next_week %}">{{ next_pick }}</a><br><br>
+            {% endif %}
+            <table>
+                <tr>
+                    <th>#</th>
+                    <th>{{ season }}</th>
+                    <th>Recs</th>
+                    {% if board %}
+                        {% for week in weeks %}
+                            <th>{{ week|stringformat:"02d" }}</th>
+                        {% endfor %}
+                    {% endif %}
+                </tr>
+                {% for row in board %}
+                    {% if row.player_status.player == player %}
+                        {% if player.is_dark_mode %}
+                            <tr style="border: 3px solid white;">
+                        {% else %}
+                            <tr style="border: 3px solid black;">
+                        {% endif %}
+                    {% else %}
+                        <tr>
+                    {% endif %}
+                        <td>{{ row.ranking|stringformat:"02d" }}</td>
+                        <td style="text-align: left; white-space: nowrap;">{{ row.player_status.player.username }}</td>
+                        <td>{{ row.player_status.win_count }}-{{ row.player_status.loss_count }}</td>
+                        {% for week in weeks %}
+                            <td
+                                {% if row|get_result_week:week == "R" %}
+                                    class="none"
+                                {% elif row|get_result_week:week == "W" %}
+                                    class="win"
+                                {% elif row|get_result_week:week == "L" %}
+                                    class="loss"
+                                {% endif %}
+                            >
+                            {% if row|get_result_week:week == "R" %}
+                                🌴
+                            {% elif row|get_pick_week:week %}
+                                {% if row|get_result_week:week == "L" %}
+                                    ⚔{{ row|get_pick_week:week }}
+                                {% elif row|get_result_week:week == "W" %}
+                                    ✓{{ row|get_pick_week:week }}
+                                {% else %}
+                                    {{ row|get_pick_week:week }}
+                                {% endif %}
+                                
+                            {% else %}
+                                🤬
+                            {% endif %}
+                            </td>
+                        {% endfor %}
+                        </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    {% endblock %}

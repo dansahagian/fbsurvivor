@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - "fbsurvivor/**"
+      - "requirements/**"
+
+jobs:
+  check:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    env:
+      ENV: dev
+      DOMAIN: http://127.0.0.1:8000
+      SECRET_KEY: abcdefghijklmnop
+      PGDATABASE: ci
+      PGUSER: postgres
+      PGPASSWORD: password
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/dev.txt --no-deps
+      - name: Ruff Linting Check
+        run: ruff check .
+      - name: Ruff Imports Check
+        run: ruff check --select I
+      - name: Ruff Format Check
+        run: ruff format --check
+      - name: Run Tests
+        run: pytest -p no:warnings .

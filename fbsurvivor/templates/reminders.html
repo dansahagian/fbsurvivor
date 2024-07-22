@@ -1,0 +1,15 @@
+{% extends "./base.html" %}
+{% block content %}
+    <br>
+    Have a problem? Contact Dan!<br>
+    {{ contact }}
+    <br><br>
+    <h3>Email Reminders</h3>
+    {% if player.has_email_reminders %}
+        Email reminders are enabled!<br><br>
+        <a class="red-button" href="{% url 'update_reminders' 'email' 'off' %}">Disable</a>
+    {% else %}
+        Email reminders are disabled!<br><br>
+        <a class="blue-button" href="{% url 'update_reminders' 'email' 'on' %}">Enable</a>
+    {% endif %}
+{% endblock %}
