@@ -1,5 +1,5 @@
 DATE=`date '+%Y-%m-%d %H:%M:%S'`
 echo "fbsurvivor wsgi started at ${DATE}" | systemd-cat -p info
 
-cd /opt/fbsurvivor2
-DJANGO_SETTINGS_MODULE=fbsurvivor.settings /opt/fbsurvivor2/.venv/bin/python -m gunicorn fbsurvivor.wsgi
+cd /opt/fbsurvivor
+DJANGO_SETTINGS_MODULE=fbsurvivor.settings /opt/fbsurvivor/.venv/bin/python -m gunicorn fbsurvivor.wsgi
