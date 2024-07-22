@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+    <head>
+        <title>FB Survivor</title>
+        {% if player and player.is_dark_mode or is_dark_mode %}
+            <link rel="stylesheet" href="{% static "css/dark.css" %}" type="text/css">
+        {% else %}
+            <link rel="stylesheet" href="{% static "css/light.css" %}" type="text/css">
+        {% endif %}
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+        <meta name="msapplication-TileColor" content="#2b5797">
+        <meta name="theme-color" content="#2b5797">
+        <meta name="viewport" content="initial-scale=1.0">
+    </head>
+    <body>
+        {% if player %}
+            <ul>
+                <li class="logo"><a href="{% url 'board' current_season.year %}">Survivor</a></li>
+                {% if player.is_admin and season and season.year == current_season.year %}
+                    <li><a href="{% url 'manager' season.year %}">admin</a></li>
+                {% endif %}
+                {% if season and season.year == current_season.year %}
+                    <li><a href="{% url 'picks' season.year %}">picks</a></li>
+                    <li><a href="{% url 'more'%}">more</a></li>
+                {% endif %}
+            </ul>
+            <br>
+            <br>
+        {% endif %}
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            <br><br>
+        {% endif %}
+        <div id="content">
+            {% block content %}{% endblock %}
+        </div>
+    </body>
+</html>
+

@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+.venv/bin/python3 ./manage.py load_weeks 2024 ./uploads/2024_weeks.txt
+.venv/bin/python3 ./manage.py load_teams 2024 ./uploads/2024_teams.txt
+.venv/bin/python3 ./manage.py load_game_locks 2024 ./uploads/2024_game_locks.txt

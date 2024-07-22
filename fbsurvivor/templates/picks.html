@@ -1,0 +1,41 @@
+{% extends "./base.html" %}
+{% block content %}
+    {% if picks %}
+        Status:
+        {% if player_status.is_retired %}Retired{% else %}Playing{% endif %}<br><br>
+        <table>
+            <tr>
+                <th>Wk</th>
+                <th>W/L</th>
+                <th>Status</th>
+            </tr>
+        {% for pick in picks %}
+            <tr>
+                <td>{{ pick.week.week_num|stringformat:"02d" }}</td>
+                <td
+                    {% if pick.result == "W" %}
+                        class="win"
+                    {% elif pick.result == "L" %}
+                        class="loss"
+                    {% endif %}
+                >{% if pick.team.team_code %}{{ pick.team.team_code }}{% endif %}</td>
+                <td>
+                    {% if pick.is_locked %}
+                        locked
+                    {% else %}
+                        <a href="{% url 'pick' season.year pick.week.week_num %}">
+                            edit
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% else %}
+        No pick data available for {{ season.year }}!
+    {% endif %}
+    <br><br>
+    {% if can_retire %}
+        <a class="red-button" href="{% url 'retire' season.year %}">Retire</a>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,9 @@
+[Unit]
+Description=fbsurvivor wsgi
+
+[Service]
+User=dan
+ExecStart=/usr/bin/zsh /usr/local/bin/run-wsgi-server-fbsurvivor
+
+[Install]
+WantedBy=multi-user.target

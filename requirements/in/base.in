@@ -1,0 +1,8 @@
+arrow
+django
+django-extensions
+django-htmlmin
+python-decouple
+requests
+PyJWT
+sentry-sdk
