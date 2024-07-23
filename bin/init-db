@@ -1,8 +1,8 @@
 #!/bin/zsh
 
-ssh dan@linode "pg_dump -U fbsurvivor2 fbsurvivor2 > /tmp/fbsurvivor2_dump"
-scp dan@linode:/tmp/fbsurvivor2_dump ~/d/code/fbsurvivor2/data/fbsurvivor2_dump
-ssh dan@linode "rm /tmp/fbsurvivor2_dump"
+ssh dan@linode "pg_dump -U fbsurvivor2 fbsurvivor2 > /tmp/fbsurvivor_dump"
+scp dan@linode:/tmp/fbsurvivor_dump ~/d/code/fbsurvivor/data/fbsurvivor_dump
+ssh dan@linode "rm /tmp/fbsurvivor_dump"
 
 psql -U postgres -d fbsurvivor2 -c "DROP SCHEMA IF EXISTS public CASCADE;"
 psql -U postgres -d postgres -c "DROP DATABASE fbsurvivor2;"
@@ -14,4 +14,4 @@ psql -U postgres -d postgres -c "GRANT ALL ON DATABASE fbsurvivor2 to fbsurvivor
 psql -U postgres -d fbsurvivor2 -c "DROP SCHEMA IF EXISTS public;"
 psql -U postgres -d fbsurvivor2 -c "CREATE SCHEMA IF NOT EXISTS public AUTHORIZATION fbsurvivor2;"
 
-psql fbsurvivor2 < ~/d/code/fbsurvivor2/data/fbsurvivor2_dump
+psql fbsurvivor2 < ~/d/code/fbsurvivor/data/fbsurvivor_dump
