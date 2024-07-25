@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+cd /opt/fbsurvivor
+.venv/bin/python ./manage.py send_reminders
+echo "Reminders Sent"
