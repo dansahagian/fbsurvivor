@@ -4,10 +4,10 @@ from email.mime.text import MIMEText
 from fbsurvivor.settings import ENV, SMTP_PASSWORD, SMTP_SENDER, SMTP_SERVER, SMTP_USER
 
 
-def send_email(subject, recipients, message):
+def send_email(subject, recipients, message) -> None:
     if ENV == "dev":
         print(f"\n\nSending Email to {len(recipients)} players...\n{subject}\n\n{message}\n\n")
-        return
+        return None
 
     msg = MIMEText(message)
     msg["Subject"] = subject
@@ -20,3 +20,5 @@ def send_email(subject, recipients, message):
         conn.sendmail(SMTP_SENDER, recipients, msg.as_string())
     finally:
         conn.quit()
+
+    return None

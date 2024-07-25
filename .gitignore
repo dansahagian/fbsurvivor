@@ -8,3 +8,4 @@ venv
 .venv
 *.pid
 .pytest_cache
+notebook.ipynb
