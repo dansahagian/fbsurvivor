@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+.venv/bin/uv pip sync requirements/dev.txt
+.venv/bin/pre-commit install
