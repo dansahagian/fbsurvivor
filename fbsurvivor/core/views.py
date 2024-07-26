@@ -166,7 +166,7 @@ def play(request, year: int, **kwargs):
 
         recipient = Player.objects.get(username="DanTheAutomator").email
         message = f"{player.username} in for {season.year}"
-        send_email("🏈 New Player! 🏈", [recipient], message)
+        send_email("Survivor New Player!", [recipient], message)
 
         return redirect(reverse("board", args=[year]))
 
@@ -255,7 +255,7 @@ def seasons(request, **kwargs):
 
 
 @authenticate_player
-def dark_mode(request, **kwargs):
+def theme(request, **kwargs):
     player = kwargs["player"]
     player.is_dark_mode = not player.is_dark_mode
     player.save()
@@ -471,8 +471,6 @@ def send_message(request, year, **kwargs):
                 .values_list("email", flat=True)
             )
 
-            subject = f"🏈 Survivor {subject}"
-
             send_email(subject, recipients, message)
 
             return redirect(reverse("board", args=[year]))
@@ -494,8 +492,6 @@ def send_message_all(request, year, **kwargs):
             message = form.cleaned_data["message"]
 
             recipients = list(Player.objects.exclude(email="").values_list("email", flat=True))
-
-            subject = f"🏈 Survivor {subject}"
 
             send_email(subject, recipients, message)
 

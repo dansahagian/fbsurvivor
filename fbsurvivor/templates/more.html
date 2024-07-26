@@ -4,9 +4,9 @@
         <ul>
             <li><a href="{% url 'logout' %}">logout</a></li>
             {% if player and player.is_dark_mode or is_dark_mode %}
-                <li><a href="{% url 'dark_mode' %}">light theme</a></li>
+                <li><a href="{% url 'theme' %}">light theme</a></li>
             {% else %}
-                <li><a href="{% url 'dark_mode' %}">dark theme</a></li>
+                <li><a href="{% url 'theme' %}">dark theme</a></li>
             {% endif %}
             <li><a href="{% url 'reminders' %}">reminders</a></li>
             <li><a href="{% url 'seasons' %}">seasons</a></li>

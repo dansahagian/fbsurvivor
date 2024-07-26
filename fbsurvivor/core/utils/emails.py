@@ -10,7 +10,7 @@ def send_email(subject, recipients, message) -> None:
         return None
 
     msg = MIMEText(message)
-    msg["Subject"] = subject
+    msg["Subject"] = f"🏈 {subject} 🏈"
     msg["From"] = SMTP_SENDER
     msg["To"] = SMTP_SENDER
 

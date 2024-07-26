@@ -15,7 +15,7 @@ def send_reminders():
     if not message:
         return
 
-    subject = f"🏈 Survivor Week {next_week.week_num} Reminder 🏈"
+    subject = f"Survivor Week {next_week.week_num} Reminder"
     message = f"Week {next_week.week_num} Locks:\n\n" + message
 
     if email_recipients := list(PlayerStatus.objects.for_email_reminders(next_week)):
