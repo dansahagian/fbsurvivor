@@ -101,6 +101,6 @@ def get_season_context(year: int, **kwargs) -> (Season, dict):
 
 def send_magic_link(player: Player) -> None:
     token = create_token(player)
-    subject = "🏈 Survivor Sign in"
+    subject = "Survivor Sign in"
     message = f"Click the link below to signin\n\n{DOMAIN}/enter/{token}"
     send_email(subject, [player.email], message)
