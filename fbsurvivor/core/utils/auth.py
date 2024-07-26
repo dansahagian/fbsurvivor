@@ -36,7 +36,7 @@ def authenticate_player(view):
             return view(*args, **kwargs)
         request.session.delete("token")
 
-        return redirect(reverse("signin"))
+        return redirect(reverse("login"))
 
     return inner
 
@@ -52,7 +52,7 @@ def authenticate_admin(view):
             return view(*args, **kwargs)
         request.session.delete("token")
 
-        return redirect(reverse("signin"))
+        return redirect(reverse("login"))
 
     return inner
 
@@ -101,6 +101,6 @@ def get_season_context(year: int, **kwargs) -> (Season, dict):
 
 def send_magic_link(player: Player) -> None:
     token = create_token(player)
-    subject = "Survivor Sign in"
-    message = f"Click the link below to signin\n\n{DOMAIN}/enter/{token}"
+    subject = "Survivor Login"
+    message = f"Click the link below to login\n\n{DOMAIN}/enter/{token}"
     send_email(subject, [player.email], message)

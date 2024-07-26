@@ -31,10 +31,10 @@ class Player(models.Model):
 
         if not pk:
             ps = f"If you didn't sign up, please email {settings.CONTACT}"
-            signin = f"{settings.DOMAIN}"
+            login = f"{settings.DOMAIN}"
             subject = "Survivor User Account"
             recipients = [self.email]
-            message = f"You can login here:\n\n{signin}\n\n{ps}"
+            message = f"You can login here:\n\n{login}\n\n{ps}"
 
             send_email(subject, recipients, message)
 

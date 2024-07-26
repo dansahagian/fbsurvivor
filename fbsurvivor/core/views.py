@@ -35,7 +35,7 @@ from fbsurvivor.core.utils.reminders import send_reminders
 from fbsurvivor.settings import CONTACT, VENMO
 
 
-def signin(request):
+def login(request):
     if request.method == "GET":
         if request.session.get("token"):
             return redirect(reverse("board_redirect"))
@@ -43,7 +43,7 @@ def signin(request):
         context = {
             "form": EmailForm(),
         }
-        return render(request, "signin.html", context=context)
+        return render(request, "fbsurvivor/templates/login.html", context=context)
 
     if request.method == "POST":
         form = EmailForm(request.POST)
@@ -56,7 +56,7 @@ def signin(request):
             except Player.DoesNotExist:
                 pass
 
-        return render(request, "signin-sent.html")
+        return render(request, "fbsurvivor/templates/login-sent.html")
 
 
 def enter(request, token):
@@ -70,7 +70,7 @@ def logout(request, **kwargs):
     if token := request.session.get("token"):
         TokenHash.objects.get(hash=get_token_hash(token)).delete()
     request.session.delete("token")
-    return redirect(reverse("signin"))
+    return redirect(reverse("login"))
 
 
 @authenticate_admin

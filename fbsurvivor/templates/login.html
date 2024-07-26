@@ -5,7 +5,7 @@
             Have an account?<br><br>
             Enter your email address!
             <br><br>
-            <form action="{% url 'signin' %}" method="POST">
+            <form action="{% url 'login' %}" method="POST">
                 {% csrf_token %}
                 <label for="{{ form.email.id_for_label }}"></label>
                 {{ form.email }}
