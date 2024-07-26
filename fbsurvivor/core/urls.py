@@ -4,9 +4,9 @@ from fbsurvivor.core.views import (
     assume,
     board,
     board_redirect,
-    theme,
     enter,
     get_players,
+    login,
     logout,
     manager,
     manager_redirect,
@@ -26,13 +26,13 @@ from fbsurvivor.core.views import (
     seasons,
     send_message,
     send_message_all,
-    signin,
+    theme,
     update_reminders,
     user_paid,
 )
 
 urlpatterns = [
-    path("", signin, name="signin"),
+    path("", login, name="login"),
     path("logout", logout, name="logout"),
     path("enter/<str:token>/", enter, name="enter"),
     path("assume/<str:username>/", assume, name="assume"),

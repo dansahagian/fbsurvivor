@@ -5,12 +5,14 @@ from fbsurvivor.settings import ENV, SMTP_PASSWORD, SMTP_SENDER, SMTP_SERVER, SM
 
 
 def send_email(subject, recipients, message) -> None:
+    subject = f"🏈 {subject} 🏈"
+
     if ENV == "dev":
         print(f"\n\nSending Email to {len(recipients)} players...\n{subject}\n\n{message}\n\n")
         return None
 
     msg = MIMEText(message)
-    msg["Subject"] = f"🏈 {subject} 🏈"
+    msg["Subject"] = subject
     msg["From"] = SMTP_SENDER
     msg["To"] = SMTP_SENDER
 

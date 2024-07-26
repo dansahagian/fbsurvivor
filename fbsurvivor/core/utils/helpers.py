@@ -37,7 +37,7 @@ def send_to_latest_season_played(request):
         return redirect(reverse("board", args=[latest]))
     else:
         messages.info(request, "We don't have a record of you playing any season.")
-        return redirect(reverse("signin"))
+        return redirect(reverse("login"))
 
 
 def update_player_records(year: int) -> int:
