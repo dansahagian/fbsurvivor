@@ -148,9 +148,18 @@ if ENV == "dev":
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
+
+def before_send(event, hint):
+    if "log_record" in hint:
+        if hint["log_record"].name == "django.security.DisallowedHost":
+            return None
+        return event
+
+
 sentry_sdk.init(
     dsn=config("SENTRY_DSN", ""),
     integrations=[DjangoIntegration()],
+    before_send=before_send,
     # If you wish to associate users to errors (assuming you are using
     # django.contrib.auth) you may enable sending PII data.
     send_default_pii=True,
