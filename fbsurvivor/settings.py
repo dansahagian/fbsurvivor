@@ -1,4 +1,5 @@
 from pathlib import Path
+from urllib.parse import urlparse
 
 import sentry_sdk
 from decouple import config
@@ -148,6 +149,26 @@ if ENV == "dev":
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
+BASE_URLS = {
+    "board",
+    "play",
+    "retire",
+    "more",
+    "payouts",
+    "rules",
+    "season",
+    "theme",
+    "picks",
+    "manager",
+    "paid",
+    "results",
+    "remind",
+    "players",
+    "message",
+    "message-all",
+    "reminders",
+}
+
 
 def before_send(event, hint):
     if "log_record" in hint:
@@ -156,10 +177,22 @@ def before_send(event, hint):
         return event
 
 
+def filter_transactions(event, hint):
+    url_string = event["request"]["url"]
+    parsed_url = urlparse(url_string)
+
+    base_url = parsed_url.path[1:].split("/")[0]
+    if base_url in BASE_URLS:
+        return event
+    else:
+        return None
+
+
 sentry_sdk.init(
     dsn=config("SENTRY_DSN", ""),
     integrations=[DjangoIntegration()],
     before_send=before_send,
+    before_send_transaction=filter_transactions,
     # If you wish to associate users to errors (assuming you are using
     # django.contrib.auth) you may enable sending PII data.
     send_default_pii=True,
