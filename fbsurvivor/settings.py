@@ -178,14 +178,20 @@ def before_send(event, hint):
 
 
 def filter_transactions(event, hint):
-    url_string = event["request"]["url"]
-    parsed_url = urlparse(url_string)
+    request = event.get("request")
+    if not request:
+        return None
 
+    url = request.get("url")
+    if not url:
+        return None
+
+    parsed_url = urlparse(url)
     base_url = parsed_url.path[1:].split("/")[0]
+
     if base_url in BASE_URLS:
         return event
-    else:
-        return None
+    return None
 
 
 sentry_sdk.init(
