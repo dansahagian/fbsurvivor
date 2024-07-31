@@ -309,6 +309,10 @@ def picks(request, year, **kwargs):
     player = kwargs["player"]
     season, player_status, context = get_player_context(player, year)
 
+    if not player_status:
+        messages.info(request, "You must play this season before editing picks!")
+        return redirect(reverse("board_redirect"))
+
     can_retire = player_status and (not player_status.is_retired) and season.is_current
 
     context["picks"] = (

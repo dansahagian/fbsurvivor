@@ -25,7 +25,9 @@
                     <li><a href="{% url 'manager' season.year %}">admin</a></li>
                 {% endif %}
                 {% if season and season.year == current_season.year %}
-                    <li><a href="{% url 'picks' season.year %}">picks</a></li>
+                    {% if player_status %}
+                        <li><a href="{% url 'picks' season.year %}">picks</a></li>
+                    {% endif %}
                     <li><a href="{% url 'more'%}">more</a></li>
                 {% endif %}
             </ul>
