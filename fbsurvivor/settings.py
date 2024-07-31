@@ -186,10 +186,14 @@ def filter_transactions(event, hint):
     if not url:
         return None
 
-    parsed_url = urlparse(url)
-    base_url = parsed_url.path[1:].split("/")[0]
+    method = request.get("method")
+    if method not in {"GET", "POST"}:
+        return None
 
-    if base_url in BASE_URLS:
+    path = urlparse(url).path
+    base_url = path.split("/")[0]
+
+    if path == "/" or base_url in BASE_URLS:
         return event
     return None
 
