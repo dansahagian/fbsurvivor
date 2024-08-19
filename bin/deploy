@@ -1,5 +1,32 @@
 #!/bin/zsh
 
+run_command() {
+    local check="$1"
+    shift
+    if ! "$@"; then
+        echo -e "\n\n❌ Failed Deployment $check\n"
+        exit 1
+    fi
+}
+
+echo -e "\nLinting and Formatting 🐍 ...\n"
+
+run_command "linting" .venv/bin/ruff check .
+run_command "imports" .venv/bin/ruff check --select I
+run_command "format" .venv/bin/ruff format --check
+
+echo -e "\nRunning Tests 🧪...\n"
+
+run_command "tests" .venv/bin/pytest -p no:warnings .
+
 echo "\nDeploying...\n"
-ssh linode "cd /opt/fbsurvivor && git pull origin main"
+
+rsync -a ./fbsurvivor dan@linode:/opt/fbsurvivor
+rsync -a ./requirements dan@linode:/opt/fbsurvivor
+rsync -a ./manage.py dan@linode:/opt/fbsurvivor
+rsync -a ./bin dan@linode:/opt/fbsurvivor
+rsync -a ./.env.prod dan@linode:/opt/fbsurvivor/.env
+
 ssh linode "/opt/fbsurvivor/bin/deploy_on_server"
+
+curl -X GET -I https://fbsurvivor.com
