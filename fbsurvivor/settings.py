@@ -138,7 +138,7 @@ SMTP_SERVER = config("SMTP_SERVER", "")
 SMTP_SENDER = config("SMTP_SENDER", "")
 SMTP_USER = config("SMTP_USER", "")
 SMTP_PASSWORD = config("SMTP_PASSWORD", "")
-SMTP_PORT = config("SMTP_PORT", "")
+SMTP_PORT = config("SMTP_PORT", 465)
 
 if ENV == "dev":
     DEBUG = True
