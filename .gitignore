@@ -3,6 +3,7 @@ __pycache__
 .idea/
 
 .env
+prod.env
 
 venv
 .venv
