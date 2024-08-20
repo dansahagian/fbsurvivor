@@ -16,5 +16,3 @@ echo "\nStarting services...\n"
 sudo systemctl start wsgi-server-fbsurvivor.service
 
 sleep 2
-
-rm .env

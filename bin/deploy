@@ -27,6 +27,6 @@ rsync -a ./manage.py dan@linode:/opt/fbsurvivor
 rsync -a ./bin dan@linode:/opt/fbsurvivor
 rsync -a ./prod.env dan@linode:/opt/fbsurvivor/.env
 
-ssh linode /opt/fbsurvivor/bin/deploy_on_server
+ssh linode /opt/fbsurvivor/bin/deploy-on-server
 
 curl -X GET -I https://fbsurvivor.com
