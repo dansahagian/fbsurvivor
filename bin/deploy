@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+OP_SERVICE_ACCOUNT_TOKEN=$(op read op://Development/op_service_account_token_fbsurvivor/password)
+
 run_command() {
     local check="$1"
     shift
