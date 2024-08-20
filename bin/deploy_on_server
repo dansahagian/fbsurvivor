@@ -8,12 +8,13 @@ cd /opt/fbsurvivor
 echo "\nStopping services...\n"
 sudo systemctl stop wsgi-server-fbsurvivor.service
 
-export OP_SERVICE_ACCOUNT_TOKEN="$1"
-export ENV=prod
-
-op run --env-file="./prod.env" -- .venv/bin/python manage.py migrate
-op run --env-file="./prod.env" -- .venv/bin/python manage.py collectstatic --no-input
-op run --env-file="./prod.env" -- .venv/bin/python manage.py check --deploy
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py collectstatic --no-input
+.venv/bin/python manage.py check --deploy
 
 echo "\nStarting services...\n"
 sudo systemctl start wsgi-server-fbsurvivor.service
+
+sleep 2
+
+rm .env
