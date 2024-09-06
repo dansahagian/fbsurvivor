@@ -94,7 +94,7 @@ def board(request, year: int, **kwargs):
     season, player_status, context = get_player_context(player, year)
 
     if season.is_locked and not player_status:
-        return send_to_latest_season_played(request)
+        return send_to_latest_season_played(request, player)
 
     can_play = not player_status and season.is_current and not season.is_locked
     weeks = (
@@ -143,7 +143,7 @@ def play(request, year: int, **kwargs):
         return redirect(reverse("board", args=[year]))
 
     if season.is_locked:
-        return send_to_latest_season_played(request)
+        return send_to_latest_season_played(request, player)
 
     context.update(
         {
@@ -446,9 +446,7 @@ def remind(request, year, **kwargs):
 def get_players(request, year, **kwargs):
     season, context = get_season_context(year, **kwargs)
     context["players"] = (
-        PlayerStatus.objects.values_list("player__username", flat=True)
-        .distinct()
-        .order_by("player__username")
+        Player.objects.values_list("username", flat=True).distinct().order_by("username")
     )
 
     return render(request, "players.html", context=context)
