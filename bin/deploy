@@ -11,18 +11,18 @@ run_command() {
 
 echo -e "\nLinting and Formatting 🐍 ...\n"
 
-run_command "linting" .venv/bin/ruff check .
-run_command "imports" .venv/bin/ruff check --select I
-run_command "format" .venv/bin/ruff format --check
+run_command "linting" ruff check .
+run_command "imports" ruff check --select I
+run_command "format" ruff format --check
 
 echo -e "\nRunning Tests 🧪...\n"
 
-run_command "tests" .venv/bin/pytest -p no:warnings .
+run_command "tests" uv run pytest -p no:warnings .
 
 echo "\nDeploying...\n"
 
 rsync -a ./fbsurvivor dan@linode:/opt/fbsurvivor
-rsync -a ./requirements dan@linode:/opt/fbsurvivor
+rsync -a ./pyproject.toml dan@linode:/opt/fbsurvivor
 rsync -a ./manage.py dan@linode:/opt/fbsurvivor
 rsync -a ./bin dan@linode:/opt/fbsurvivor
 rsync -a ./prod.env dan@linode:/opt/fbsurvivor/.env

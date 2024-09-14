@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env sh
 
-.venv/bin/ruff check --select I --fix
-.venv/bin/ruff format
+ruff check --select I --fix
+ruff format

@@ -1,7 +1,5 @@
 #!/bin/zsh
 
-rsync -a ./prod.env dan@linode:/opt/fbsurvivor/.env
-
 echo "\nStopping services...\n"
 ssh linode sudo systemctl stop wsgi-server-fbsurvivor.service
 
