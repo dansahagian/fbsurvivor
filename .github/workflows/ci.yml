@@ -6,6 +6,7 @@ on:
       - "fbsurvivor/**"
       - "pyproject.toml"
       - "uv.lock"
+      - ".github/workflows/**"
 
 jobs:
   check:
@@ -60,4 +61,4 @@ jobs:
       - name: Ruff Format Check
         run: ruff format --check
       - name: Run Tests
-        run: pytest -p no:warnings .
+        run: uv run python -m pytest -p no:warnings .
