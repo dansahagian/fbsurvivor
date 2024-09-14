@@ -4,7 +4,8 @@ on:
   push:
     paths:
       - "fbsurvivor/**"
-      - "requirements/**"
+      - "pyproject.toml"
+      - "uv.lock"
 
 jobs:
   check:
@@ -35,14 +36,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Install Python
-        uses: actions/setup-python@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
         with:
-          python-version: 3.12
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements/dev.txt --no-deps
+          version: "0.4.10"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install the project
+        run: uv sync --all-extras --dev
+
+      - name: Install ruff
+        run: uv tool install ruff
+
       - name: Ruff Linting Check
         run: ruff check .
       - name: Ruff Imports Check
