@@ -3,9 +3,6 @@ from django.db import models
 from django.db.models import Sum
 from django.db.models.functions import Lower
 
-from fbsurvivor import settings
-from fbsurvivor.core.utils.emails import send_email
-
 
 class Player(models.Model):
     username = models.CharField(max_length=20, unique=True)
@@ -24,19 +21,6 @@ class Player(models.Model):
 
     def __str__(self):
         return f"{self.username}"
-
-    def save(self, *args, **kwargs):
-        pk = self.pk
-        super().save(*args, **kwargs)
-
-        if not pk:
-            ps = f"If you didn't sign up, please email {settings.CONTACT}"
-            login = f"{settings.DOMAIN}"
-            subject = "Survivor User Account"
-            recipients = [self.email]
-            message = f"You can login here:\n\n{login}\n\n{ps}"
-
-            send_email(subject, recipients, message)
 
 
 class TokenHash(models.Model):
@@ -330,3 +314,9 @@ class Board(models.Model):
     result_16 = models.CharField(max_length=1, null=True)
     result_17 = models.CharField(max_length=1, null=True)
     result_18 = models.CharField(max_length=1, null=True)
+
+
+class EmailLogRecord(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    subject = models.CharField(max_length=128)
+    email = models.CharField(max_length=128)
