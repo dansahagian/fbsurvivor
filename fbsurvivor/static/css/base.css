@@ -28,6 +28,10 @@ a {
     color: var(--link-color);
 }
 
+.season a {
+    padding-left: 0.0em;
+}
+
 table {
     border-collapse: collapse;
 }

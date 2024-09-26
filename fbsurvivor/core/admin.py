@@ -41,8 +41,8 @@ class PlayerStatusAdmin(admin.ModelAdmin):
 
 @admin.register(Season)
 class SeasonAdmin(admin.ModelAdmin):
-    list_display = ["year", "is_locked", "is_current"]
-    list_editable = ["is_locked", "is_current"]
+    list_display = ["year", "is_locked", "is_current", "is_live"]
+    list_editable = ["is_locked", "is_current", "is_live"]
 
 
 @admin.register(Week)

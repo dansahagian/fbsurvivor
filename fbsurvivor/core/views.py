@@ -25,8 +25,8 @@ from fbsurvivor.core.utils.auth import (
 from fbsurvivor.core.utils.emails import send_email
 from fbsurvivor.core.utils.helpers import (
     cache_board,
+    get_add_on_season,
     get_board,
-    get_current_season,
     get_player_context,
     send_to_latest_season_played,
     update_player_records,
@@ -83,9 +83,9 @@ def assume(request, username, **kwargs):
 
 @authenticate_player
 def board_redirect(request, **kwargs):
-    season = get_current_season()
+    current_season = Season.objects.get(is_current=True)
 
-    return redirect(reverse("board", args=[season.year]))
+    return redirect(reverse("board", args=[current_season.year]))
 
 
 @authenticate_player
@@ -96,7 +96,7 @@ def board(request, year: int, **kwargs):
     if season.is_locked and not player_status:
         return send_to_latest_season_played(request, player)
 
-    can_play = not player_status and season.is_current and not season.is_locked
+    can_play = not player_status and not season.is_locked
     weeks = (
         Week.objects.for_display(season).order_by("-week_num").values_list("week_num", flat=True)
     )
@@ -105,7 +105,7 @@ def board(request, year: int, **kwargs):
     season_board = get_board(season)
 
     try:
-        playable = Season.objects.get(is_current=True, is_locked=False).year
+        playable = Season.objects.get(is_locked=False).year
     except Season.DoesNotExist:
         playable = None
 
@@ -119,6 +119,8 @@ def board(request, year: int, **kwargs):
         except Pick.DoesNotExist:
             context["next_pick"] = None
 
+    add_on_season = get_add_on_season(player, season)
+
     context.update(
         {
             "can_play": can_play,
@@ -127,6 +129,7 @@ def board(request, year: int, **kwargs):
             "player_count": player_statuses_count,
             "playable": playable,
             "venmo": VENMO,
+            "add_on_season": add_on_season,
         }
     )
 
@@ -197,11 +200,9 @@ def retire(request, year, **kwargs):
 @authenticate_player
 def more(request, **kwargs):
     player = kwargs["player"]
-    current_season = get_current_season()
 
     context = {
         "player": player,
-        "current_season": current_season,
     }
     return render(request, "more.html", context=context)
 
@@ -210,13 +211,10 @@ def more(request, **kwargs):
 def payouts(request, **kwargs):
     player = kwargs["player"]
     player_payouts = Payout.objects.for_payout_table()
-    current_season = get_current_season()
 
     context = {
         "player": player,
         "payouts": player_payouts,
-        "season": current_season,
-        "current_season": current_season,
     }
 
     return render(request, "payouts.html", context=context)
@@ -225,12 +223,9 @@ def payouts(request, **kwargs):
 @authenticate_player
 def rules(request, **kwargs):
     player = kwargs["player"]
-    current_season = get_current_season()
 
     context = {
         "player": player,
-        "season": current_season,
-        "current_season": current_season,
         "contact": CONTACT,
     }
 
@@ -242,13 +237,10 @@ def seasons(request, **kwargs):
     player = kwargs["player"]
 
     years = list(PlayerStatus.objects.player_years(player))
-    current_season = get_current_season()
 
     context = {
         "player": player,
         "years": years,
-        "season": current_season,
-        "current_season": current_season,
     }
 
     return render(request, "seasons.html", context=context)
@@ -266,12 +258,9 @@ def theme(request, **kwargs):
 @authenticate_player
 def reminders(request, **kwargs):
     player = kwargs["player"]
-    current_season = get_current_season()
 
     context = {
         "player": player,
-        "season": current_season,
-        "current_season": current_season,
         "contact": CONTACT,
     }
 
@@ -298,20 +287,13 @@ def update_reminders(request, kind, status, **kwargs):
 
 
 @authenticate_player
-def picks_redirect(request):
-    season = get_current_season()
-
-    return redirect(reverse("picks", args=[season.year]))
-
-
-@authenticate_player
 def picks(request, year, **kwargs):
     player = kwargs["player"]
     season, player_status, context = get_player_context(player, year)
 
     if not player_status:
         messages.info(request, "You must play this season before editing picks!")
-        return redirect(reverse("board_redirect"))
+        return redirect(reverse("board", args=year))
 
     can_retire = player_status and (not player_status.is_retired) and season.is_current
 
@@ -372,13 +354,6 @@ def pick(request, year, week, **kwargs):
             messages.info(request, "Bad form submission")
 
         return redirect(reverse("board", args=[year]))
-
-
-@authenticate_admin
-def manager_redirect(request, **kwargs):
-    season = get_current_season()
-
-    return redirect(reverse("manager", args=[season.year]))
 
 
 @authenticate_admin
@@ -479,11 +454,9 @@ def send_message(request, year, **kwargs):
 
 
 @authenticate_admin
-def send_message_all(request, year, **kwargs):
-    season, context = get_season_context(year, **kwargs)
-
+def send_message_all(request, **kwargs):
     if request.method == "GET":
-        context["form"] = MessageForm()
+        context = {"form": MessageForm()}
         return render(request, "message_all.html", context=context)
 
     if request.method == "POST":
@@ -497,4 +470,4 @@ def send_message_all(request, year, **kwargs):
 
             send_email(subject, recipients, message)
 
-            return redirect(reverse("board", args=[year]))
+            return redirect(reverse("board_redirect"))
