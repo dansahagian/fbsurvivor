@@ -8,7 +8,6 @@ from jwt import ExpiredSignatureError, InvalidSignatureError, decode, encode
 
 from fbsurvivor.core.models import Player, Season, TokenHash
 from fbsurvivor.core.utils.emails import send_email
-from fbsurvivor.core.utils.helpers import get_current_season
 from fbsurvivor.settings import DOMAIN, SECRET_KEY
 
 
@@ -95,8 +94,10 @@ def get_authenticated_admin(request) -> Player | None:
 
 def get_season_context(year: int, **kwargs) -> (Season, dict):
     season = get_object_or_404(Season, year=year)
-    current_season = get_current_season()
-    return season, {"season": season, "player": kwargs["player"], "current_season": current_season}
+    return season, {
+        "season": season,
+        "player": kwargs["player"],
+    }
 
 
 def send_magic_link(player: Player) -> None:

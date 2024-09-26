@@ -3,11 +3,11 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 
 from fbsurvivor.core.models import Board, Pick, Player, PlayerStatus, Season
+from fbsurvivor.core.services import SeasonService
 
 
 def get_player_context(player: Player, year: int) -> (Season, PlayerStatus, dict):
     season = get_object_or_404(Season, year=year)
-    current_season = get_current_season()
 
     try:
         player_status = PlayerStatus.objects.get(player=player, season=season)
@@ -18,14 +18,9 @@ def get_player_context(player: Player, year: int) -> (Season, PlayerStatus, dict
         "player": player,
         "season": season,
         "player_status": player_status,
-        "current_season": current_season,
     }
 
     return season, player_status, context
-
-
-def get_current_season() -> Season:
-    return Season.objects.get(is_current=True)
 
 
 def send_to_latest_season_played(request, player: Player):
@@ -37,6 +32,25 @@ def send_to_latest_season_played(request, player: Player):
     else:
         messages.info(request, "We don't have a record of you playing any season.")
         return redirect(reverse("login"))
+
+
+def get_add_on_season(player: Player, season: Season):
+    year = season.year * 10 + 1
+
+    try:
+        add_on_season = Season.objects.get(year=year)
+    except Season.DoesNotExist:
+        return None
+
+    try:
+        ps_add_on_season = PlayerStatus.objects.get(player=player, season=add_on_season)
+    except PlayerStatus.DoesNotExist:
+        ps_add_on_season = None
+
+    if (add_on_season.is_locked and ps_add_on_season) or not add_on_season.is_locked:
+        return add_on_season
+
+    return None
 
 
 def update_player_records(year: int) -> int:
@@ -92,8 +106,8 @@ def cache_board(season: Season) -> bool:
 
 
 def cache_current_board() -> bool:
-    season = get_current_season()
-    cache_board(season)
+    for season in SeasonService.get_live():
+        cache_board(season)
     return True
 
 

@@ -1,22 +1,25 @@
-from fbsurvivor.core.models import PlayerStatus, Season, Week
+from fbsurvivor.core.models import PlayerStatus, Week
+from fbsurvivor.core.services import SeasonService
 from fbsurvivor.core.utils.deadlines import get_reminder_message
 from fbsurvivor.core.utils.emails import send_email
 
 
 def send_reminders():
-    current_season: Season = Season.objects.get(is_current=True)
-    next_week: Week = Week.objects.get_next(current_season)
+    for season in SeasonService.get_live():
+        season_service = SeasonService(season)
 
-    if not next_week:
-        return
+        next_week: Week = season_service.get_next_week()
 
-    message = get_reminder_message(current_season, next_week)
+        if not next_week:
+            return
 
-    if not message:
-        return
+        message = get_reminder_message(season, next_week)
 
-    subject = f"Survivor Week {next_week.week_num} Reminder"
-    message = f"Week {next_week.week_num} Locks:\n\n" + message
+        if not message:
+            return
 
-    if email_recipients := list(PlayerStatus.objects.for_email_reminders(next_week)):
-        send_email(subject, email_recipients, message)
+        subject = f"Survivor {season.description}: Week {next_week.week_num} Reminder"
+        message = f"Week {next_week.week_num} Locks:\n\n" + message
+
+        if email_recipients := list(PlayerStatus.objects.for_email_reminders(next_week)):
+            send_email(subject, email_recipients, message)

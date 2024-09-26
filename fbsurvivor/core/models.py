@@ -36,8 +36,10 @@ class TokenHash(models.Model):
 
 class Season(models.Model):
     year = models.PositiveSmallIntegerField(unique=True)
+    description = models.CharField(max_length=16, default="")
     is_locked = models.BooleanField(default=True)
     is_current = models.BooleanField(default=False)
+    is_live = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.year}"
@@ -82,13 +84,6 @@ class PlayerStatusQuerySet(models.QuerySet):
             self.for_reminders(week)
             .filter(player__has_email_reminders=True)
             .values_list("player__email", flat=True)
-        )
-
-    def for_sms_reminders(self, week):
-        return (
-            self.for_reminders(week)
-            .filter(player__has_sms_reminders=True)
-            .values_list("player__phone_number", flat=True)
         )
 
 
