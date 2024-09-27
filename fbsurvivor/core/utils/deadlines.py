@@ -3,6 +3,7 @@ from datetime import datetime
 import arrow
 
 from fbsurvivor.core.models import Lock, Pick, PlayerStatus, Season, Week
+from fbsurvivor.core.services import SeasonService
 
 
 def _zero_pad_number(number):
@@ -111,6 +112,10 @@ def get_reminder_message(season: Season, next_week: Week) -> str | None:
 
     weekly_deadline = get_weekly_deadline(season, next_week)
     if weekly_deadline:
-        message += f"All Teams: {get_countdown(weekly_deadline)}"
+        message += f"All Teams: {get_countdown(weekly_deadline)}\n\n"
+
+    if message:
+        live_seasons = "\n- ".join([x.description for x in SeasonService.get_live()])
+        message += f"You are missing a pick in one of the following seasons:\n- {live_seasons}"
 
     return message if message else None
