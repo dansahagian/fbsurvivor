@@ -30,8 +30,12 @@ class SeasonService:
             self.season = None
 
     @staticmethod
+    def get_current():
+        return Season.objects.get(is_current=True)
+
+    @staticmethod
     def get_live():
-        return Season.objects.filter(is_live=True)
+        return Season.objects.filter(is_live=True).order_by("year")
 
     def get_next_week(self):
         weeks = Week.objects.filter(
