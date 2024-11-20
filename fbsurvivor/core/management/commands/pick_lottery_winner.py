@@ -1,35 +1,41 @@
 from secrets import choice
 
 from django.core.management.base import BaseCommand
+from django.db.models.functions import Lower
 
-from fbsurvivor.core.models import Player, Season
+from fbsurvivor.core.models import PlayerStatus, Season
 
 
 class Command(BaseCommand):
     help = "Pick the winner of free entry for next season"
 
+    def add_arguments(self, parser):
+        parser.add_argument("year", type=int)
+
     def handle(self, *args, **options):
-        current_seasons = Season.objects.filter(is_current=True)
+        year = options["year"]
+        season = Season.objects.get(year=year)
 
-        for current_season in current_seasons:
-            # filter out players who retired, won survivor, and me
-            players = Player.objects.filter(
-                playerstatus__season=current_season,
-                playerstatus__is_retired=False,
-                playerstatus__is_survivor=False,
-            ).exclude(username="DanTheAutomator")
+        # filter out players who don't have full picks, have won money, and me
+        ps = (
+            PlayerStatus.objects.filter(
+                season=season,
+                has_complete_picks=True,
+                has_won_gt_buy_in=False,
+                is_retired=False,
+            )
+            .exclude(player__username="DanTheAutomator")
+            .annotate(lower=Lower("player__username"))
+            .prefetch_related("player")
+            .order_by("-win_count", "lower")
+        )
 
-            # filter out players who missed picks during the season
-            ep = [
-                p.username
-                for p in players
-                if not p.pick_set.filter(team__isnull=True, week__season=current_season)
-                and sum(
-                    p.payout_set.filter(season=current_season).values_list("amount", flat=True)
-                )
-                < 30
-            ]
-            display = "\n".join(ep)
+        hat = []
+        for p in ps:
+            hat.extend([p.player.username] * p.win_count)
 
-            print(f"\n\n{current_season.year} Eligible Players:\n\n{display}\n\n")
-            print(f"And the winner is... {choice(ep)}\n\n")
+        total = len(hat)
+        for p in ps:
+            print(f"{p.player}: {round(p.win_count / total * 100, 2)}%")
+
+        print(f"And the winner is... {choice(hat)}\n\n")

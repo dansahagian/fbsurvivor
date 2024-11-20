@@ -30,8 +30,22 @@ class PlayerAdmin(admin.ModelAdmin):
 
 @admin.register(PlayerStatus)
 class PlayerStatusAdmin(admin.ModelAdmin):
-    list_display = ["player", "season", "is_paid", "is_retired", "is_survivor"]
-    list_editable = ["is_paid", "is_retired", "is_survivor"]
+    list_display = [
+        "player",
+        "season",
+        "is_paid",
+        "is_retired",
+        "is_survivor",
+        "has_complete_picks",
+        "has_won_gt_buy_in",
+    ]
+    list_editable = [
+        "is_paid",
+        "is_retired",
+        "is_survivor",
+        "has_complete_picks",
+        "has_won_gt_buy_in",
+    ]
     list_filter = ["season"]
 
     def get_queryset(self, request):
