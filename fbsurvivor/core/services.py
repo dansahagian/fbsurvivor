@@ -25,7 +25,7 @@ class SeasonService:
         if isinstance(season, Season):
             self.season = season
         elif isinstance(season, int):
-            self.season: Season.objects.get(year=season)
+            self.season = Season.objects.get(year=season)
         else:
             self.season = None
 
