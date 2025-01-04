@@ -191,7 +191,7 @@ def filter_transactions(event, hint):
         return None
 
     path = urlparse(url).path
-    base_url = path.split("/")[0]
+    base_url = path.split("/")[1]
 
     if path == "/" or base_url in BASE_URLS:
         return event
