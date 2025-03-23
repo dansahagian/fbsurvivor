@@ -1,6 +1,6 @@
 import arrow
-import factory
 import pytest
+from factory.declarations import Iterator
 
 from fbsurvivor.core.tests.factories import (
     PickFactory,
@@ -16,7 +16,7 @@ from fbsurvivor.core.tests.factories import (
 def players(db):
     return PlayerFactory.create_batch(
         size=2,
-        username=factory.Iterator(["Automator", "Roboto"]),
+        username=Iterator(["Automator", "Roboto"]),
     )
 
 
@@ -24,9 +24,9 @@ def players(db):
 def seasons(db):
     return SeasonFactory.create_batch(
         size=2,
-        year=factory.Iterator([2019, 2020]),
-        is_locked=factory.Iterator([True, False]),
-        is_current=factory.Iterator([False, True]),
+        year=Iterator([2019, 2020]),
+        is_locked=Iterator([True, False]),
+        is_current=Iterator([False, True]),
     )
 
 
@@ -41,13 +41,13 @@ def weeks(db, seasons):
         "this_season": WeekFactory.create_batch(
             size=5,
             season=seasons[1],
-            week_num=factory.Iterator([1, 2, 3, 4, 5]),
-            lock_datetime=factory.Iterator([lw, lw, lw, lw, nw]),
+            week_num=Iterator([1, 2, 3, 4, 5]),
+            lock_datetime=Iterator([lw, lw, lw, lw, nw]),
         ),
         "last_season": WeekFactory.create_batch(
             size=5,
             season=seasons[0],
-            week_num=factory.Iterator([1, 2, 3, 4, 5]),
+            week_num=Iterator([1, 2, 3, 4, 5]),
             lock_datetime=ly,
         ),
     }
@@ -59,14 +59,14 @@ def teams(db, seasons):
         "this_season": TeamFactory.create_batch(
             size=6,
             season=seasons[1],
-            team_code=factory.Iterator(["NE", "SF", "TB", "GB", "DAL", "BUF"]),
-            bye_week=factory.Iterator([1, 1, 2, 2, 3]),
+            team_code=Iterator(["NE", "SF", "TB", "GB", "DAL", "BUF"]),
+            bye_week=Iterator([1, 1, 2, 2, 3]),
         ),
         "last_season": TeamFactory.create_batch(
             size=5,
             season=seasons[0],
-            team_code=factory.Iterator(["NE", "SF", "TB", "GB", "DAL"]),
-            bye_week=factory.Iterator([1, 1, 2, 2, 3]),
+            team_code=Iterator(["NE", "SF", "TB", "GB", "DAL"]),
+            bye_week=Iterator([1, 1, 2, 2, 3]),
         ),
     }
 
@@ -84,10 +84,10 @@ def picks(db, players, weeks, teams):
 def player_statuses(db, players, seasons):
     return {
         "p1": PlayerStatusFactory.create_batch(
-            size=2, player=players[0], season=factory.Iterator(seasons)
+            size=2, player=players[0], season=Iterator(seasons)
         ),
         "p2": PlayerStatusFactory.create_batch(
-            size=2, player=players[1], season=factory.Iterator(seasons)
+            size=2, player=players[1], season=Iterator(seasons)
         ),
     }
 
@@ -96,6 +96,6 @@ def _picks(player, weeks, teams):
     return PickFactory.create_batch(
         size=5,
         player=player,
-        week=factory.Iterator(weeks),
-        team=factory.Iterator(teams),
+        week=Iterator(weeks),
+        team=Iterator(teams),
     )

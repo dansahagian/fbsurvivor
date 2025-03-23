@@ -5,6 +5,7 @@ import sentry_sdk
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from jwt import ExpiredSignatureError, InvalidSignatureError, decode, encode
+from typing_extensions import Tuple
 
 from fbsurvivor.core.models import Player, Season, TokenHash
 from fbsurvivor.core.utils.emails import send_email
@@ -68,7 +69,7 @@ def check_token_and_get_player(payload, token) -> Player | None:
         return None
 
     try:
-        player.tokens.get(hash=get_token_hash(token))
+        TokenHash.objects.get(player=player, hash=get_token_hash(token))
         return player
     except TokenHash.DoesNotExist:
         return None
@@ -92,7 +93,7 @@ def get_authenticated_admin(request) -> Player | None:
     return player if player and player.is_admin else None
 
 
-def get_season_context(year: int, **kwargs) -> (Season, dict):
+def get_season_context(year: int, **kwargs) -> Tuple[Season, dict]:
     season = get_object_or_404(Season, year=year)
     return season, {
         "season": season,
