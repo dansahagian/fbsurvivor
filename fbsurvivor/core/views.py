@@ -5,7 +5,6 @@ from django.urls import reverse
 
 from fbsurvivor.core.forms import EmailForm, MessageForm, PickForm
 from fbsurvivor.core.models import (
-    Payout,
     Pick,
     Player,
     PlayerStatus,
@@ -14,6 +13,7 @@ from fbsurvivor.core.models import (
     TokenHash,
     Week,
 )
+from fbsurvivor.core.services import PayoutQuery, PickQuery, PlayerStatusQuery, WeekQuery
 from fbsurvivor.core.utils.auth import (
     authenticate_admin,
     authenticate_player,
@@ -97,11 +97,9 @@ def board(request, year: int, **kwargs):
         return send_to_latest_season_played(request, player)
 
     can_play = not player_status and not season.is_locked
-    weeks = (
-        Week.objects.for_display(season).order_by("-week_num").values_list("week_num", flat=True)
-    )
+    weeks = WeekQuery.for_display(season).order_by("-week_num").values_list("week_num", flat=True)
 
-    player_statuses_count = PlayerStatus.objects.for_season_board(season).count()
+    player_statuses_count = PlayerStatusQuery.for_season_board(season).count()
     season_board = get_board(season)
 
     try:
@@ -110,7 +108,7 @@ def board(request, year: int, **kwargs):
         playable = None
 
     context["next_week"] = None
-    if next_week := Week.objects.get_next(season):
+    if next_week := WeekQuery.get_next(season):
         try:
             player_pick = Pick.objects.get(player=player, week=next_week)
             next_pick = player_pick.team.team_code if player_pick.team else "None"
@@ -210,7 +208,7 @@ def more(request, **kwargs):
 @authenticate_player
 def payouts(request, **kwargs):
     player = kwargs["player"]
-    player_payouts = Payout.objects.for_payout_table()
+    player_payouts = PayoutQuery.for_payout_table()
 
     context = {
         "player": player,
@@ -236,7 +234,7 @@ def rules(request, **kwargs):
 def seasons(request, **kwargs):
     player = kwargs["player"]
 
-    years = list(PlayerStatus.objects.player_years(player))
+    years = list(PlayerStatusQuery.player_years(player))
 
     context = {
         "player": player,
@@ -298,9 +296,7 @@ def picks(request, year, **kwargs):
     can_retire = player_status and (not player_status.is_retired) and season.is_current
 
     context["picks"] = (
-        Pick.objects.for_player_season(player, season)
-        .select_related("week")
-        .select_related("team")
+        PickQuery.for_player_season(player, season).select_related("week").select_related("team")
     )
     context["status"] = "Retired" if player_status.is_retired else "Playing"
     context["can_retire"] = can_retire
@@ -337,19 +333,11 @@ def pick(request, year, week, **kwargs):
             if team_code:
                 choice = get_object_or_404(Team, team_code=team_code, season=season)
                 user_pick.team = choice
-                if user_pick.is_locked:
-                    messages.info(request, f"Week {week.week_num} is locked!")
-                    return redirect(reverse("picks", args=[year]))
+                messages.info(request, f"{team_code} submitted for week {week.week_num}")
             else:
                 user_pick.team = None
-
+                messages.info(request, f"No team submitted for week {week.week_num}")
             user_pick.save()
-            team_code = user_pick.team.team_code if user_pick.team else "No team "
-            messages.info(
-                request,
-                f"{team_code} submitted for week {week.week_num}",
-            )
-
         else:
             messages.info(request, "Bad form submission")
 
@@ -365,7 +353,7 @@ def manager(request, year, **kwargs):
 @authenticate_admin
 def paid(request, year, **kwargs):
     season, context = get_season_context(year, **kwargs)
-    player_statuses = PlayerStatus.objects.paid_for_season(season).prefetch_related("player")
+    player_statuses = PlayerStatusQuery.paid_for_season(season).prefetch_related("player")
     context["player_statuses"] = player_statuses
     return render(request, "paid.html", context=context)
 
@@ -383,8 +371,8 @@ def user_paid(request, year, username, **kwargs):
 @authenticate_admin
 def results(request, year, **kwargs):
     season, context = get_season_context(year, **kwargs)
-    current_week = Week.objects.get_current(season)
-    teams = Pick.objects.for_results(current_week)
+    current_week = WeekQuery.get_current(season)
+    teams = PickQuery.for_results(current_week)
 
     context["week"] = current_week
     context["teams"] = teams
@@ -398,8 +386,8 @@ def result(request, year, week, team, outcome, **kwargs):
     week = get_object_or_404(Week, season=season, week_num=week)
 
     team = get_object_or_404(Team, team_code=team, season=season)
-    Pick.objects.for_result_updates(week, team).update(result=outcome)
-    Pick.objects.for_no_picks(week).update(result="L")
+    PickQuery.for_result_updates(week, team).update(result=outcome)
+    PickQuery.for_no_picks(week).update(result="L")
 
     messages.info(request, f"Picks for week {week.week_num} of {team} updated!")
 

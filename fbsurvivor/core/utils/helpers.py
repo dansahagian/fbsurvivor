@@ -1,12 +1,14 @@
+from typing import Dict, Tuple
+
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 
 from fbsurvivor.core.models import Board, Pick, Player, PlayerStatus, Season
-from fbsurvivor.core.services import SeasonService
+from fbsurvivor.core.services import PickQuery, PlayerStatusQuery, SeasonService
 
 
-def get_player_context(player: Player, year: int) -> (Season, PlayerStatus, dict):
+def get_player_context(player: Player, year: int) -> Tuple[Season, PlayerStatus | None, dict]:
     season = get_object_or_404(Season, year=year)
 
     try:
@@ -83,16 +85,16 @@ def get_board(season: Season):
 
 
 def cache_board(season: Season) -> bool:
-    ps = PlayerStatus.objects.for_season_board(season).select_related("player")
+    ps = PlayerStatusQuery.for_season_board(season).select_related("player")
     pick_data = [
-        (x, list(Pick.objects.for_board(x.player, season).select_related("team"))) for x in ps
+        (x, list(PickQuery.for_board(x.player, season).select_related("team"))) for x in ps
     ]
 
     r = 1
     for row in pick_data:
         player_status, picks = row
 
-        defaults = {"ranking": r}
+        defaults: Dict[str, int | str | None] = {"ranking": r}
         for pick in picks:
             defaults[f"pick_{pick.week.week_num:02}"] = pick.team.team_code if pick.team else None
             defaults[f"result_{pick.week.week_num:02}"] = pick.result if pick else None

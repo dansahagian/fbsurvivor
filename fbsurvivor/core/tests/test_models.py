@@ -1,6 +1,7 @@
 import pytest
 
-from fbsurvivor.core.models import Pick, PlayerStatus, Week
+from fbsurvivor.core.models import Pick
+from fbsurvivor.core.services import PickQuery, PlayerStatusQuery, WeekQuery
 
 
 @pytest.fixture
@@ -18,7 +19,7 @@ class TestPicks:
         p1 = players[0]
         this_season = seasons[1]
 
-        qs = Pick.objects.for_player_season(p1, this_season)
+        qs = PickQuery.for_player_season(p1, this_season)
 
         assert list(qs) == picks["p1"]["this_season"]
 
@@ -26,7 +27,7 @@ class TestPicks:
         p1 = players[0]
         this_season = seasons[1]
 
-        qs = Pick.objects.for_board(p1, this_season)
+        qs = PickQuery.for_board(p1, this_season)
         picks = list(reversed(picks["p1"]["this_season"]))
 
         assert list(qs) == picks[1:]  # latest pick isn't locked
@@ -36,14 +37,14 @@ class TestPicks:
         team1 = picks["p1"]["this_season"][0].team.team_code
         team2 = picks["p2"]["this_season"][0].team.team_code
 
-        qs = Pick.objects.for_results(first_week)
+        qs = PickQuery.for_results(first_week)
         assert list(qs) == sorted([team1, team2])
 
     def test_pick_for_result_updates(self, db, weeks, picks):
         first_week = weeks["this_season"][0]
         team = picks["p1"]["this_season"][0].team
 
-        qs = Pick.objects.for_result_updates(first_week, team)
+        qs = PickQuery.for_result_updates(first_week, team)
         assert qs.count() == 1
 
 
@@ -54,13 +55,13 @@ class TestReminders:
         pick.save()
 
     def test_for_email_reminders_with_picks(self, db, current_week):
-        assert PlayerStatus.objects.for_email_reminders(current_week).count() == 0
+        assert PlayerStatusQuery.for_email_reminders(current_week).count() == 0
 
     def test_for_email_reminders_no_pick(self, db, current_week, players):
         self.clear_pick(players[0], current_week)
         self.clear_pick(players[1], current_week)
 
-        emails = list(PlayerStatus.objects.for_email_reminders(current_week))
+        emails = list(PlayerStatusQuery.for_email_reminders(current_week))
 
         assert emails == [players[0].email, players[1].email]
 
@@ -72,7 +73,7 @@ class TestReminders:
         player_status.is_retired = True
         player_status.save()
 
-        emails = list(PlayerStatus.objects.for_email_reminders(current_week))
+        emails = list(PlayerStatusQuery.for_email_reminders(current_week))
 
         assert emails == [players[1].email]
 
@@ -83,22 +84,22 @@ class TestReminders:
         players[1].has_email_reminders = False
         players[1].save()
 
-        emails = list(PlayerStatus.objects.for_email_reminders(current_week))
+        emails = list(PlayerStatusQuery.for_email_reminders(current_week))
 
         assert emails == [players[0].email]
 
 
 class TestWeeks:
     def test_week_for_display(self, this_season, weeks):
-        qs = Week.objects.for_display(this_season)
+        qs = WeekQuery.for_display(this_season)
         assert list(qs) == weeks["this_season"][:4]
 
     def test_week_get_current(self, this_season, weeks):
-        qs = Week.objects.get_current(this_season)
+        qs = WeekQuery.get_current(this_season)
         assert qs == weeks["this_season"][3]
 
     def test_week_get_next(self, this_season, weeks):
-        qs = Week.objects.get_next(this_season)
+        qs = WeekQuery.get_next(this_season)
         assert qs == weeks["this_season"][4]
 
     def test_week_is_locked(self, weeks):

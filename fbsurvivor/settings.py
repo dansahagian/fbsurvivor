@@ -134,10 +134,10 @@ STATICFILES_DIRS = [BASE_DIR / "fbsurvivor/static"]
 STATIC_URL = "/static/"
 STATIC_ROOT = "/srv/www/fbsurvivor/static/"
 
-SMTP_SERVER = config("SMTP_SERVER", "")
-SMTP_SENDER = config("SMTP_SENDER", "")
-SMTP_USER = config("SMTP_USER", "")
-SMTP_PASSWORD = config("SMTP_PASSWORD", "")
+SMTP_SERVER = config("SMTP_SERVER", "", cast=str)
+SMTP_SENDER = config("SMTP_SENDER", "", cast=str)
+SMTP_USER = config("SMTP_USER", "", cast=str)
+SMTP_PASSWORD = config("SMTP_PASSWORD", "", cast=str)
 SMTP_PORT = config("SMTP_PORT", 465)
 
 if ENV == "dev":
@@ -199,7 +199,7 @@ def filter_transactions(event, hint):
 
 
 sentry_sdk.init(
-    dsn=config("SENTRY_DSN", ""),
+    dsn=config("SENTRY_DSN", ""),  # pyright: ignore
     integrations=[DjangoIntegration()],
     before_send=before_send,
     before_send_transaction=filter_transactions,
@@ -214,5 +214,5 @@ sentry_sdk.init(
     # of sampled transactions.
     # We recommend adjusting this value in production.
     profiles_sample_rate=1.0,
-    environment=ENV,
+    environment=ENV,  # pyright: ignore
 )
