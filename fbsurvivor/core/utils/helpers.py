@@ -28,7 +28,7 @@ def get_player_context(player: Player, year: int) -> Tuple[Season, PlayerStatus 
 def send_to_latest_season_played(request, player: Player):
     ps = PlayerStatus.objects.filter(player=player).order_by("-season__year")
     if ps:
-        latest = ps[0].season.year
+        latest = ps[0].season.year  # type: ignore
         messages.info(request, f"No record for the requested year. Here is {latest}")
         return redirect(reverse("board", args=[latest]))
     else:
@@ -59,7 +59,7 @@ def update_player_records(year: int) -> int:
     try:
         season = Season.objects.get(year=year)
         player_statuses = PlayerStatus.objects.filter(season=season)
-        updates = [update_record(ps) for ps in player_statuses]
+        updates = [update_record(ps) for ps in player_statuses]  # type: ignore
         return len(updates)
     except Season.DoesNotExist:
         return 0
@@ -114,6 +114,6 @@ def cache_current_board() -> bool:
 
 
 def cache_boards() -> bool:
-    for season in Season.objects.all():
+    for season in Season.objects.all():  # type: ignore
         cache_board(season)
     return True

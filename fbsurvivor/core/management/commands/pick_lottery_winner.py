@@ -31,11 +31,11 @@ class Command(BaseCommand):
         )
 
         hat = []
-        for p in ps:
+        for p in ps:  # type: Ignore
             hat.extend([p.player.username] * p.win_count)
 
         total = len(hat)
-        for p in ps:
+        for p in ps:  # type: Ignore
             print(f"{p.player}: {round(p.win_count / total * 100, 2)}%")
 
         print(f"And the winner is... {choice(hat)}\n\n")

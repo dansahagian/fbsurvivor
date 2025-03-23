@@ -16,12 +16,11 @@ def year(seasons):
     return seasons[1].year
 
 
-def test_get_player_info_and_context(players, seasons, player_statuses):
+def test_get_player_info_and_context(players, seasons, year, player_statuses):
     p1 = players[0]
-    this_season = seasons[1]
 
-    season, player_status, context = get_player_context(p1, this_season.year)
-    assert season == this_season
+    season, player_status, context = get_player_context(p1, year)
+    assert season == seasons[1]
     assert player_status == player_statuses["p1"][1]
     assert "player" in context
     assert "season" in context

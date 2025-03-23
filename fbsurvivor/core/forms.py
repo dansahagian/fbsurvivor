@@ -20,16 +20,18 @@ class PickForm(forms.Form):
             player=player, week__season=season, team__isnull=False
         ).values_list("team__team_code", flat=True)
 
+        teams = (
+            Team.objects.filter(season=season)
+            .exclude(bye_week=week.week_num)
+            .exclude(team_code__in=picks)
+            .order_by("team_code")
+        )
+
         choices = [("", "--")]
         choices.extend(
             [
                 (team.team_code, f"{team.team_code} ({team.name})")
-                for team in (
-                    Team.objects.filter(season=season)
-                    .exclude(bye_week=week.week_num)
-                    .exclude(team_code__in=picks)
-                    .order_by("team_code")
-                )
+                for team in teams  # type: ignore
                 if not team.is_locked(week)
             ]
         )

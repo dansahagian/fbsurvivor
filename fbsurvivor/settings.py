@@ -132,7 +132,7 @@ USE_TZ = True
 HTML_MINIFY = True
 STATICFILES_DIRS = [BASE_DIR / "fbsurvivor/static"]
 STATIC_URL = "/static/"
-STATIC_ROOT = "/srv/www/fbsurvivor/static/"
+STATIC_ROOT = "/srv/www/fbsurvivor/static/"  # noqa
 
 SMTP_SERVER = config("SMTP_SERVER", "", cast=str)
 SMTP_SENDER = config("SMTP_SENDER", "", cast=str)
@@ -177,7 +177,7 @@ def before_send(event, hint):
         return event
 
 
-def filter_transactions(event, hint):
+def filter_transactions(event, hint):  # noqa
     request = event.get("request")
     if not request:
         return None

@@ -98,7 +98,7 @@ def get_reminder_message(season: Season, next_week: Week) -> str | None:
 
     results = {}
 
-    for lock in early_locks:
+    for lock in early_locks:  # type: ignore
         if results.get(lock.lock_datetime):
             results[lock.lock_datetime].append(lock.team.team_code)
         else:
