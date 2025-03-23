@@ -1,7 +1,5 @@
 import arrow
 from django.db import models
-from django.db.models import Sum
-from django.db.models.functions import Lower
 
 
 class Player(models.Model):
@@ -49,47 +47,7 @@ class Season(models.Model):
         indexes = [models.Index(fields=["year"])]
 
 
-class PlayerStatusQuerySet(models.QuerySet):
-    def player_years(self, player):
-        return (
-            self.filter(player=player)
-            .values_list("season__year", flat=True)
-            .order_by("-season__year")
-        )
-
-    def for_season_board(self, season):
-        return (
-            self.filter(season=season)
-            .annotate(lower=Lower("player__username"))
-            .order_by("-is_survivor", "is_retired", "-win_count", "loss_count", "lower")
-        )
-
-    def paid_for_season(self, season):
-        return (
-            self.filter(season=season)
-            .annotate(lower=Lower("player__username"))
-            .order_by("-is_paid", "lower")
-        )
-
-    def for_reminders(self, week):
-        return self.filter(
-            season=week.season,
-            is_retired=False,
-            player__pick__week=week,
-            player__pick__team__isnull=True,
-        )
-
-    def for_email_reminders(self, week):
-        return (
-            self.for_reminders(week)
-            .filter(player__has_email_reminders=True)
-            .values_list("player__email", flat=True)
-        )
-
-
 class PlayerStatus(models.Model):
-    objects = PlayerStatusQuerySet.as_manager()
-
     player = models.ForeignKey(Player, on_delete=models.DO_NOTHING)
     season = models.ForeignKey(Season, on_delete=models.DO_NOTHING)
     is_paid = models.BooleanField(default=False)
@@ -109,19 +67,7 @@ class PlayerStatus(models.Model):
         indexes = [models.Index(fields=["player", "season"])]
 
 
-class PayoutQuerySet(models.QuerySet):
-    def for_payout_table(self):
-        return (
-            self.values("player")
-            .annotate(total=Sum("amount"))
-            .order_by("-total")
-            .values("player__username", "total", "player__notes")
-        )
-
-
 class Payout(models.Model):
-    objects = PayoutQuerySet.as_manager()
-
     player = models.ForeignKey(Player, on_delete=models.DO_NOTHING)
     season = models.ForeignKey(Season, on_delete=models.DO_NOTHING)
     amount = models.DecimalField(max_digits=6, decimal_places=2)
@@ -134,28 +80,7 @@ class Payout(models.Model):
         verbose_name_plural = "payouts"
 
 
-class WeekQuerySet(models.QuerySet):
-    def for_display(self, season):
-        return self.filter(
-            season=season,
-            lock_datetime__lte=arrow.now().datetime,
-        ).order_by("week_num")
-
-    def get_current(self, season):
-        qs = self.for_display(season)
-        return qs.last() if qs else None
-
-    def get_next(self, season):
-        qs = self.filter(
-            season=season,
-            lock_datetime__gt=arrow.now().datetime,
-        ).order_by("week_num")
-        return qs.first() if qs else None
-
-
 class Week(models.Model):
-    objects = WeekQuerySet.as_manager()
-
     season = models.ForeignKey(Season, on_delete=models.DO_NOTHING)
     week_num = models.PositiveSmallIntegerField(db_index=True)
     lock_datetime = models.DateTimeField(db_index=True, null=True)
@@ -204,36 +129,7 @@ class Lock(models.Model):
         models.UniqueConstraint(fields=["week", "team"], name="unique_lock")
 
 
-class PickQuerySet(models.QuerySet):
-    def for_player_season(self, player, season):
-        return self.filter(player=player, week__season=season).order_by("week__week_num")
-
-    def for_board(self, player, season):
-        return (
-            self.for_player_season(player, season)
-            .order_by("-week__week_num")
-            .filter(
-                week__lock_datetime__lte=arrow.now().datetime,
-            )
-        )
-
-    def for_results(self, week):
-        return (
-            self.filter(week=week, result__isnull=True, team__isnull=False)
-            .values_list("team__team_code", flat=True)
-            .distinct()
-        )
-
-    def for_result_updates(self, week, team):
-        return self.filter(week=week, team=team, result__isnull=True)
-
-    def for_no_picks(self, week):
-        return self.filter(week=week, team__isnull=True, result__isnull=True)
-
-
 class Pick(models.Model):
-    objects = PickQuerySet.as_manager()
-
     result_choices = [
         ("W", "WIN"),
         ("L", "LOSS"),

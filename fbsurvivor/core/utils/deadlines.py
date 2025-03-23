@@ -3,7 +3,7 @@ from datetime import datetime
 import arrow
 
 from fbsurvivor.core.models import Lock, Pick, PlayerStatus, Season, Week
-from fbsurvivor.core.services import SeasonService
+from fbsurvivor.core.services import SeasonService, WeekQuery
 
 
 def _zero_pad_number(number):
@@ -66,7 +66,7 @@ def get_weekly_deadline(season: Season, next_week: Week) -> datetime | None:
 
 
 def get_next_deadline(season):
-    next_week: Week = Week.objects.get_next(season)
+    next_week = WeekQuery.get_next(season)
     if not next_week:
         return None
 
@@ -77,7 +77,7 @@ def get_next_deadline(season):
 
 
 def get_picks_count_display(season: Season) -> str | None:
-    next_week: Week = Week.objects.get_next(season)
+    next_week = WeekQuery.get_next(season)
     if not next_week:
         return None
 

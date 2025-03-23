@@ -18,15 +18,20 @@ def send_email(subject, recipients, message) -> None:
         log_email(subject, recipients)
         return None
 
+    sender = str(SMTP_SENDER)
+    server = str(SMTP_SERVER)
+    user = str(SMTP_USER)
+    passwd = str(SMTP_PASSWORD)
+
     msg = MIMEText(message)
     msg["Subject"] = subject
-    msg["From"] = SMTP_SENDER
-    msg["To"] = SMTP_SENDER
+    msg["From"] = sender
+    msg["To"] = sender
 
-    conn = smtplib.SMTP_SSL(SMTP_SERVER)
-    conn.login(SMTP_USER, SMTP_PASSWORD)
+    conn = smtplib.SMTP_SSL(server)
+    conn.login(user, passwd)
     try:
-        conn.sendmail(SMTP_SENDER, recipients, msg.as_string())
+        conn.sendmail(sender, recipients, msg.as_string())
     finally:
         conn.quit()
 
