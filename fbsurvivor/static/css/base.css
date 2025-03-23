@@ -10,7 +10,7 @@
 html {
     -webkit-text-size-adjust: 100%;
     background: var(--background);
-    font-family: 'Roboto Mono';
+    font-family: 'Roboto Mono', ui-monospace;
     letter-spacing: .01em;
 }
 
@@ -94,15 +94,6 @@ li a {
     color: var(--body-color);
 }
 
-.small {
-    font-size: .8em;
-}
-
-.resizedTextBox {
-    width: 15em;
-    height: 1.5em;
-}
-
 .notfound {
     font-size: 1.50em;
     font-weight: 800;
@@ -134,7 +125,7 @@ li a {
 
 .logo a {
     text-decoration: none;
-    padding-left: 0px;
+    padding-left: 0;
 }
 
 .vertical-links li {

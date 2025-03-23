@@ -160,7 +160,7 @@ def play(request, year: int, **kwargs):
     if request.method == "POST":
         PlayerStatus.objects.create(player=player, season=season)
         weeks = Week.objects.filter(season=season)
-        player_picks = [Pick(player=player, week=week) for week in weeks]
+        player_picks = [Pick(player=player, week=week) for week in weeks]  # type: Ignore
         Pick.objects.bulk_create(player_picks)
         cache_board(season)
         messages.info(request, f"Good luck in the {year} season!")

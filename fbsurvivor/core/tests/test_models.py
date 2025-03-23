@@ -15,17 +15,15 @@ def this_season(seasons):
 
 
 class TestPicks:
-    def test_pick_for_player_season(self, db, players, seasons, picks):
+    def test_pick_for_player_season(self, db, players, seasons, this_season, picks):
         p1 = players[0]
-        this_season = seasons[1]
 
         qs = PickQuery.for_player_season(p1, this_season)
 
         assert list(qs) == picks["p1"]["this_season"]
 
-    def test_pick_for_player_season_locked(self, db, players, seasons, picks):
+    def test_pick_for_player_season_locked(self, db, players, seasons, this_season, picks):
         p1 = players[0]
-        this_season = seasons[1]
 
         qs = PickQuery.for_board(p1, this_season)
         picks = list(reversed(picks["p1"]["this_season"]))
@@ -49,7 +47,8 @@ class TestPicks:
 
 
 class TestReminders:
-    def clear_pick(self, player, week):
+    @staticmethod
+    def clear_pick(player, week):
         pick = Pick.objects.get(player=player, week=week)
         pick.team = None
         pick.save()
