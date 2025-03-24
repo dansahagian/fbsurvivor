@@ -160,7 +160,7 @@ def play(request, year: int, **kwargs):
     if request.method == "POST":
         PlayerStatus.objects.create(player=player, season=season)
         weeks = Week.objects.filter(season=season)
-        player_picks = [Pick(player=player, week=week) for week in weeks]  # type: ignore
+        player_picks = [Pick(player=player, week=week) for week in weeks]
         Pick.objects.bulk_create(player_picks)
         cache_board(season)
         messages.info(request, f"Good luck in the {year} season!")
@@ -175,7 +175,7 @@ def play(request, year: int, **kwargs):
 @authenticate_player
 def retire(request, year, **kwargs):
     player = kwargs["player"]
-    season, player_status, context = get_player_context(player, year)
+    season, player_status, _context = get_player_context(player, year)
 
     if not player_status:
         messages.info(request, "You can NOT retire from a season you didn't play!")
@@ -308,7 +308,7 @@ def picks(request, year, **kwargs):
 @authenticate_player
 def pick(request, year, week, **kwargs):
     player = kwargs["player"]
-    season, player_status, context = get_player_context(player, year)
+    season, _player_status, context = get_player_context(player, year)
 
     week = get_object_or_404(Week, season=season, week_num=week)
 
@@ -346,7 +346,7 @@ def pick(request, year, week, **kwargs):
 
 @authenticate_admin
 def manager(request, year, **kwargs):
-    season, context = get_season_context(year, **kwargs)
+    _season, context = get_season_context(year, **kwargs)
     return render(request, "manager.html", context=context)
 
 
@@ -360,7 +360,7 @@ def paid(request, year, **kwargs):
 
 @authenticate_admin
 def user_paid(request, year, username, **kwargs):
-    season, context = get_season_context(year, **kwargs)
+    season, _context = get_season_context(year, **kwargs)
     ps = get_object_or_404(PlayerStatus, player__username=username, season=season)
     ps.is_paid = True
     ps.save()
@@ -382,7 +382,7 @@ def results(request, year, **kwargs):
 
 @authenticate_admin
 def result(request, year, week, team, outcome, **kwargs):
-    season, context = get_season_context(year, **kwargs)
+    season, _context = get_season_context(year, **kwargs)
     week = get_object_or_404(Week, season=season, week_num=week)
 
     team = get_object_or_404(Team, team_code=team, season=season)
@@ -407,7 +407,7 @@ def remind(request, year, **kwargs):
 
 @authenticate_admin
 def get_players(request, year, **kwargs):
-    season, context = get_season_context(year, **kwargs)
+    _season, context = get_season_context(year, **kwargs)
     context["players"] = (
         Player.objects.values_list("username", flat=True).distinct().order_by("username")
     )

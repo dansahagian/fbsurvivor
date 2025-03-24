@@ -10,7 +10,7 @@ from fbsurvivor.core.utils.emails import send_email
 class PlayerService:
     @staticmethod
     def create(username: str, email: str):
-        player, created = Player.objects.get_or_create(username=username, email=email)
+        _, created = Player.objects.get_or_create(username=username, email=email)
 
         if created:
             ps = f"If you didn't sign up, please email Dan at {settings.CONTACT}"
