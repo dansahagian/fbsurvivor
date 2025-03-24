@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-uv run mypy . --config-file=mypy.ini

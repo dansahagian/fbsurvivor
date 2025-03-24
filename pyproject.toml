@@ -43,8 +43,13 @@ exclude = [".git", ".pytest_cache", ".ruff_cache", "venv", ".venv"]
 select = ["C", "E", "F", "W"]
 
 [tool.pyright]
+venvPath = "."
+venv = ".venv"
 include = ["fbsurvivor"]
 exclude = ["**/__pycache__", "**/migrations", ".venv", "venv"]
 typeCheckingMode = "basic"
-reportMissingImports = true
+reportMissingImports = "error"
+reportUnusedImports = "error"
+reportUnusedVariable = "error"
+reportUnnecessaryTypeIgnoreComment = "error"
 reportMissingTypeStubs = false

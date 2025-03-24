@@ -31,7 +31,7 @@ class PickForm(forms.Form):
         choices.extend(
             [
                 (team.team_code, f"{team.team_code} ({team.name})")
-                for team in teams  # type: ignore
+                for team in teams
                 if not team.is_locked(week)
             ]
         )
