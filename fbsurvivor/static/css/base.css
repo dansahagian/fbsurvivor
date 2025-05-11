@@ -132,3 +132,81 @@ td {
 .picks a {
     text-decoration: none;
 }
+
+.pick-form-container {
+    background-color: --var(--table-header);
+    border-radius: 8px;
+    max-width: 200px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper select,
+.pick-select {
+    appearance: none;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-family: "Roboto Mono", ui-monospace;
+    border-radius: 6px;
+    border: 2px solid var(--table-lines);
+    background-color: var(--background);
+    color: var(--color);
+    cursor: pointer;
+}
+
+.select-wrapper::after {
+    content: "▼";
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 0.8rem;
+    color: var(--color);
+    opacity: 0.7;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+}
+
+.submit-button {
+    background-color: var(--win-color);
+    color: var(--background);
+    border: none;
+    border-radius: 6px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    font-family: "Roboto Mono", ui-monospace;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.submit-button:hover {
+    opacity: 0.9;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.submit-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}

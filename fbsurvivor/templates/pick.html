@@ -1,14 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
-    Week {{ pick.week.week_num|stringformat:"02d" }}
-    <br>
-    Current Pick: {% if pick.team.team_code %}{{ pick.team.team_code }}{% endif %}
-    <br>
-    <form action="{% url 'pick' season.year pick.week.week_num %}" method="POST">
-        {% csrf_token %}
-        Choose Pick:
-        {{ form.team }}
-        <br><br>
-        <input class="blue-button" type="submit" value="Submit" />
-    </form>
+    <div class="container">
+        {{ season.description }} Week {{ pick.week.week_num|stringformat:"02d" }}
+        <div class="container">
+            <div class="pick-form-container">
+                <form action="{% url 'pick' season.year pick.week.week_num %}" method="POST" class="modern-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="{{ form.team.id_for_label }}"></label>
+                        <div class="select-wrapper">
+                            {{ form.team }}
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="submit-button">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}
