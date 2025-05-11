@@ -2,11 +2,11 @@
 
 :root {
     --background: rgb(31, 32, 35);
-    --body-color: rgb(228 228 231);
+    --color: rgb(228 228 231);
     --link-color: #81d4fa;
-    --message-color: red;
-    --win-color: #93f8a0;
-    --loss-color: #ff4f4f;
-    --red-button: red;
-    --blue-button: #2a71f5;
+    --win-color: #92e6a7;
+    --loss-color: #ec8385;
+    /* Tables */
+    --table-header: #343a40;
+    --table-lines: #343a40;
 }

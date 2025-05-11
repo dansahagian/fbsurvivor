@@ -12,74 +12,85 @@
             {% endif %}
         {% endif %}
         {% if player_status %}
-            {% if not player_status.is_paid %}
-                <div class="messages">
-                    <strong>Unpaid - Venmo $30 to {{ venmo }}</strong>
-                </div>
-                <br>
-            {% endif %}
-            {% if next_week and next_pick%}
-                Week {{ next_week|stringformat:"02d" }} Pick: <a href="{% url 'pick' season.year next_week %}">{{ next_pick }}</a>
-                <br><br>
-            {% endif %}
-            {% if add_on_season %}
-                <div class="season">
-                    <a href="{% url 'board' add_on_season.year %}">Add-On Season</a>
-                </div>
-                <br>
-            {% endif %}
-            <table>
-                <tr>
-                    <th>#</th>
-                    <th>{{ season.description }}</th>
-                    <th>Recs</th>
-                    {% if board %}
-                        {% for week in weeks %}
-                            <th>{{ week|stringformat:"02d" }}</th>
-                        {% endfor %}
-                    {% endif %}
-                </tr>
-                {% for row in board %}
-                    {% if row.player_status.player == player %}
-                        {% if player.is_dark_mode %}
-                            <tr style="border: 3px solid white;">
-                        {% else %}
-                            <tr style="border: 3px solid black;">
-                        {% endif %}
-                    {% else %}
+            <div class="container">
+                {{ season.description }}
+                {% if player_status.is_paid %}
+                    > <span class="paid">Paid</span>
+                {% else %}
+                    > <span class="unpaid">Unpaid</span>
+                {% endif %}
+                > <a class="pill picks" href="{% url 'picks' season.year %}">Picks</a>
+                {% if next_week and next_pick%}
+                    > <a class="pill picks" href="{% url 'pick' season.year next_week %}">{{ next_pick }}</a>
+                {% endif %}
+                <div class="container">
+                    <table>
                         <tr>
-                    {% endif %}
-                        <td>{{ row.ranking|stringformat:"02d" }}</td>
-                        <td style="text-align: left; white-space: nowrap;">{{ row.player_status.player.username }}</td>
-                        <td>{{ row.player_status.win_count }}-{{ row.player_status.loss_count }}</td>
-                        {% for week in weeks %}
-                            <td
-                                {% if row|get_result_week:week == "R" %}
-                                    class="none"
-                                {% elif row|get_result_week:week == "W" %}
-                                    class="win"
-                                {% elif row|get_result_week:week == "L" %}
-                                    class="loss"
-                                {% endif %}
-                            >
-                            {% if row|get_result_week:week == "R" %}
-                                🌴
-                            {% elif row|get_pick_week:week %}
-                                {% if row|get_result_week:week == "L" %}
-                                    ⚔{{ row|get_pick_week:week }}
-                                {% elif row|get_result_week:week == "W" %}
-                                    ✓{{ row|get_pick_week:week }}
-                                {% else %}
-                                    {{ row|get_pick_week:week }}
-                                {% endif %}
-                                
-                            {% else %}
-                                🤬
+                            <th>Player Name</th>
+                            <th>Recs</th>
+                            {% if board %}
+                                {% for week in weeks %}
+                                    <th>{{ week|stringformat:"02d" }}</th>
+                                {% endfor %}
                             {% endif %}
-                            </td>
-                        {% endfor %}
                         </tr>
-                {% endfor %}
-            </table>
+                        {% for row in board %}
+                            {% if row.player_status.player == player %}
+                                <tr class="user-row">
+                            {% else %}
+                                <tr>
+                            {% endif %}
+                                <td style="white-space: nowrap;">{{ row.player_status.player.username }}</td>
+                                <td>{{ row.player_status.win_count }}-{{ row.player_status.loss_count }}</td>
+                                {% for week in weeks %}
+                                    <td
+                                        {% if row|get_result_week:week == "R" %}
+                                            class="none"
+                                        {% elif row|get_result_week:week == "W" %}
+                                            class="win"
+                                        {% elif row|get_result_week:week == "L" %}
+                                            class="loss"
+                                        {% endif %}
+                                    >
+                                    {% if row|get_result_week:week == "R" %}
+                                        🌴
+                                    {% elif row|get_pick_week:week %}
+                                        {% if row|get_result_week:week == "L" %}
+                                            <strike>{{ row|get_pick_week:week }}</strike>
+                                        {% elif row|get_result_week:week == "W" %}
+                                            {{ row|get_pick_week:week }}
+                                        {% else %}
+                                            {{ row|get_pick_week:week }}
+                                        {% endif %}
+
+                                    {% else %}
+                                        🤬
+                                    {% endif %}
+                                    </td>
+                                {% endfor %}
+                                </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
         {% endif %}
+        <div class="container">
+            <div class="vertical-link">
+                {% if player.is_admin and season %}
+                    <a href="{% url 'manager' season.year %}">admin</a>
+                {% endif %}
+            </div>
+            <div class="vertical-link"><a href="{% url 'seasons' %}">seasons</a></div>
+            <div class="vertical-link"><a href="{% url 'payouts' %}">payouts</a></div>
+            <div class="vertical-link"><a href="{% url 'rules' %}">rules</a></div>
+            <div class="vertical-link"><a href="{% url 'theme' %}">switch theme</a></div>
+            <div class="vertical-link">
+                {% if player.has_email_reminders %}
+                    <a href="{% url 'update_reminders' 'email' 'off' %}">disable reminders</a>
+                {% else %}
+                    <a href="{% url 'update_reminders' 'email' 'on' %}">enable reminders</a>
+                {% endif %}
+            </div>
+            <div class="vertical-link"><a href="{% url 'logout' %}">logout</a></div>
+        </div>
     {% endblock %}
