@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-    <h3>Seasons</h3>
-    <div class="vertical-links">
-        <ul>
-            {% for year in years %}
-                <li><a href="{% url 'board' year %}">{{ year }}</a></li>
-            {% endfor %}
-        </ul>
+    <div class="container">
+        Seasons
+        {% for year in years %}
+            <div class="vertical-link"><a href="{% url 'board' year %}">{{ year }}</a></div>
+        {% endfor %}
     </div>
+
+
 {% endblock %}

@@ -1,6 +1,5 @@
 from typing import Dict, Tuple
 
-from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 
@@ -29,10 +28,8 @@ def send_to_latest_season_played(request, player: Player):
     ps = PlayerStatus.objects.filter(player=player).order_by("-season__year")
     if ps:
         latest = ps[0].season.year
-        messages.info(request, f"No record for the requested year. Here is {latest}")
         return redirect(reverse("board", args=[latest]))
     else:
-        messages.info(request, "We don't have a record of you playing any season.")
         return redirect(reverse("login"))
 
 

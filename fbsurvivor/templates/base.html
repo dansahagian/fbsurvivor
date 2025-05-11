@@ -18,33 +18,11 @@
         <meta name="viewport" content="initial-scale=1.0">
     </head>
     <body>
-        {% if player %}
-            <ul>
-                <li class="logo"><a href="{% url 'board_redirect' %}">Survivor</a></li>
-                {% if player.is_admin and season %}
-                    <li><a href="{% url 'manager' season.year %}">admin</a></li>
-                {% endif %}
-                {% if season %}
-                    {% if player_status %}
-                        <li><a href="{% url 'picks' season.year %}">picks</a></li>
-                    {% endif %}
-                {% endif %}
-                <li><a href="{% url 'more'%}">more</a></li>
-            </ul>
-            <br>
-            <br>
-        {% endif %}
-        {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-            <br><br>
-        {% endif %}
+        <div class="logo">
+            <a href="{% url 'board_redirect' %}">Survivor</a>
+        </div>
         <div id="content">
             {% block content %}{% endblock %}
         </div>
     </body>
 </html>
-

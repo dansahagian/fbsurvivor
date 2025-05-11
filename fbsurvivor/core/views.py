@@ -1,9 +1,8 @@
-from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from fbsurvivor.core.forms import EmailForm, MessageForm, PickForm
+from fbsurvivor.core.forms import EmailForm, PickForm
 from fbsurvivor.core.models import (
     Pick,
     Player,
@@ -31,7 +30,6 @@ from fbsurvivor.core.utils.helpers import (
     send_to_latest_season_played,
     update_player_records,
 )
-from fbsurvivor.core.utils.reminders import send_reminders
 from fbsurvivor.settings import CONTACT, VENMO
 
 
@@ -140,7 +138,6 @@ def play(request, year: int, **kwargs):
     season, player_status, context = get_player_context(player, year)
 
     if player_status:
-        messages.info(request, f"You are already playing for {year}!")
         return redirect(reverse("board", args=[year]))
 
     if season.is_locked:
@@ -163,46 +160,12 @@ def play(request, year: int, **kwargs):
         player_picks = [Pick(player=player, week=week) for week in weeks]
         Pick.objects.bulk_create(player_picks)
         cache_board(season)
-        messages.info(request, f"Good luck in the {year} season!")
 
         recipient = Player.objects.get(username="DanTheAutomator").email
         message = f"{player.username} in for {season.year}"
         send_email("Survivor New Player!", [recipient], message)
 
         return redirect(reverse("board", args=[year]))
-
-
-@authenticate_player
-def retire(request, year, **kwargs):
-    player = kwargs["player"]
-    season, player_status, _context = get_player_context(player, year)
-
-    if not player_status:
-        messages.info(request, "You can NOT retire from a season you didn't play!")
-    elif player_status.is_retired:
-        messages.info(request, f"You already retired in {year}!")
-    elif not season.is_current:
-        messages.info(request, "You can NOT retire from a past season!")
-    else:
-        player_status.is_retired = True
-        player_status.save()
-        Pick.objects.filter(player=player, week__season=season, result__isnull=True).update(
-            result="R"
-        )
-        cache_board(season)
-        messages.info(request, "You have retired. See you next year!")
-
-    return redirect(reverse("board", args=[year]))
-
-
-@authenticate_player
-def more(request, **kwargs):
-    player = kwargs["player"]
-
-    context = {
-        "player": player,
-    }
-    return render(request, "more.html", context=context)
 
 
 @authenticate_player
@@ -254,18 +217,6 @@ def theme(request, **kwargs):
 
 
 @authenticate_player
-def reminders(request, **kwargs):
-    player = kwargs["player"]
-
-    context = {
-        "player": player,
-        "contact": CONTACT,
-    }
-
-    return render(request, "reminders.html", context=context)
-
-
-@authenticate_player
 def update_reminders(request, kind, status, **kwargs):
     player = kwargs["player"]
 
@@ -281,7 +232,7 @@ def update_reminders(request, kind, status, **kwargs):
 
     player.save()
 
-    return redirect(reverse("reminders"))
+    return board_redirect(request)
 
 
 @authenticate_player
@@ -290,7 +241,6 @@ def picks(request, year, **kwargs):
     season, player_status, context = get_player_context(player, year)
 
     if not player_status:
-        messages.info(request, "You must play this season before editing picks!")
         return redirect(reverse("board", args=year))
 
     can_retire = player_status and (not player_status.is_retired) and season.is_current
@@ -316,7 +266,6 @@ def pick(request, year, week, **kwargs):
     context["pick"] = user_pick
 
     if user_pick.is_locked:
-        messages.info(request, f"Week {week.week_num} is locked!")
         return redirect(reverse("picks", args=[year]))
 
     if request.method == "GET":
@@ -333,13 +282,14 @@ def pick(request, year, week, **kwargs):
             if team_code:
                 choice = get_object_or_404(Team, team_code=team_code, season=season)
                 user_pick.team = choice
-                messages.info(request, f"{team_code} submitted for week {week.week_num}")
+                # TODO: Show a successful update!
             else:
                 user_pick.team = None
-                messages.info(request, f"No team submitted for week {week.week_num}")
+                # TODO: Show they removed their pick!
             user_pick.save()
         else:
-            messages.info(request, "Bad form submission")
+            pass
+            # TODO: Show an error page!
 
         return redirect(reverse("board", args=[year]))
 
@@ -364,7 +314,6 @@ def user_paid(request, year, username, **kwargs):
     ps = get_object_or_404(PlayerStatus, player__username=username, season=season)
     ps.is_paid = True
     ps.save()
-    messages.info(request, f"{ps.player.username} marked as paid!")
     return redirect(reverse("paid", args=[year]))
 
 
@@ -389,20 +338,10 @@ def result(request, year, week, team, outcome, **kwargs):
     PickQuery.for_result_updates(week, team).update(result=outcome)
     PickQuery.for_no_picks(week).update(result="L")
 
-    messages.info(request, f"Picks for week {week.week_num} of {team} updated!")
-
-    player_records_updated = update_player_records(year)
+    _player_records_updated = update_player_records(year)
     cache_board(season)
-    messages.info(request, f"{player_records_updated} player records updated!")
 
     return redirect(reverse("results", args=[year]))
-
-
-@authenticate_admin
-def remind(request, year, **kwargs):
-    send_reminders()
-    messages.info(request, "Reminder task kicked off")
-    return redirect(reverse("manager", args=[year]))
 
 
 @authenticate_admin
@@ -413,49 +352,3 @@ def get_players(request, year, **kwargs):
     )
 
     return render(request, "players.html", context=context)
-
-
-@authenticate_admin
-def send_message(request, year, **kwargs):
-    season, context = get_season_context(year, **kwargs)
-
-    if request.method == "GET":
-        context["form"] = MessageForm()
-        return render(request, "message.html", context=context)
-
-    if request.method == "POST":
-        form = MessageForm(request.POST)
-
-        if form.is_valid():
-            subject = form.cleaned_data["subject"]
-            message = form.cleaned_data["message"]
-
-            recipients = list(
-                Player.objects.filter(playerstatus__season=season)
-                .exclude(email="")
-                .values_list("email", flat=True)
-            )
-
-            send_email(subject, recipients, message)
-
-            return redirect(reverse("board", args=[year]))
-
-
-@authenticate_admin
-def send_message_all(request, **kwargs):
-    if request.method == "GET":
-        context = {"form": MessageForm()}
-        return render(request, "message_all.html", context=context)
-
-    if request.method == "POST":
-        form = MessageForm(request.POST)
-
-        if form.is_valid():
-            subject = form.cleaned_data["subject"]
-            message = form.cleaned_data["message"]
-
-            recipients = list(Player.objects.exclude(email="").values_list("email", flat=True))
-
-            send_email(subject, recipients, message)
-
-            return redirect(reverse("board_redirect"))

@@ -1,7 +1,8 @@
 @font-face {
-    font-family: 'Roboto Mono';
-    src: url('../fonts/RobotoMono-Regular.woff2') format('woff2'),
-         url('../fonts/RobotoMono-Regular.woff') format('woff');
+    font-family: "Roboto Mono";
+    src:
+        url("../fonts/RobotoMono-Regular.woff2") format("woff2"),
+        url("../fonts/RobotoMono-Regular.woff") format("woff");
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -10,76 +11,60 @@
 html {
     -webkit-text-size-adjust: 100%;
     background: var(--background);
-    font-family: 'Roboto Mono', ui-monospace;
-    letter-spacing: .01em;
+    font-family: "Roboto Mono", ui-monospace;
 }
 
 body {
-    font-size: .93em;
-    color: var(--body-color);
-    line-height: 1.5em;
-    padding-left: 1.0em;
-    padding-right: 1.0em;
+    color: var(--color);
+    line-height: 1.5rem;
+    max-width: 1000px;
+    text-align: left;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    font-size: 1.1rem;
 }
 
 a {
-    padding-left: .50em;
-    padding-right: .50em;
     color: var(--link-color);
 }
 
-.season a {
-    padding-left: 0.0em;
-}
-
 table {
-    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    border-spacing: 0;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 1);
 }
 
 table th {
-    border-bottom: 2px solid var(--body-color);
+    border-bottom: 1px solid var(--table-lines);
+    background-color: var(--table-header);
 }
 
 table tr {
-    padding-top: 1.0em;
+    padding-top: 1rem;
 }
 
-table, th, td {
-    border-bottom: 1px solid var(--body-color);
+table,
+th,
+td {
+    border-bottom: 1px solid var(--table-lines);
     border-collapse: collapse;
 }
 
-th, td {
-    padding-left: .75em;
-    padding-right: .75em;
+th,
+td {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
     text-align: left;
 }
 
-th {
-    text-align: center;
-}
-
-ul {
-    list-style-type: none;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-    padding: 0;
-    color: white;
-}
-
-li {
-    float: left;
-}
-
-li a {
-    text-align: center;
-    text-decoration: none;
-    padding-right: 1.5em;
-}
-
-.messages {
-    color: var(--message-color);
+.user-row {
+    background-color: var(--table-header);
 }
 
 .win {
@@ -91,50 +76,59 @@ li a {
 }
 
 .none {
-    color: var(--body-color);
+    color: var(--color);
 }
 
 .notfound {
-    font-size: 1.50em;
+    font-size: 1.5rem;
     font-weight: 800;
 }
 
-.red-button {
-    padding: .75em 1.0em;
-    text-decoration: none;
-    border-radius: 5em;
-    background-color: var(--red-button);
-    color: white;
-    border: none;
-}
-
-.blue-button {
-    padding: .75em 1.0em;
-    text-decoration: none;
-    border-radius: 5em;
-    background-color: var(--blue-button);
-    color: white;
-    border: none;
-}
-
 .logo {
-    font-size: 1.2em;
+    font-size: 1.3rem;
     font-weight: bold;
-    color: var(--body-color);
 }
 
 .logo a {
     text-decoration: none;
-    padding-left: 0;
+    color: var(--color);
 }
 
-.vertical-links li {
-    padding-top: 2.0em;
-    text-align: left;
-    float: none;
+.container {
+    padding-top: 2rem;
 }
 
-.center {
-    padding-top: 2.0em;
-    text-align: center;
+.small-table-container {
+    max-width: 200px;
+}
+
+.vertical-link {
+    padding-top: 2rem;
+}
+
+.vertical-link a {
+    text-decoration: none;
+}
+
+.unpaid {
+    color: var(--loss-color);
+}
+
+.paid {
+    color: var(--win-color);
+}
+
+.pill {
+    color: var(--background);
+    padding: 0.1rem 0.5rem;
+    border-radius: 8px;
+}
+
+.picks {
+    background-color: var(--link-color);
+    text-decoration: none;
+}
+
+.picks a {
+    text-decoration: none;
 }

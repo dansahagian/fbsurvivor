@@ -152,8 +152,6 @@ if ENV == "dev":
 BASE_URLS = {
     "board",
     "play",
-    "retire",
-    "more",
     "payouts",
     "rules",
     "season",
@@ -162,10 +160,7 @@ BASE_URLS = {
     "manager",
     "paid",
     "results",
-    "remind",
     "players",
-    "message",
-    "message-all",
     "reminders",
 }
 
