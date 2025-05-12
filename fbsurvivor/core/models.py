@@ -55,8 +55,6 @@ class PlayerStatus(models.Model):
     is_survivor = models.BooleanField(default=True)
     win_count = models.SmallIntegerField(default=0)
     loss_count = models.SmallIntegerField(default=0)
-    has_complete_picks = models.BooleanField(default=True)
-    has_won_gt_buy_in = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.player} - {self.season}"

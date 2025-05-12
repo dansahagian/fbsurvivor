@@ -36,15 +36,11 @@ class PlayerStatusAdmin(admin.ModelAdmin):
         "is_paid",
         "is_retired",
         "is_survivor",
-        "has_complete_picks",
-        "has_won_gt_buy_in",
     ]
     list_editable = [
         "is_paid",
         "is_retired",
         "is_survivor",
-        "has_complete_picks",
-        "has_won_gt_buy_in",
     ]
     list_filter = ["season"]
 
