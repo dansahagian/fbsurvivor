@@ -1,16 +1,20 @@
 {% extends "base.html" %}
 {% load templatetags %}
     {% block content %}
-        {% if can_play %}
-            <strong>{{ player_count }}</strong> players have joined! Will you?<br><br><br>
-                <a class="blue-button" href="{% url 'play' season.year %}">Play</a>
-            <br><br><br><br>
-        {% else %}
-            {% if playable and playable not in years %}
-                <a href="{% url 'board' playable %}">Join the {{ playable }} season!</a>
+        <div class="container">
+            {% if can_play %}
+                {{ player_count }} players have joined for {{ season.description }}.<br><br>
+                Click the button to join them!<br><br><br>
+                <a class="submit-button blue-button" href="{% url 'play' season.year %}">Play</a>
                 <br><br>
+            {% else %}
+                {% if playable and playable not in years %}
+                    <a href="{% url 'board' playable %}">Join the {{ playable }} season!</a>
+                    <br><br>
+                {% endif %}
             {% endif %}
-        {% endif %}
+        </div>
+
         {% if player_status %}
             <div class="container">
                 {{ season.description }}

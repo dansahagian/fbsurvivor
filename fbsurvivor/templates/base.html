@@ -18,9 +18,11 @@
         <meta name="viewport" content="initial-scale=1.0">
     </head>
     <body>
-        <div class="logo">
-            <a href="{% url 'board_redirect' %}">Survivor</a>
-        </div>
+        {% if player %}
+            <div class="logo">
+                <a href="{% url 'board_redirect' %}">Survivor</a>
+            </div>
+        {% endif %}
         <div id="content">
             {% block content %}{% endblock %}
         </div>

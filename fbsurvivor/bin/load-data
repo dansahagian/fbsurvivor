@@ -1,5 +1,5 @@
 #!/bin/zsh
 
-.venv/bin/python3 ./manage.py load_weeks 20241 ./uploads/20241_weeks.txt
-.venv/bin/python3 ./manage.py load_teams 20241 ./uploads/20241_teams.txt
-.venv/bin/python3 ./manage.py load_game_locks 20241 ./uploads/20241_game_locks.txt
+/home/dan/.cargo/bin/uv run python ./manage.py load_weeks 2025 ./uploads/2025_weeks.txt
+/home/dan/.cargo/bin/uv run python ./manage.py load_teams 2025 ./uploads/2025_teams.txt
+/home/dan/.cargo/bin/uv run python ./manage.py load_game_locks 2025 ./uploads/2025_game_locks.txt
