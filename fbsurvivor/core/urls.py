@@ -26,7 +26,7 @@ from fbsurvivor.core.views import (
 urlpatterns = [
     path("", login, name="login"),  # pyright: ignore
     path("logout", logout, name="logout"),
-    path("enter/<str:token>/", enter, name="enter"),
+    path("enter/<str:magic_link_id>/", enter, name="enter"),
     path("assume/<str:username>/", assume, name="assume"),
     path("board/", board_redirect, name="board_redirect"),
     path("board/<int:year>/", board, name="board"),
