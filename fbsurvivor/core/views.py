@@ -4,12 +4,13 @@ from django.urls import reverse
 
 from fbsurvivor.core.forms import EmailForm, PickForm
 from fbsurvivor.core.models import (
+    LoggedOutTokens,
+    MagicLink,
     Pick,
     Player,
     PlayerStatus,
     Season,
     Team,
-    TokenHash,
     Week,
 )
 from fbsurvivor.core.services import PayoutQuery, PickQuery, PlayerStatusQuery, WeekQuery
@@ -18,7 +19,6 @@ from fbsurvivor.core.utils.auth import (
     authenticate_player,
     create_token,
     get_season_context,
-    get_token_hash,
     send_magic_link,
 )
 from fbsurvivor.core.utils.emails import send_email
@@ -57,7 +57,17 @@ def login(request):
         return render(request, "fbsurvivor/templates/login-sent.html")
 
 
-def enter(request, token):
+def enter(request, magic_link_id):
+    try:
+        magic_link = MagicLink.objects.get(id=magic_link_id)
+    except MagicLink.DoesNotExist:
+        return render(request, "fbsurvivor/templates/magic-link-expired.html")
+
+    if magic_link.is_expired:
+        render(request, "fbsurvivor/templates/magic-link-expired.html")
+
+    token = create_token(magic_link.player)
+    magic_link.delete()
     request.session["token"] = token
 
     return redirect(reverse("board_redirect"))
@@ -65,8 +75,8 @@ def enter(request, token):
 
 @authenticate_player
 def logout(request, **kwargs):
-    if token := request.session.get("token"):
-        TokenHash.objects.get(hash=get_token_hash(token)).delete()
+    token = request.session["token"]
+    LoggedOutTokens.objects.create(id=token)
     request.session.delete("token")
     return redirect(reverse("login"))
 

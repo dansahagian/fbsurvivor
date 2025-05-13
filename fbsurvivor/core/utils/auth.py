@@ -1,19 +1,16 @@
-import hashlib
+import secrets
 
 import arrow
 import sentry_sdk
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from jwt import ExpiredSignatureError, InvalidSignatureError, decode, encode
+from jwt.exceptions import DecodeError
 from typing_extensions import Tuple
 
-from fbsurvivor.core.models import Player, Season, TokenHash
+from fbsurvivor.core.models import LoggedOutTokens, MagicLink, Player, Season
 from fbsurvivor.core.utils.emails import send_email
 from fbsurvivor.settings import DOMAIN, SECRET_KEY
-
-
-def get_token_hash(token: str) -> str:
-    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
 def create_token(player: Player) -> str:
@@ -21,8 +18,20 @@ def create_token(player: Player) -> str:
     payload = {"username": player.username, "exp": exp}
 
     token = encode(payload, SECRET_KEY, algorithm="HS256")
-    TokenHash.objects.create(hash=get_token_hash(token), player=player)
     return token
+
+
+def verify_token(token: str) -> Player | None:
+    try:
+        LoggedOutTokens.objects.get(id=token)
+        return None
+    except LoggedOutTokens.DoesNotExist:
+        try:
+            payload = decode(token, SECRET_KEY, algorithms="HS256")
+            username = payload.get("username")
+            return Player.objects.get(username=username)
+        except (ExpiredSignatureError, InvalidSignatureError, Player.DoesNotExist, DecodeError):
+            return None
 
 
 def authenticate_player(view):
@@ -57,35 +66,13 @@ def authenticate_admin(view):
     return inner
 
 
-def check_token_and_get_player(payload, token) -> Player | None:
-    username = payload.get("username")
-
-    if not username:
-        return None
-
-    try:
-        player = Player.objects.get(username=username)
-    except Player.DoesNotExist:
-        return None
-
-    try:
-        TokenHash.objects.get(player=player, hash=get_token_hash(token))
-        return player
-    except TokenHash.DoesNotExist:
-        return None
-
-
 def get_authenticated_player(request) -> Player | None:
     token = request.session.get("token")
 
     if not token:
         return None
 
-    try:
-        payload = decode(token, SECRET_KEY, algorithms="HS256")
-        return check_token_and_get_player(payload, token)
-    except (ExpiredSignatureError, InvalidSignatureError):
-        return None
+    return verify_token(token)
 
 
 def get_authenticated_admin(request) -> Player | None:
@@ -102,7 +89,10 @@ def get_season_context(year: int, **kwargs) -> Tuple[Season, dict]:
 
 
 def send_magic_link(player: Player) -> None:
-    token = create_token(player)
+    magic_link = MagicLink.objects.create(id=secrets.token_urlsafe(32), player=player)
+
     subject = "Survivor Login"
-    message = f"Click the link below to login\n\n{DOMAIN}/enter/{token}"
+    link = f"{DOMAIN}/enter/{magic_link.id}"
+    message = f"Click the link below to login. It expires in 30 minutes.\n\n{link}"
+
     send_email(subject, [player.email], message)

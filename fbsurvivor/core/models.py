@@ -1,5 +1,6 @@
 import arrow
 from django.db import models
+from django.utils import timezone
 
 
 class Player(models.Model):
@@ -21,15 +22,25 @@ class Player(models.Model):
         return f"{self.username}"
 
 
-class TokenHash(models.Model):
-    hash = models.CharField(max_length=128)
+class MagicLink(models.Model):
+    id = models.CharField(max_length=64, primary_key=True, editable=False)
     player = models.ForeignKey(
-        Player, related_name="tokens", related_query_name="token", on_delete=models.CASCADE
+        Player,
+        on_delete=models.CASCADE,
+        related_name="magic_links",
+        related_query_name="magic_link",
     )
-    created_at = models.DateField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        indexes = [models.Index(fields=["hash"])]
+    @property
+    def is_expired(self):
+        expiration_time = self.created_at + timezone.timedelta(minutes=30)
+        return timezone.now() > expiration_time
+
+
+class LoggedOutTokens(models.Model):
+    id = models.CharField(max_length=1024, primary_key=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Season(models.Model):
