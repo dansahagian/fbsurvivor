@@ -1,9 +1,9 @@
 {% extends "rules.html" %}
     {% block confirm %}
-        <div>
+        <div class="container">
             <form action="{% url "play" season.year %}" method="POST">
                 {% csrf_token %}
-                <input class="blue-button" type="submit" value="Accept Rules and Play!" />
+                <input class="submit-button blue-button" type="submit" value="Accept Rules!" />
             </form>
         </div>
     {% endblock %}

@@ -17,7 +17,6 @@ html {
 body {
     color: var(--color);
     line-height: 1.5rem;
-    max-width: 1000px;
     text-align: left;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
@@ -162,7 +161,7 @@ td {
     font-size: 1rem;
     font-family: "Roboto Mono", ui-monospace;
     border-radius: 6px;
-    border: 2px solid var(--table-lines);
+    border: 2px solid var(--color);
     background-color: var(--background);
     color: var(--color);
     cursor: pointer;
@@ -190,14 +189,15 @@ td {
     background-color: var(--win-color);
     color: var(--background);
     border: none;
-    border-radius: 6px;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 1.2rem;
     font-weight: bold;
     font-family: "Roboto Mono", ui-monospace;
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 200px;
 }
 
 .submit-button:hover {
@@ -209,4 +209,38 @@ td {
 .submit-button:active {
     transform: translateY(1px);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.blue-button {
+    background-color: var(--link-color);
+    text-decoration: none;
+}
+
+.rules-header {
+    text-decoration: underline;
+}
+
+.login {
+    text-align: center;
+}
+
+.email-form {
+    width: 18em;
+    border-radius: 8px;
+    background-color: var(--background);
+    margin: 0 auto;
+    padding: 0;
+    display: flex;
+}
+
+.email-form input[type="email"] {
+    width: 90%;
+    padding: 16px 20px;
+    text-align: center;
+    font-size: 1.1rem;
+    border: 2px solid var(--color);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: var(--color);
+    font-family: "Roboto Mono", ui-monospace;
 }
