@@ -34,31 +34,23 @@ table {
     overflow: hidden;
     width: 100%;
     border-spacing: 0;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 1);
+    border: 1px solid var(--table-lines);
 }
 
 table th {
-    border-bottom: 1px solid var(--table-lines);
     background-color: var(--table-header);
 }
 
-table tr {
-    padding-top: 1rem;
-}
-
-table,
-th,
 td {
-    border-bottom: 1px solid var(--table-lines);
-    border-collapse: collapse;
+    border-top: 1px solid var(--table-lines);
 }
 
 th,
 td {
     padding-left: 1rem;
     padding-right: 1rem;
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
+    padding-top: 0.33rem;
+    padding-bottom: 0.33rem;
     text-align: left;
 }
 
