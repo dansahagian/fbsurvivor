@@ -33,25 +33,6 @@ def send_to_latest_season_played(request, player: Player):
         return redirect(reverse("login"))
 
 
-def get_add_on_season(player: Player, season: Season):
-    year = season.year * 10 + 1
-
-    try:
-        add_on_season = Season.objects.get(year=year)
-    except Season.DoesNotExist:
-        return None
-
-    try:
-        ps_add_on_season = PlayerStatus.objects.get(player=player, season=add_on_season)
-    except PlayerStatus.DoesNotExist:
-        ps_add_on_season = None
-
-    if (add_on_season.is_locked and ps_add_on_season) or not add_on_season.is_locked:
-        return add_on_season
-
-    return None
-
-
 def update_player_records(year: int) -> int:
     try:
         season = Season.objects.get(year=year)

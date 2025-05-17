@@ -24,7 +24,6 @@ from fbsurvivor.core.utils.auth import (
 from fbsurvivor.core.utils.emails import send_email
 from fbsurvivor.core.utils.helpers import (
     cache_board,
-    get_add_on_season,
     get_board,
     get_player_context,
     send_to_latest_season_played,
@@ -125,8 +124,6 @@ def board(request, year: int, **kwargs):
         except Pick.DoesNotExist:
             context["next_pick"] = None
 
-    add_on_season = get_add_on_season(player, season)
-
     context.update(
         {
             "can_play": can_play,
@@ -135,7 +132,6 @@ def board(request, year: int, **kwargs):
             "player_count": player_statuses_count,
             "playable": playable,
             "venmo": VENMO,
-            "add_on_season": add_on_season,
         }
     )
 

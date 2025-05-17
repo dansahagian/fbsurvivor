@@ -53,8 +53,8 @@ class PlayerStatusQuery:
     def player_years(player):
         return (
             PlayerStatus.objects.filter(player=player)
+            .order_by("-season__description")
             .values_list("season__year", flat=True)
-            .order_by("-season__year")
         )
 
     @staticmethod
