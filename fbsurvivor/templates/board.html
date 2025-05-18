@@ -1,21 +1,20 @@
 {% extends "base.html" %}
 {% load templatetags %}
     {% block content %}
-        <div class="container">
-            {% if can_play %}
+        {% if can_play %}
+            <div class="container">
                 {{ player_count }} players have joined for {{ season.description }}.<br><br>
                 Click the button to join them!<br><br><br>
                 <a class="submit-button blue-button" href="{% url 'play' season.year %}">Play</a>
                 <br><br>
-            {% else %}
-                {% if playable and playable not in years %}
-                    <a href="{% url 'board' playable %}">Join the {{ playable }} season!</a>
-                    <br><br>
-                {% endif %}
-            {% endif %}
-        </div>
-
+            </div>
+        {% endif %}
         {% if player_status %}
+        {% if can_buy_back %}
+            <div class="container">
+                <a href="{% url 'buy_back' season.year %}">buy back</a>
+            </div>
+        {% endif %}
             <div class="container">
                 {{ season.description }}
                 {% if player_status.is_paid %}
@@ -44,7 +43,12 @@
                             {% else %}
                                 <tr>
                             {% endif %}
-                                <td style="white-space: nowrap;">{{ row.player_status.player.username }}</td>
+                                <td style="white-space: nowrap;">
+                                    {{ row.player_status.player.username }}
+                                    {% if row.player_status.is_survivor %}
+                                    🏈
+                                    {% endif %}
+                                </td>
                                 <td>{{ row.player_status.win_count }}-{{ row.player_status.loss_count }}</td>
                                 {% for week in weeks %}
                                     <td
