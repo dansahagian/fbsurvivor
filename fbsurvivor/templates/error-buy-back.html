@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+    {% block content %}
+        <div class="container login">
+            Buy back Error<br><br>
+            You couldn't buy back. This could be because you already have, or it's past the
+            deadline.
+            <br><br>
+
+            Please send me an email if you have questions.<br><br>
+            Return to the <a href="{% url 'board_redirect' %}">Board</a>
+        </div>
+    {% endblock %}

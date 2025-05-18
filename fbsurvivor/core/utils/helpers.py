@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 
 from fbsurvivor.core.models import Board, Pick, Player, PlayerStatus, Season
-from fbsurvivor.core.services import PickQuery, PlayerStatusQuery, SeasonService
+from fbsurvivor.core.services import PickQuery, PlayerStatusQuery, SeasonService, WeekQuery
 
 
 def get_player_context(player: Player, year: int) -> Tuple[Season, PlayerStatus | None, dict]:
@@ -33,14 +33,14 @@ def send_to_latest_season_played(request, player: Player):
         return redirect(reverse("login"))
 
 
-def update_player_records(year: int) -> int:
+def update_player_records(year: int):
     try:
         season = Season.objects.get(year=year)
-        player_statuses = PlayerStatus.objects.filter(season=season)
-        updates = [update_record(ps) for ps in player_statuses]
-        return len(updates)
     except Season.DoesNotExist:
-        return 0
+        return
+
+    for ps in PlayerStatus.objects.filter(season=season):
+        update_record(ps)
 
 
 def update_record(player_status: PlayerStatus) -> bool:
@@ -95,3 +95,37 @@ def cache_boards() -> bool:
     for season in Season.objects.all():
         cache_board(season)
     return True
+
+
+def can_buy_back(
+    player_status: PlayerStatus | None,
+    player: Player,
+    season: Season,
+):
+    if not player_status:
+        return False
+
+    if player_status.did_buy_back:
+        return False
+
+    if player_status.is_survivor:
+        return False
+
+    if next_week := WeekQuery.get_next(season):
+        if next_week.is_locked:
+            return False
+
+    if not (current_week := WeekQuery.get_current(season)):
+        return False
+
+    try:
+        is_current_loss = Pick.objects.get(player=player, week=current_week).result == "L"
+    except Pick.DoesNotExist:
+        return False
+
+    has_one_loss = Pick.objects.filter(player=player, week__season=season, result="L").count() == 1
+
+    if is_current_loss and has_one_loss:
+        return True
+
+    return False

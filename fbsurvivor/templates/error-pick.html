@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+    {% block content %}
+        <div class="container login">
+            Pick Error<br><br>
+            There was an error submitting your pick. It could be locked or some other issue.
+            <br><br>
+
+            Please send me an email if you have questions.<br><br>
+            Return to the <a href="{% url 'board_redirect' %}">Board</a>
+        </div>
+    {% endblock %}

@@ -36,6 +36,9 @@ class PlayerStatusAdmin(admin.ModelAdmin):
         "is_paid",
         "is_retired",
         "is_survivor",
+        "did_buy_back",
+        "win_count",
+        "loss_count",
     ]
     list_editable = [
         "is_paid",

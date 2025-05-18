@@ -24,12 +24,13 @@ from fbsurvivor.core.utils.auth import (
 from fbsurvivor.core.utils.emails import send_email
 from fbsurvivor.core.utils.helpers import (
     cache_board,
+    can_buy_back,
     get_board,
     get_player_context,
     send_to_latest_season_played,
     update_player_records,
 )
-from fbsurvivor.settings import CONTACT, VENMO
+from fbsurvivor.settings import CONTACT
 
 
 def login(request):
@@ -60,10 +61,10 @@ def enter(request, magic_link_id):
     try:
         magic_link = MagicLink.objects.get(id=magic_link_id)
     except MagicLink.DoesNotExist:
-        return render(request, "fbsurvivor/templates/magic-link-expired.html")
+        return render(request, "fbsurvivor/templates/error-magic-link.html")
 
     if magic_link.is_expired:
-        render(request, "fbsurvivor/templates/magic-link-expired.html")
+        render(request, "fbsurvivor/templates/error-magic-link.html")
 
     token = create_token(magic_link.player)
     magic_link.delete()
@@ -109,13 +110,10 @@ def board(request, year: int, **kwargs):
     player_statuses_count = PlayerStatusQuery.for_season_board(season).count()
     season_board = get_board(season)
 
-    try:
-        playable = Season.objects.get(is_locked=False).year
-    except Season.DoesNotExist:
-        playable = None
+    next_week = WeekQuery.get_next(season)
 
     context["next_week"] = None
-    if next_week := WeekQuery.get_next(season):
+    if next_week:
         try:
             player_pick = Pick.objects.get(player=player, week=next_week)
             next_pick = player_pick.team.team_code if player_pick.team else "None"
@@ -130,8 +128,7 @@ def board(request, year: int, **kwargs):
             "weeks": weeks,
             "board": season_board,
             "player_count": player_statuses_count,
-            "playable": playable,
-            "venmo": VENMO,
+            "can_buy_back": can_buy_back(player_status, player, season),
         }
     )
 
@@ -172,6 +169,23 @@ def play(request, year: int, **kwargs):
         send_email("Survivor New Player!", [recipient], message)
 
         return redirect(reverse("board", args=[year]))
+
+
+@authenticate_player
+def buy_back(request, year: int, **kwargs):
+    player = kwargs["player"]
+    season, player_status, context = get_player_context(player, year)
+    if not player_status:
+        return redirect(reverse("board"))
+
+    if can_buy_back(player_status, player, season):
+        player_status.did_buy_back = True
+        player_status.is_survivor = True
+        player_status.is_paid = False
+        player_status.save()
+        return redirect(reverse("board", args=[year]))
+    else:
+        return render(request, "error-buy-back.html", context=context)
 
 
 @authenticate_player
@@ -272,7 +286,7 @@ def pick(request, year, week, **kwargs):
     context["pick"] = user_pick
 
     if user_pick.is_locked:
-        return redirect(reverse("picks", args=[year]))
+        return render(request, "error-pick.html", context=context)
 
     if request.method == "GET":
         form = PickForm(player, season, week)
@@ -288,14 +302,11 @@ def pick(request, year, week, **kwargs):
             if team_code:
                 choice = get_object_or_404(Team, team_code=team_code, season=season)
                 user_pick.team = choice
-                # TODO: Show a successful update!
             else:
                 user_pick.team = None
-                # TODO: Show they removed their pick!
             user_pick.save()
         else:
-            pass
-            # TODO: Show an error page!
+            return render(request, "error-pick.html", context=context)
 
         return redirect(reverse("board", args=[year]))
 
