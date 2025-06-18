@@ -1,0 +1,16 @@
+dictionaries = ["en_us", "en_gb"]
+
+words = [
+    "codebook",
+    "pyright",
+    "urlpatterns",
+    "fbsurvivor",
+    "endfor"
+]
+
+ignore_paths = [
+    "**/settings.py",
+    "**/pyproject.toml",
+    "**/*.json",
+    "**/*.toml"
+]

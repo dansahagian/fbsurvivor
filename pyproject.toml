@@ -45,8 +45,8 @@ select = ["C", "E", "F", "W"]
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
-include = ["fbsurvivor"]
 exclude = ["**/__pycache__", "**/migrations", ".venv", "venv"]
+ignore = ["**/migrations"]
 typeCheckingMode = "basic"
 reportMissingImports = "error"
 reportUnusedImports = "error"

@@ -85,8 +85,8 @@ def logout(request, **kwargs):
 def assume(request, username, **kwargs):
     player = get_object_or_404(Player, username=username)
     token = create_token(player)
-
-    return redirect(reverse("enter", args=[token]))
+    request.session["token"] = token
+    return redirect(reverse("board_redirect"))
 
 
 @authenticate_player
