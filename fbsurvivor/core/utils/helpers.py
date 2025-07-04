@@ -98,21 +98,16 @@ def can_buy_back(
     if not player_status.can_buy_back:
         return False
 
-    if next_week := WeekQuery.get_next(season):
-        if next_week.is_locked:
-            return False
-
     if not (current_week := WeekQuery.get_current(season)):
         return False
 
-    try:
-        is_current_loss = Pick.objects.get(player=player, week=current_week).result == "L"
-    except Pick.DoesNotExist:
+    if player_status.loss_count != 1:
         return False
 
-    has_one_loss = Pick.objects.filter(player=player, week__season=season, result="L").count() == 1
+    if (next_week := WeekQuery.get_next(season)) and next_week.is_locked:
+        return False
 
-    if is_current_loss and has_one_loss:
-        return True
-
-    return False
+    try:
+        return Pick.objects.get(player=player, week=current_week).result == "L"
+    except Pick.DoesNotExist:
+        return False
