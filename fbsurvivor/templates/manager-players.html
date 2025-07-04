@@ -2,6 +2,8 @@
 {% block content %}
     <div class="container">
         Players
+    </div>
+    <div class="container">
         {% for username in players %}
             <div class="vertical-link"><a href="{% url 'assume' username %}">{{ username }}</a></div>
         {% endfor %}

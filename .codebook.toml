@@ -5,7 +5,9 @@ words = [
     "pyright",
     "urlpatterns",
     "fbsurvivor",
-    "endfor"
+    "endfor",
+    "venmo",
+    "templatetags",
 ]
 
 ignore_paths = [

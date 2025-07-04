@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        Buy-In Required
+    </div>
+    <div class="container">
+        Please send $30 via venmo to {{ venmo }}.<br>
+        For other options, email me!<br><br>
+        {{ contact }}
+    </div>
+    <div class="container">
+        <div class="vertical-link">
+            {% if player.is_admin and season %}
+                <a href="{% url 'manager' season.year %}">admin</a>
+            {% endif %}
+        </div>
+        <div class="vertical-link"><a href="{% url 'seasons' %}">seasons</a></div>
+        <div class="vertical-link"><a href="{% url 'payouts' %}">payouts</a></div>
+        <div class="vertical-link"><a href="{% url 'rules' %}">rules</a></div>
+        <div class="vertical-link"><a href="{% url 'theme' %}">switch theme</a></div>
+        <div class="vertical-link">
+            {% if player.has_email_reminders %}
+                <a href="{% url 'update_reminders' 'email' 'off' %}">disable reminders</a>
+            {% else %}
+                <a href="{% url 'update_reminders' 'email' 'on' %}">enable reminders</a>
+            {% endif %}
+        </div>
+        <div class="vertical-link"><a href="{% url 'logout' %}">logout</a></div>
+    </div>
+{% endblock %}

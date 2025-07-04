@@ -1,8 +1,16 @@
 {% extends "base.html" %}
-    {% block content %}
-        <div class="container login">
-            Login Error<br><br>
-            Magic Link expired or was already used!<br><br>
-            <a href="{% url 'login' %}">Login</a>
-        </div>
-    {% endblock %}
+{% block content %}
+    <div class="container">
+        Login Error
+    </div>
+    <div class="container">
+        Magic Link expired or was already used!
+        <br><br>
+        <a href="{% url 'login' %}">Login</a>
+    </div>
+    <div class="container">
+        Having a problem? Email me!
+        <br><br>
+        {{ contact }}
+    </div>
+{% endblock %}

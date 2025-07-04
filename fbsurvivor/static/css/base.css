@@ -208,6 +208,16 @@ td {
     text-decoration: none;
 }
 
+.green-button {
+    background-color: var(--win-color);
+    text-decoration: none;
+}
+
+.red-button {
+    background-color: var(--loss-color);
+    text-decoration: none;
+}
+
 .rules-header {
     text-decoration: underline;
 }

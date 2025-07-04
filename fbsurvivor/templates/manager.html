@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
     <div class="container">
-        Admin
+        Manager
+    </div>
+    <div class="container">
         <div class="vertical-link"><a href="{% url 'paid' season.year %}">Paid</a></div>
         <div class="vertical-link"><a href="{% url 'results' season.year %}">Results</a></div>
         <div class="vertical-link"><a href="{% url 'players' season.year %}">Player Links</a></div>

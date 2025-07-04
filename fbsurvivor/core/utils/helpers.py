@@ -1,7 +1,6 @@
 from typing import Dict, Tuple
 
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
+from django.shortcuts import get_object_or_404
 
 from fbsurvivor.core.models import Board, Pick, Player, PlayerStatus, Season
 from fbsurvivor.core.services import PickQuery, PlayerStatusQuery, SeasonService, WeekQuery
@@ -22,15 +21,6 @@ def get_player_context(player: Player, year: int) -> Tuple[Season, PlayerStatus 
     }
 
     return season, player_status, context
-
-
-def send_to_latest_season_played(request, player: Player):
-    ps = PlayerStatus.objects.filter(player=player).order_by("-season__year")
-    if ps:
-        latest = ps[0].season.year
-        return redirect(reverse("board", args=[latest]))
-    else:
-        return redirect(reverse("login"))
 
 
 def update_player_records(year: int):
@@ -105,10 +95,7 @@ def can_buy_back(
     if not player_status:
         return False
 
-    if player_status.did_buy_back:
-        return False
-
-    if player_status.is_survivor:
+    if not player_status.can_buy_back:
         return False
 
     if next_week := WeekQuery.get_next(season):

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        Season Missing
+    </div>
+    <div class="container">
+        You didn't play this season.<br>
+        Go to the <a href="{% url 'board' latest %}">{{ latest }}</a> season.
+    </div>
+    <div class="container">
+        Having a problem? Email me!
+        <br><br>
+        {{ contact }}
+    </div>
+{% endblock %}

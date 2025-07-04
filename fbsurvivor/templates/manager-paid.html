@@ -1,7 +1,9 @@
 {% extends "base.html" %}
-    {% block content %}
+{% block content %}
     <div class="container">
         Mark Paid
+    </div>
+    <div class="container">
         {% for player_status in player_statuses %}
             {% if not player_status.is_paid %}
                 <div class="vertical-link">
@@ -11,4 +13,5 @@
                 </div>
             {% endif %}
         {% endfor %}
-    {% endblock %}
+    </div>
+{% endblock %}

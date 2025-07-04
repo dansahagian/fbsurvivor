@@ -1,18 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
     <div class="container">
+        Results
+    </div>
+    <div class="container">
         {% for team in teams %}
             {{ team }}
             <a href="{% url 'result' season.year week.week_num team 'W' %}">Won</a>
             <a href="{% url 'result' season.year week.week_num team 'L' %}">Lost</a>
-            <br><br>
         {% endfor %}
     </div>
 {% endblock %}
-
-        <div class="container">
-            Players
-            {% for username in players %}
-                <div class="vertical-link"><a href="{% url 'assume' username %}">{{ username }}</a></div>
-            {% endfor %}
-        </div>
