@@ -1,44 +1,44 @@
 {% extends "base.html" %}
-    {% block content %}
+{% block content %}
+    <div class="container">
+        Rules
         <div class="container">
-            Rules
-            <div class="container">
-                <span class="rules-header">Buy-In</span><br>
-                $30 for the season.
-                <br><br>
+            <span class="rules-header">Buy-In</span><br>
+            $30 for the season.
+            <br><br>
 
-                <span class="rules-header">Each Week</span><br>
-                Pick a team to win.<br>
-                Ties are losses.<br>
-                No contests are wins.<br>
-                <br>
+            <span class="rules-header">Each Week</span><br>
+            Pick a team to win.<br>
+            Ties are losses.<br>
+            No contests are wins.<br>
+            <br>
 
-                <span class="rules-header">Picks Lock</span><br>
-                Submit your pick by the deadline.<br>
-                You're responsible for your pick.<br>
-                Each week locks on Sun at 1PM ET.<br>
-                Thu, Sat, EU games lock earlier.<br>
-                <br>
+            <span class="rules-header">Picks Lock</span><br>
+            Submit your pick by the deadline.<br>
+            You're responsible for your pick.<br>
+            Each week locks on Sun at 1PM ET.<br>
+            Thu, Sat, EU games lock earlier.<br>
+            <br>
 
-                <span class="rules-header">Buy Back</span><br>
-                You are a Survivor again!<br>
-                One time for $30 into the pot.<br>
-                Only after your first loss.<br>
-                Before the next week starts.<br>
-                <br>
+            <span class="rules-header">Buy Back</span><br>
+            You are a Survivor again!<br>
+            One time for $30 into the pot.<br>
+            Only after your first loss.<br>
+            Before the next week starts.<br>
+            <br>
 
-                <span class="rules-header">Payouts</span><br>
-                Dependent on participation!<br>
-                Survivor: 2/3, Best Record 1/3.<br>
-                Split if tied.<br>
-                <br>
+            <span class="rules-header">Payouts</span><br>
+            Dependent on participation!<br>
+            Survivor: 2/3, Best Record 1/3.<br>
+            Split if tied.<br>
+            <br>
 
-                Having issues? Email your pick:<br>
-                {{ contact }}
-                <br>
-                <div id="confirm">
-                    {% block confirm %}{% endblock %}
-                </div>
+            Having issues? Email your pick:<br>
+            {{ contact }}
+            <br>
+            <div id="confirm">
+                {% block confirm %}{% endblock %}
             </div>
         </div>
-    {% endblock %}
+    </div>
+{% endblock %}

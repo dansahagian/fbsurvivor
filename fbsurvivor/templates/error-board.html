@@ -1,12 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
     <div class="container">
-        Login Error
+        Season Missing
     </div>
     <div class="container">
-        Magic Link expired or was already used!
-        <br><br>
-        <a href="{% url 'login' %}">Login</a>
+        You didn't play this season.<br>
+        Go to the <a href="{% url 'board' latest %}">{{ latest }}</a> season.
     </div>
     <div class="container">
         Having a problem? Email me!

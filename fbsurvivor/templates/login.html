@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-    {% block content %}
-        <div class="container login">
-            <p>Private NFL Survivor Pool</p>
-            <p>Have an account?</p>
-            <p>Enter your email address</p>
-                <form action="{% url 'login' %}" method="POST">
-                    {% csrf_token %}
-                    <div class="email-form">
-                        {{ form.email }}
-                    </div>
-                    <div class="container">
-                        <input class="submit-button blue-button" type="submit" value="Sign In" />
-                    </div>
-                </form>
-        </div>
-    {% endblock %}
+{% block content %}
+    <div class="container login">
+        <p>Private NFL Survivor Pool</p>
+        <p>Have an account?</p>
+        <p>Enter your email address</p>
+            <form action="{% url 'login' %}" method="POST">
+                {% csrf_token %}
+                <div class="email-form">
+                    {{ form.email }}
+                </div>
+                <div class="container">
+                    <input class="submit-button blue-button" type="submit" value="Sign In" />
+                </div>
+            </form>
+    </div>
+{% endblock %}

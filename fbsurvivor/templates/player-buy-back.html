@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        Buy Back
+    </div>
+    <div class="container">
+        Each player is allowed to buy back after their first loss. If you buy back, you are a
+        survivor and competing for the big pot again. You must choose to buy back or decline to
+        continue to the board.
+    </div>
+    <div class="container">
+        <a class="submit-button green-button" href="{% url 'buy_back' season.year %}">Buy Back</a>
+    </div>
+    <br>
+    <div class="container">
+        <a class="submit-button red-button" href="{% url 'decline_buy_back' season.year %}">Decline</a>
+    </div>
+{% endblock %}

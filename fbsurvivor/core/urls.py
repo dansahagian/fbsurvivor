@@ -5,6 +5,7 @@ from fbsurvivor.core.views import (
     board,
     board_redirect,
     buy_back,
+    decline_buy_back,
     enter,
     get_players,
     login,
@@ -33,6 +34,7 @@ urlpatterns = [
     path("board/<int:year>/", board, name="board"),
     path("play/<int:year>/", play, name="play"),  # pyright: ignore
     path("buy-back/<int:year>/", buy_back, name="buy_back"),
+    path("decline-buy-back/<int:year>/", decline_buy_back, name="decline_buy_back"),
     path("payouts/", payouts, name="payouts"),
     path("rules/", rules, name="rules"),
     path("seasons/", seasons, name="seasons"),

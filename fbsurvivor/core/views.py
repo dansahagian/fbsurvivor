@@ -27,10 +27,9 @@ from fbsurvivor.core.utils.helpers import (
     can_buy_back,
     get_board,
     get_player_context,
-    send_to_latest_season_played,
     update_player_records,
 )
-from fbsurvivor.settings import CONTACT
+from fbsurvivor.settings import CONTACT, VENMO
 
 
 def login(request):
@@ -101,13 +100,22 @@ def board(request, year: int, **kwargs):
     player = kwargs["player"]
     season, player_status, context = get_player_context(player, year)
 
-    if season.is_locked and not player_status:
-        return send_to_latest_season_played(request, player)
+    if not player_status:
+        if season.is_locked:
+            return send_to_latest_season_played(request, player)
+        else:
+            context["player_count"] = PlayerStatusQuery.for_season_board(season).count()
+            return render(request, "player-play.html", context=context)
 
-    can_play = not player_status and not season.is_locked
+    if not player_status.is_paid:
+        context["venmo"] = VENMO
+        context["contact"] = CONTACT
+        return render(request, "player-pay.html", context=context)
+
+    if can_buy_back(player_status, player, season):
+        return render(request, "player-buy-back.html", context=context)
+
     weeks = WeekQuery.for_display(season).order_by("-week_num").values_list("week_num", flat=True)
-
-    player_statuses_count = PlayerStatusQuery.for_season_board(season).count()
     season_board = get_board(season)
 
     next_week = WeekQuery.get_next(season)
@@ -122,17 +130,18 @@ def board(request, year: int, **kwargs):
         except Pick.DoesNotExist:
             context["next_pick"] = None
 
-    context.update(
-        {
-            "can_play": can_play,
-            "weeks": weeks,
-            "board": season_board,
-            "player_count": player_statuses_count,
-            "can_buy_back": can_buy_back(player_status, player, season),
-        }
-    )
+    context.update({"weeks": weeks, "board": season_board})
 
     return render(request, "board.html", context=context)
+
+
+def send_to_latest_season_played(request, player: Player):
+    ps = PlayerStatus.objects.filter(player=player).order_by("-season__year")
+    if ps:
+        context = {"player": player, "latest": ps[0].season.year, "contact": CONTACT}
+        return render(request, "error-board.html", context=context)
+    else:
+        return redirect(reverse("login"))
 
 
 @authenticate_player
@@ -155,7 +164,7 @@ def play(request, year: int, **kwargs):
     )
 
     if request.method == "GET":
-        return render(request, "confirm.html", context=context)
+        return render(request, "rules-confirm.html", context=context)
 
     if request.method == "POST":
         PlayerStatus.objects.create(player=player, season=season)
@@ -164,9 +173,8 @@ def play(request, year: int, **kwargs):
         Pick.objects.bulk_create(player_picks)
         cache_board(season)
 
-        recipient = Player.objects.get(username="DanTheAutomator").email
         message = f"{player.username} in for {season.year}"
-        send_email("Survivor New Player!", [recipient], message)
+        send_email("Survivor New Player!", [CONTACT], message)
 
         return redirect(reverse("board", args=[year]))
 
@@ -179,10 +187,29 @@ def buy_back(request, year: int, **kwargs):
         return redirect(reverse("board"))
 
     if can_buy_back(player_status, player, season):
+        player_status.can_buy_back = False
         player_status.did_buy_back = True
         player_status.is_survivor = True
         player_status.is_paid = False
         player_status.save()
+        cache_board(season)
+        return redirect(reverse("board", args=[year]))
+    else:
+        return render(request, "error-buy-back.html", context=context)
+
+
+@authenticate_player
+def decline_buy_back(request, year: int, **kwargs):
+    player = kwargs["player"]
+    season, player_status, context = get_player_context(player, year)
+    if not player_status:
+        return redirect(reverse("board"))
+
+    if can_buy_back(player_status, player, season):
+        player_status.can_buy_back = False
+        player_status.is_survivor = False
+        player_status.save()
+        cache_board(season)
         return redirect(reverse("board", args=[year]))
     else:
         return render(request, "error-buy-back.html", context=context)
@@ -286,6 +313,7 @@ def pick(request, year, week, **kwargs):
     context["pick"] = user_pick
 
     if user_pick.is_locked:
+        context["contact"] = CONTACT
         return render(request, "error-pick.html", context=context)
 
     if request.method == "GET":
@@ -306,6 +334,7 @@ def pick(request, year, week, **kwargs):
                 user_pick.team = None
             user_pick.save()
         else:
+            context["contact"] = CONTACT
             return render(request, "error-pick.html", context=context)
 
         return redirect(reverse("board", args=[year]))
@@ -322,7 +351,7 @@ def paid(request, year, **kwargs):
     season, context = get_season_context(year, **kwargs)
     player_statuses = PlayerStatusQuery.paid_for_season(season).prefetch_related("player")
     context["player_statuses"] = player_statuses
-    return render(request, "paid.html", context=context)
+    return render(request, "manager-paid.html", context=context)
 
 
 @authenticate_admin
@@ -343,7 +372,7 @@ def results(request, year, **kwargs):
     context["week"] = current_week
     context["teams"] = teams
 
-    return render(request, "results.html", context=context)
+    return render(request, "manager-results.html", context=context)
 
 
 @authenticate_admin
@@ -368,4 +397,4 @@ def get_players(request, year, **kwargs):
         Player.objects.values_list("username", flat=True).distinct().order_by("username")
     )
 
-    return render(request, "players.html", context=context)
+    return render(request, "manager-players.html", context=context)

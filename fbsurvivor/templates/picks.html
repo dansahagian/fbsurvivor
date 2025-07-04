@@ -1,12 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     <div class="container">
-        {{ season.description }}
-        {% if player_status.is_paid %}
-            > <span class="paid">Paid</span>
-        {% else %}
-            > <span class="unpaid">Unpaid</span>
-        {% endif %}
+        {{ season.description }} Picks
         {% if picks %}
             <div class="container small-table-container">
                 <table>
@@ -39,5 +34,4 @@
             No pick data available for {{ season.year }}!
         {% endif %}
     </div>
-
 {% endblock %}
