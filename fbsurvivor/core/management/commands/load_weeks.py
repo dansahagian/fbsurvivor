@@ -1,4 +1,5 @@
-import arrow
+from datetime import datetime
+
 from django.core.management.base import BaseCommand
 
 from fbsurvivor.core.models import Season, Week
@@ -21,7 +22,7 @@ class Command(BaseCommand):
         with open(filename, "r") as f:
             for line in f:
                 week_num, lock_datetime = line.strip("/n").split(",")
-                lock_datetime = arrow.get(lock_datetime).datetime
+                lock_datetime = datetime.fromisoformat(lock_datetime)
 
                 _, created = Week.objects.update_or_create(
                     season=season, week_num=week_num, defaults={"lock_datetime": lock_datetime}

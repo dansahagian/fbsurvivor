@@ -1,5 +1,5 @@
-import arrow as arrow
 import factory.django
+from django.utils import timezone
 from factory.declarations import LazyAttribute, Sequence, SubFactory
 
 from fbsurvivor.core.models import Pick, Player, PlayerStatus, Season, Team, Week
@@ -29,7 +29,7 @@ class WeekFactory(factory.django.DjangoModelFactory):
 
     season = SubFactory(SeasonFactory)
     week_num = Sequence(lambda n: n + 1)
-    lock_datetime = arrow.now().datetime
+    lock_datetime = timezone.now()
 
 
 class TeamFactory(factory.django.DjangoModelFactory):
