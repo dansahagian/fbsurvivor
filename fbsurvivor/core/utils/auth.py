@@ -1,9 +1,10 @@
 import secrets
+from datetime import timedelta
 
-import arrow
 import sentry_sdk
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils import timezone
 from jwt import ExpiredSignatureError, InvalidSignatureError, decode, encode
 from jwt.exceptions import DecodeError
 from typing_extensions import Tuple
@@ -14,7 +15,7 @@ from fbsurvivor.settings import DOMAIN, SECRET_KEY
 
 
 def create_token(player: Player) -> str:
-    exp = arrow.now().shift(days=30).datetime
+    exp = timezone.now() + timedelta(days=30)
     payload = {"username": player.username, "exp": exp}
 
     token = encode(payload, SECRET_KEY, algorithm="HS256")

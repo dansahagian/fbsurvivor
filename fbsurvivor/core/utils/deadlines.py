@@ -1,6 +1,6 @@
 from datetime import datetime
 
-import arrow
+from django.utils import timezone
 
 from fbsurvivor.core.models import Lock, Pick, PlayerStatus, Season, Week
 from fbsurvivor.core.services import SeasonService, WeekQuery
@@ -14,7 +14,7 @@ def get_countdown(deadline):
     if not deadline:
         return None
 
-    right_now = arrow.now()
+    right_now = timezone.now()
 
     seconds = (deadline - right_now).total_seconds()
     if seconds <= 0:
@@ -43,7 +43,7 @@ def get_countdown(deadline):
 
 
 def get_early_deadline(season: Season, next_week: Week) -> datetime | None:
-    now = arrow.now().datetime
+    now = timezone.now()
     try:
         deadline = (
             Lock.objects.filter(week__season=season, week=next_week, lock_datetime__gte=now)
@@ -90,7 +90,7 @@ def get_picks_count_display(season: Season) -> str | None:
 
 
 def get_reminder_message(season: Season, next_week: Week) -> str | None:
-    now = arrow.now().datetime
+    now = timezone.now()
 
     early_locks = Lock.objects.filter(
         week__season=season, week=next_week, lock_datetime__gte=now

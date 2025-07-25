@@ -1,4 +1,3 @@
-import arrow
 from django.db import models
 from django.utils import timezone
 
@@ -98,7 +97,7 @@ class Week(models.Model):
 
     @property
     def is_locked(self):
-        return arrow.now() > self.lock_datetime if self.lock_datetime else False
+        return timezone.now() > self.lock_datetime if self.lock_datetime else False
 
     def __str__(self):
         return f"{self.season} | {self.week_num}"
@@ -123,7 +122,7 @@ class Team(models.Model):
     def is_locked(self, week: Week) -> bool:
         try:
             lock = Lock.objects.get(week=week, team=self)
-            return arrow.now() > lock.lock_datetime if lock.lock_datetime else False
+            return timezone.now() > lock.lock_datetime if lock.lock_datetime else False
         except Lock.DoesNotExist:
             return week.is_locked
 
@@ -156,7 +155,7 @@ class Pick(models.Model):
     def is_locked(self):
         try:
             lock = Lock.objects.get(week=self.week, team=self.team)
-            return arrow.now() > lock.lock_datetime if lock.lock_datetime else False
+            return timezone.now() > lock.lock_datetime if lock.lock_datetime else False
         except Lock.DoesNotExist:
             return self.week.is_locked
 

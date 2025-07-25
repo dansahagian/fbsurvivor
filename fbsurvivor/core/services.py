@@ -1,6 +1,6 @@
-import arrow
 from django.db.models.aggregates import Sum
 from django.db.models.functions import Lower
+from django.utils import timezone
 
 from fbsurvivor import settings
 from fbsurvivor.core.models import Payout, Pick, Player, PlayerStatus, Season, Week
@@ -42,7 +42,7 @@ class SeasonService:
     def get_next_week(self):
         weeks = Week.objects.filter(
             season=self.season,
-            lock_datetime__gt=arrow.now().datetime,
+            lock_datetime__gt=timezone.now(),
         ).order_by("week_num")
 
         return weeks.first() if weeks else None
@@ -96,7 +96,7 @@ class WeekQuery:
     def for_display(season):
         return Week.objects.filter(
             season=season,
-            lock_datetime__lte=arrow.now().datetime,
+            lock_datetime__lte=timezone.now(),
         ).order_by("week_num")
 
     @staticmethod
@@ -108,7 +108,7 @@ class WeekQuery:
     def get_next(season):
         qs = Week.objects.filter(
             season=season,
-            lock_datetime__gt=arrow.now().datetime,
+            lock_datetime__gt=timezone.now(),
         ).order_by("week_num")
         return qs.first() if qs else None
 
@@ -135,7 +135,7 @@ class PickQuery:
             PickQuery.for_player_season(player, season)
             .order_by("-week__week_num")
             .filter(
-                week__lock_datetime__lte=arrow.now().datetime,
+                week__lock_datetime__lte=timezone.now(),
             )
         )
 

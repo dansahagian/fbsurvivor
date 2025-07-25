@@ -1,4 +1,5 @@
-import arrow
+from datetime import datetime
+
 from django.core.management.base import BaseCommand
 
 from fbsurvivor.core.models import Lock, Season, Team, Week
@@ -25,7 +26,7 @@ class Command(BaseCommand):
                 team1 = Team.objects.get(season=season, team_code=team_code1)
                 team2 = Team.objects.get(season=season, team_code=team_code2)
 
-                lock_datetime = arrow.get(lock_datetime).datetime
+                lock_datetime = datetime.fromisoformat(lock_datetime)
 
                 _, created = Lock.objects.update_or_create(
                     week=week, team=team1, defaults={"lock_datetime": lock_datetime}

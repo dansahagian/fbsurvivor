@@ -1,5 +1,7 @@
-import arrow
+from datetime import timedelta
+
 import pytest
+from django.utils import timezone
 from factory.declarations import Iterator
 
 from fbsurvivor.core.tests.factories import (
@@ -32,10 +34,10 @@ def seasons(db):
 
 @pytest.fixture(autouse=True)
 def weeks(db, seasons):
-    right_now = arrow.now()
-    nw = right_now.shift(days=7).datetime
-    lw = right_now.shift(days=-7).datetime
-    ly = right_now.shift(days=-365).datetime
+    right_now = timezone.now()
+    nw = right_now + timedelta(days=7)
+    lw = right_now + timedelta(days=-7)
+    ly = right_now + timedelta(days=-365)
 
     return {
         "this_season": WeekFactory.create_batch(
