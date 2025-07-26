@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from django.utils import timezone
 
@@ -33,7 +35,7 @@ class MagicLink(models.Model):
 
     @property
     def is_expired(self):
-        expiration_time = self.created_at + timezone.timedelta(minutes=30)
+        expiration_time = self.created_at + timedelta(minutes=30)
         return timezone.now() > expiration_time
 
 

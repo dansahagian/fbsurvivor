@@ -1,9 +1,6 @@
 from pathlib import Path
-from urllib.parse import urlparse
 
-import sentry_sdk
 from decouple import config
-from sentry_sdk.integrations.django import DjangoIntegration
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -148,66 +145,3 @@ if ENV == "dev":
     CSRF_COOKIE_SECURE = False
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
-
-BASE_URLS = {
-    "board",
-    "play",
-    "payouts",
-    "rules",
-    "season",
-    "theme",
-    "picks",
-    "manager",
-    "paid",
-    "results",
-    "players",
-    "reminders",
-}
-
-
-def before_send(event, hint):
-    if "log_record" in hint:
-        if hint["log_record"].name == "django.security.DisallowedHost":
-            return None
-        return event
-
-
-def filter_transactions(event, hint):  # noqa
-    request = event.get("request")
-    if not request:
-        return None
-
-    url = request.get("url")
-    if not url:
-        return None
-
-    method = request.get("method")
-    if method not in {"GET", "POST"}:
-        return None
-
-    path = urlparse(url).path
-    base_url = path.split("/")[1]
-
-    if path == "/" or base_url in BASE_URLS:
-        return event
-    return None
-
-
-sentry_sdk.init(
-    dsn=config("SENTRY_DSN", ""),  # pyright: ignore
-    integrations=[DjangoIntegration()],
-    before_send=before_send,
-    before_send_transaction=filter_transactions,
-    # If you wish to associate users to errors (assuming you are using
-    # django.contrib.auth) you may enable sending PII data.
-    send_default_pii=True,
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    # We recommend adjusting this value in production.
-    traces_sample_rate=1.0,
-    # Set profiles_sample_rate to 1.0 to profile 100%
-    # of sampled transactions.
-    # We recommend adjusting this value in production.
-    profiles_sample_rate=1.0,
-    environment=ENV,  # pyright: ignore
-)

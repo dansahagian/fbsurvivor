@@ -1,7 +1,6 @@
 import secrets
 from datetime import timedelta
 
-import sentry_sdk
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
@@ -39,7 +38,6 @@ def authenticate_player(view):
     def inner(*args, **kwargs):
         request = args[0]
         if player := get_authenticated_player(request):
-            sentry_sdk.set_user({"username": player.username})
             kwargs["player"] = player
             kwargs["path"] = request.session.get("path")
             request.session["path"] = request.path
@@ -55,7 +53,6 @@ def authenticate_admin(view):
     def inner(*args, **kwargs):
         request = args[0]
         if player := get_authenticated_admin(request):
-            sentry_sdk.set_user({"username": player.username})
             kwargs["player"] = player
             kwargs["path"] = request.session.get("path")
             request.session["path"] = request.path
