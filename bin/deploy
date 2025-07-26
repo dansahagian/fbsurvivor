@@ -9,15 +9,9 @@ run_command() {
     fi
 }
 
-echo -e "\nLinting and Formatting 🐍 ...\n"
+echo -e "\nPre-commit Checks 🐍 ...\n"
 
-run_command "linting" ruff check .
-run_command "imports" ruff check --select I
-run_command "format" ruff format --check
-
-echo -e "\nRunning Tests 🧪...\n"
-
-run_command "tests" uv run pytest -p no:warnings .
+run_command "pre-commit" pre-commit run --all-files
 
 echo "\nDeploying...\n"
 

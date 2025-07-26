@@ -3,24 +3,30 @@ repos:
     hooks:
       - id: ruff-imports
         name: ruff import check
-        entry: ./checks/ruff-imports
+        entry: ./dev/checks/ruff-imports
         language: script
         pass_filenames: false
 
       - id: ruff-format
         name: ruff formatting
-        entry: ./checks/ruff-format
+        entry: ./dev/checks/ruff-format
         language: script
         pass_filenames: false
 
       - id: ruff-check
         name: ruff checks
-        entry: ./checks/ruff-check
+        entry: ./dev/checks/ruff-check
         language: script
         pass_filenames: false
 
       - id: pyright
         name: pyright checks
-        entry: ./checks/pyright
+        entry: ./dev/checks/pyright
+        language: script
+        pass_filenames: false
+
+      - id: tests
+        name: run tests
+        entry: ./dev/checks/tests
         language: script
         pass_filenames: false
