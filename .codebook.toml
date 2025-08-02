@@ -8,6 +8,8 @@ words = [
     "endfor",
     "venmo",
     "templatetags",
+    "runserver",
+    "venv",
 ]
 
 ignore_paths = [

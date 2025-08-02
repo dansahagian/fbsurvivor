@@ -62,6 +62,7 @@ class PlayerStatusQuery:
         return (
             PlayerStatus.objects.filter(season=season)
             .annotate(lower=Lower("player__username"))
+            .filter(is_paid=True)
             .order_by("-is_survivor", "is_retired", "-win_count", "loss_count", "lower")
         )
 

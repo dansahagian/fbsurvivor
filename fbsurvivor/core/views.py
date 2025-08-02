@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from fbsurvivor.core.forms import EmailForm, PickForm
 from fbsurvivor.core.models import (
+    Board,
     LoggedOutTokens,
     MagicLink,
     Pick,
@@ -190,7 +191,6 @@ def buy_back(request, year: int, **kwargs):
         player_status.can_buy_back = False
         player_status.did_buy_back = True
         player_status.is_survivor = True
-        player_status.is_paid = False
         player_status.save()
         cache_board(season)
         return redirect(reverse("board", args=[year]))
@@ -360,6 +360,7 @@ def user_paid(request, year, username, **kwargs):
     ps = get_object_or_404(PlayerStatus, player__username=username, season=season)
     ps.is_paid = True
     ps.save()
+    cache_board(season)
     return redirect(reverse("paid", args=[year]))
 
 
@@ -398,3 +399,13 @@ def get_players(request, year, **kwargs):
     )
 
     return render(request, "manager-players.html", context=context)
+
+
+@authenticate_admin
+def cache_season(request, year, **kwargs):
+    season, _context = get_season_context(year, **kwargs)
+
+    Board.objects.filter(season=season).delete()
+    cache_board(season)
+
+    return redirect(reverse("board", args=[season.year]))
