@@ -41,3 +41,11 @@ initialize_env:
 update_packages:
     uv lock --upgrade
     uv sync
+
+[group('manage')]
+runserver:
+    uv run python manage.py runserver
+
+[group('manage')]
+shell_plus:
+    uv run python manage.py shell_plus

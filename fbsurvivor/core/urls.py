@@ -5,6 +5,7 @@ from fbsurvivor.core.views import (
     board,
     board_redirect,
     buy_back,
+    cache_season,
     decline_buy_back,
     enter,
     get_players,
@@ -48,4 +49,5 @@ urlpatterns = [
     path("results/<int:year>/<int:week>/<str:team>/<str:outcome>/", result, name="result"),
     path("players/<int:year>", get_players, name="players"),
     path("reminders/<str:kind>/<str:status>/", update_reminders, name="update_reminders"),
+    path("cache_season/<int:year>/", cache_season, name="cache_season"),
 ]
