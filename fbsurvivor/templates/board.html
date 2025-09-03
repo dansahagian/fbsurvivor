@@ -26,10 +26,10 @@
                             <tr>
                         {% endif %}
                             <td style="white-space: nowrap;">
-                                {{ row.player_status.player.username }}
                                 {% if row.player_status.is_survivor %}
-                                🏈
+                                ★
                                 {% endif %}
+                                {{ row.player_status.player.username }}
                             </td>
                             <td>{{ row.player_status.win_count }}-{{ row.player_status.loss_count }}</td>
                             {% for week in weeks %}
