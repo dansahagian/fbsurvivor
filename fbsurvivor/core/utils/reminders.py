@@ -16,8 +16,10 @@ def send_reminders():
     if not message:
         return
 
+    week_text = f"Week {next_week.week_num}"
     subject = f"Survivor {current_season.year}: Week {next_week.week_num} Reminder"
-    message = f"Week {next_week.week_num} Locks:\n\n" + message
+    warning = f"If you received this email, you have not submitted your pick for {week_text}."
+    message = f"{warning}\n\n{week_text} Locks:\n\n" + message
 
     if email_recipients := list(PlayerStatusQuery.for_email_reminders(next_week)):
         send_email(subject, email_recipients, message)
