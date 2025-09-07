@@ -8,6 +8,7 @@
             {{ team }}
             <a href="{% url 'result' season.year week.week_num team 'W' %}">Won</a>
             <a href="{% url 'result' season.year week.week_num team 'L' %}">Lost</a>
+            <br><br>
         {% endfor %}
     </div>
 {% endblock %}
