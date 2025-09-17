@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        Week {{week}} is locked!
+    </div>
+    <div class="container">
+        Having a problem? Email me!<br>
+        {{ contact }}
+    </div>
+    <div class="container">
+        <div class="vertical-link"><a href="{% url 'board_redirect' %}">board</a></div>
+        <div class="vertical-link"><a href="{% url 'picks' season %}">picks</a></div>
+    </div>
+{% endblock %}

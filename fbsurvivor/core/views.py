@@ -312,9 +312,12 @@ def pick(request, year, week, **kwargs):
     user_pick = get_object_or_404(Pick, player=player, week=week)
     context["pick"] = user_pick
 
+    context["contact"] = CONTACT
+    context["week"] = week.week_num
+    context["team"] = None
+
     if user_pick.is_locked:
-        context["contact"] = CONTACT
-        return render(request, "error-pick.html", context=context)
+        return render(request, "pick-locked.html", context=context)
 
     if request.method == "GET":
         form = PickForm(player, season, week)
@@ -330,14 +333,15 @@ def pick(request, year, week, **kwargs):
             if team_code:
                 choice = get_object_or_404(Team, team_code=team_code, season=season)
                 user_pick.team = choice
+                context["team"] = team_code
             else:
                 user_pick.team = None
-            user_pick.save()
-        else:
-            context["contact"] = CONTACT
-            return render(request, "error-pick.html", context=context)
 
-        return redirect(reverse("board", args=[year]))
+            user_pick.save()
+            return render(request, "pick-submitted.html", context=context)
+
+        else:
+            return render(request, "pick-error.html", context=context)
 
 
 @authenticate_admin
