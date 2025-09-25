@@ -101,6 +101,9 @@ def board(request, year: int, **kwargs):
     player = kwargs["player"]
     season, player_status, context = get_player_context(player, year)
 
+    context["venmo"] = VENMO
+    context["contact"] = CONTACT
+
     if not player_status:
         if season.is_locked:
             return send_to_latest_season_played(request, player)
@@ -109,8 +112,6 @@ def board(request, year: int, **kwargs):
             return render(request, "player-play.html", context=context)
 
     if not player_status.is_paid:
-        context["venmo"] = VENMO
-        context["contact"] = CONTACT
         return render(request, "player-pay.html", context=context)
 
     if can_buy_back(player_status, player, season):
