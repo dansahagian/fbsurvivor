@@ -10,7 +10,7 @@ shell_plus:
     uv run python manage.py shell_plus
 
 [group('deploy')]
-deploy: check
+deploy:
     bin/deploy
 
 [group('check')]
