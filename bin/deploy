@@ -1,17 +1,10 @@
 #!/bin/zsh
 
-run_command() {
-    local check="$1"
-    shift
-    if ! "$@"; then
-        echo -e "\n\n❌ Failed Deployment $check\n"
-        exit 1
-    fi
-}
+set -e
 
-echo -e "\nPre-commit Checks 🐍 ...\n"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-run_command "pre-commit" pre-commit run --all-files
+"$SCRIPT_DIR"/check
 
 echo "\nDeploying...\n"
 

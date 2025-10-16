@@ -95,6 +95,9 @@ def can_buy_back(
     if not player_status:
         return False
 
+    if player_status.is_survivor:
+        return False
+
     if not player_status.can_buy_back:
         return False
 

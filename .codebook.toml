@@ -10,6 +10,11 @@ words = [
     "templatetags",
     "runserver",
     "venv",
+    "playerstatus",
+    "playerstatuses",
+    "queryset",
+    "favicons",
+    "mstile",
 ]
 
 ignore_paths = [

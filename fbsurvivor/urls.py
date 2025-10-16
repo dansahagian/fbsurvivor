@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.http import FileResponse
+from django.http import FileResponse, HttpRequest
 from django.urls import include, path
 from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET
@@ -9,14 +9,14 @@ from fbsurvivor import settings
 
 @require_GET
 @cache_control(max_age=60, immutable=True, public=True)
-def favicon_file(request):
+def favicon_file(request: HttpRequest):
     name = request.path.lstrip("/")
     file = (settings.BASE_DIR / "fbsurvivor" / "static" / "favicons" / name).open("rb")
     return FileResponse(file)
 
 
 @require_GET
-def font_file(request):
+def font_file(request: HttpRequest):
     name = request.path.lstrip("/")
     file = (settings.BASE_DIR / "homepage" / "static" / "fonts" / name).open("rb")
     return FileResponse(file)
@@ -28,7 +28,7 @@ urlpatterns = [
 ]
 
 if settings.ENV == "dev":
-    import debug_toolbar
+    import debug_toolbar  # pyright: ignore[reportMissingTypeStubs]
 
     local_urls = [
         path("android-chrome-192x192.png", favicon_file),

@@ -1,30 +1,52 @@
+from logging import debug
 from pathlib import Path
 
 from decouple import config
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
+# EVERYTHING FROM THE ENVIRONMENT
+ENV: str = config("ENV", "")
 DOMAIN = config("DOMAIN")
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-ENV = config("ENV")
+SMTP_SERVER = config("SMTP_SERVER", cast=str)
+SMTP_SENDER = config("SMTP_SENDER", cast=str)
+SMTP_USER = config("SMTP_USER", cast=str)
+SMTP_PASSWORD = config("SMTP_PASSWORD", cast=str)
+SMTP_PORT = config("SMTP_PORT", 465)
 
-ALLOWED_HOSTS = ["fbsurvivor.com"]
-SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+PG_DATABASE = config("PGDATABASE")
+PG_USER = config("PGUSER")
+PG_PASSWORD = config("PGPASSWORD")
+PG_HOST = config("PGHOST", default="127.0.0.1")
 
-CSRF_TRUSTED_ORIGINS = ["https://fbsurvivor.com"]
+CONTACT = config("CONTACT", cast=str)
+VENMO = config("VENMO", cast=str)
+
+# EVERYTHING ELSE
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 INTERNAL_IPS = ["127.0.0.1"]
 
-CONTACT = config("CONTACT", "")
-VENMO = config("VENMO", "")
+if ENV == "dev":
+    debug = True
+    allowed_hosts = ["*"]
+    secure_ssl_redirect = False
+    session_cookie_secure = False
+    csrf_cookie_secure = False
+else:
+    debug = False
+    allowed_hosts = ["fbsurvivor.com"]
+    secure_ssl_redirect = False
+    session_cookie_secure = True
+    csrf_cookie_secure = True
+    CSRF_TRUSTED_ORIGINS = ["https://fbsurvivor.com"]
+
+DEBUG = debug
+ALLOWED_HOSTS = allowed_hosts
+SECURE_SSL_REDIRECT = secure_ssl_redirect
+SESSION_COOKIE_SECURE = session_cookie_secure
+CSRF_COOKIE_SECURE = csrf_cookie_secure
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -51,6 +73,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+if ENV == "dev":
+    INSTALLED_APPS.append("debug_toolbar")
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
 ROOT_URLCONF = "fbsurvivor.urls"
 
@@ -80,10 +106,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": config("PGDATABASE"),
-        "USER": config("PGUSER"),
-        "PASSWORD": config("PGPASSWORD"),
-        "HOST": config("PGHOST", default="127.0.0.1"),
+        "NAME": PG_DATABASE,
+        "USER": PG_USER,
+        "PASSWORD": PG_PASSWORD,
+        "HOST": PG_HOST,
     }
 }
 
@@ -130,18 +156,3 @@ HTML_MINIFY = True
 STATICFILES_DIRS = [BASE_DIR / "fbsurvivor/static"]
 STATIC_URL = "/static/"
 STATIC_ROOT = "/srv/www/fbsurvivor/static/"  # noqa
-
-SMTP_SERVER = config("SMTP_SERVER", "", cast=str)
-SMTP_SENDER = config("SMTP_SENDER", "", cast=str)
-SMTP_USER = config("SMTP_USER", "", cast=str)
-SMTP_PASSWORD = config("SMTP_PASSWORD", "", cast=str)
-SMTP_PORT = config("SMTP_PORT", 465)
-
-if ENV == "dev":
-    DEBUG = True
-    ALLOWED_HOSTS = ["*"]
-    SECURE_SSL_REDIRECT = False
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    INSTALLED_APPS.append("debug_toolbar")
-    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
