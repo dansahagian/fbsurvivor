@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+"$SCRIPT_DIR"/checks/lint
+"$SCRIPT_DIR"/checks/format
+"$SCRIPT_DIR"/checks/types
+"$SCRIPT_DIR"/checks/test
+
+echo "✅"

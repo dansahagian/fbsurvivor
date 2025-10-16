@@ -15,14 +15,15 @@ dependencies = [
     "psycopg[c]",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
+    "basedpyright>=1.31.6",
+    "decouple-types>=1.0.2",
     "django-debug-toolbar",
     "django-stubs",
     "django-types",
     "factory-boy",
     "ipython",
-    "pyright[nodejs]",
     "pytest",
     "pytest-django",
 ]
@@ -31,23 +32,17 @@ dev-dependencies = [
 line-length = 99
 target-version = "py313"
 
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 docstring-code-format = true
-exclude = [".git", ".pytest_cache", ".ruff_cache", "venv", ".venv"]
 
-[tool.ruff.lint]
-select = ["C", "E", "F", "W"]
+[tool.django-stubs]
+django_settings_module = "fbsurvivor.settings"
 
-[tool.pyright]
-venvPath = "."
-venv = ".venv"
-exclude = ["**/__pycache__", "**/migrations", ".venv", "venv"]
-ignore = ["**/migrations"]
-typeCheckingMode = "basic"
-reportMissingImports = "error"
-reportUnusedImports = "error"
-reportUnusedVariable = "error"
-reportUnnecessaryTypeIgnoreComment = "error"
-reportMissingTypeStubs = false
+[tool.basedpyright]
+exclude = ["**/__pycache__", "**/migrations", "**/tests", ".venv"]
+typeCheckingMode = "standard"

@@ -1,32 +1,26 @@
 repos:
   - repo: local
     hooks:
-      - id: ruff-imports
-        name: ruff import check
-        entry: ./dev/checks/ruff-imports
+      - id: lint
+        name: lint
+        entry: ./bin/checks/lint
         language: script
         pass_filenames: false
 
-      - id: ruff-format
-        name: ruff formatting
-        entry: ./dev/checks/ruff-format
+      - id: format
+        name: format
+        entry: ./bin/checks/format
         language: script
         pass_filenames: false
 
-      - id: ruff-check
-        name: ruff checks
-        entry: ./dev/checks/ruff-check
-        language: script
-        pass_filenames: false
-
-      - id: pyright
-        name: pyright checks
-        entry: ./dev/checks/pyright
+      - id: types
+        name: types
+        entry: ./bin/checks/types
         language: script
         pass_filenames: false
 
       - id: tests
-        name: run tests
-        entry: ./dev/checks/tests
+        name: tests
+        entry: ./bin/checks/test
         language: script
         pass_filenames: false

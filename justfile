@@ -1,51 +1,59 @@
 _list:
-    just -l
+    just -l --unsorted
 
-deploy:
-    bin/deploy
-
-
-[group('check')]
-pyright:
-    dev/checks/pyright
-
-[group('check')]
-ruff:
-    dev/checks/ruff-check
-
-[group('check')]
-ruff-format:
-    dev/checks/ruff-format
-
-[group('check')]
-ruff-imports:
-    dev/checks/ruff-imports
-
-[group('dev')]
-format:
-    ruff check --select I --fix
-    ruff format
-
-[group('dev')]
-initialize_db:
-    dev/initialize-db
-
-[group('dev')]
-initialize_env:
-    rm -rf .venv
-    uv venv
-    uv sync
-    pre-commit install
-
-[group('dev')]
-update_packages:
-    uv lock --upgrade
-    uv sync
-
-[group('manage')]
+[group('run')]
 runserver:
     uv run python manage.py runserver
 
-[group('manage')]
+[group('run')]
 shell_plus:
     uv run python manage.py shell_plus
+
+[group('deploy')]
+deploy: check
+    bin/deploy
+
+[group('check')]
+check:
+    bin/check
+
+[group('check')]
+lint:
+    bin/checks/lint
+
+[group('check')]
+format:
+    bin/checks/format
+
+[group('check')]
+types:
+    bin/checks/types
+
+[group('check')]
+test:
+    bin/checks/test
+
+
+[group('migrations')]
+showmigrations:
+    uv run python manage.py showmigrations
+
+[group('migrations')]
+makemigrations:
+    uv run python manage.py makemigrations
+
+[group('migrations')]
+migrate:
+    uv run python manage.py migrate
+
+[group('setup')]
+update_packages:
+    bin/update_packages
+
+[group('setup')]
+initialize_db:
+    bin/initialize-db
+
+[group('setup')]
+initialize_env:
+    bin/initialize_env

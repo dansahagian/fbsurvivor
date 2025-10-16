@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env sh
 
 echo "\nStopping services...\n"
 ssh linode sudo systemctl stop wsgi-server-fbsurvivor.service

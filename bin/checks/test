@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+uv run pytest .
+echo ""
