@@ -48,7 +48,7 @@ migrate:
 
 [group('dev')]
 update_packages:
-    bin/dev/update_packages
+    bin/dev/update-packages
 
 [group('dev')]
 initialize_db:
@@ -56,4 +56,4 @@ initialize_db:
 
 [group('dev')]
 initialize_env:
-    bin/dev/initialize_env
+    bin/dev/initialize-env
