@@ -46,14 +46,14 @@ makemigrations:
 migrate:
     uv run python manage.py migrate
 
-[group('setup')]
+[group('dev')]
 update_packages:
-    bin/update_packages
+    bin/dev/update_packages
 
-[group('setup')]
+[group('dev')]
 initialize_db:
-    bin/initialize-db
+    bin/dev/initialize-db
 
-[group('setup')]
+[group('dev')]
 initialize_env:
-    bin/initialize_env
+    bin/dev/initialize_env
