@@ -27,13 +27,13 @@ from fbsurvivor.core.views import (
 )
 
 urlpatterns = [
-    path("", login, name="login"),  # pyright: ignore
+    path("", login, name="login"),
     path("logout", logout, name="logout"),
     path("enter/<str:magic_link_id>/", enter, name="enter"),
     path("assume/<str:username>/", assume, name="assume"),
     path("board/", board_redirect, name="board_redirect"),
     path("board/<int:year>/", board, name="board"),
-    path("play/<int:year>/", play, name="play"),  # pyright: ignore
+    path("play/<int:year>/", play, name="play"),
     path("buy-back/<int:year>/", buy_back, name="buy_back"),
     path("decline-buy-back/<int:year>/", decline_buy_back, name="decline_buy_back"),
     path("payouts/", payouts, name="payouts"),
@@ -41,7 +41,7 @@ urlpatterns = [
     path("seasons/", seasons, name="seasons"),
     path("theme/", theme, name="theme"),
     path("picks/<int:year>/", picks, name="picks"),
-    path("picks/<int:year>/<int:week>/", pick, name="pick"),  # pyright: ignore
+    path("picks/<int:year>/<int:week>/", pick, name="pick"),
     path("manager/<int:year>/", manager, name="manager"),
     path("paid/<int:year>/", paid, name="paid"),
     path("paid/<int:year>/<str:username>/", user_paid, name="user_paid"),

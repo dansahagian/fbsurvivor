@@ -17,8 +17,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "basedpyright>=1.31.6",
-    "decouple-types>=1.0.2",
+    "decouple-types",
     "django-debug-toolbar",
     "django-stubs",
     "django-types",
@@ -26,6 +25,7 @@ dev = [
     "ipython",
     "pytest",
     "pytest-django",
+    "ty",
 ]
 
 [tool.ruff]
@@ -42,7 +42,3 @@ docstring-code-format = true
 
 [tool.django-stubs]
 django_settings_module = "fbsurvivor.settings"
-
-[tool.basedpyright]
-exclude = ["**/__pycache__", "**/migrations", "**/tests", ".venv"]
-typeCheckingMode = "standard"

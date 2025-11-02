@@ -1,4 +1,3 @@
-from logging import debug
 from pathlib import Path
 
 from decouple import config
@@ -28,20 +27,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 INTERNAL_IPS = ["127.0.0.1"]
 
 if ENV == "dev":
-    debug = True
+    debug_flag = True
     allowed_hosts = ["*"]
     secure_ssl_redirect = False
     session_cookie_secure = False
     csrf_cookie_secure = False
 else:
-    debug = False
+    debug_flag = False
     allowed_hosts = ["fbsurvivor.com"]
     secure_ssl_redirect = False
     session_cookie_secure = True
     csrf_cookie_secure = True
     CSRF_TRUSTED_ORIGINS = ["https://fbsurvivor.com"]
 
-DEBUG = debug
+DEBUG = debug_flag
 ALLOWED_HOSTS = allowed_hosts
 SECURE_SSL_REDIRECT = secure_ssl_redirect
 SESSION_COOKIE_SECURE = session_cookie_secure

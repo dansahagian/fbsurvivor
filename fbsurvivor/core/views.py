@@ -387,9 +387,16 @@ def result(request, year, week, team, outcome, **kwargs):
     week = get_object_or_404(Week, season=season, week_num=week)
 
     team = get_object_or_404(Team, team_code=team, season=season)
-    PickQuery.for_result_updates(week, team).update(result=outcome)
     PickQuery.for_no_picks(week).update(result="L")
+    picks = PickQuery.for_result_updates(week, team)
 
+    # if it's a loss, query for the player statuses and set their is_survivor to false
+    if outcome == "L":
+        PlayerStatus.objects.filter(player__pick__in=picks, season=season).update(
+            is_survivor=False
+        )
+
+    picks.update(result=outcome)
     _player_records_updated = update_player_records(year)
     cache_board(season)
 
