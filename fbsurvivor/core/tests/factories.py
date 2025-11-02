@@ -1,11 +1,12 @@
-import factory.django
 from django.utils import timezone
 from factory.declarations import LazyAttribute, Sequence, SubFactory
+from factory.django import DjangoModelFactory
 
 from fbsurvivor.core.models import Pick, Player, PlayerStatus, Season, Team, Week
 
 
-class PlayerFactory(factory.django.DjangoModelFactory):
+class PlayerFactory(DjangoModelFactory):
+    # pyrefly: ignore  # bad-override
     class Meta:
         model = Player
 
@@ -14,7 +15,8 @@ class PlayerFactory(factory.django.DjangoModelFactory):
     has_email_reminders = True
 
 
-class SeasonFactory(factory.django.DjangoModelFactory):
+class SeasonFactory(DjangoModelFactory):
+    # pyrefly: ignore  # bad-override
     class Meta:
         model = Season
 
@@ -23,7 +25,8 @@ class SeasonFactory(factory.django.DjangoModelFactory):
     is_current = False
 
 
-class WeekFactory(factory.django.DjangoModelFactory):
+class WeekFactory(DjangoModelFactory):
+    # pyrefly: ignore  # bad-override
     class Meta:
         model = Week
 
@@ -32,7 +35,8 @@ class WeekFactory(factory.django.DjangoModelFactory):
     lock_datetime = timezone.now()
 
 
-class TeamFactory(factory.django.DjangoModelFactory):
+class TeamFactory(DjangoModelFactory):
+    # pyrefly: ignore  # bad-override
     class Meta:
         model = Team
 
@@ -41,7 +45,8 @@ class TeamFactory(factory.django.DjangoModelFactory):
     bye_week = Sequence(lambda n: n + 1)
 
 
-class PickFactory(factory.django.DjangoModelFactory):
+class PickFactory(DjangoModelFactory):
+    # pyrefly: ignore  # bad-override
     class Meta:
         model = Pick
 
@@ -50,7 +55,8 @@ class PickFactory(factory.django.DjangoModelFactory):
     team = SubFactory(TeamFactory)
 
 
-class PlayerStatusFactory(factory.django.DjangoModelFactory):
+class PlayerStatusFactory(DjangoModelFactory):
+    # pyrefly: ignore  # bad-override
     class Meta:
         model = PlayerStatus
 

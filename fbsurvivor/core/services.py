@@ -23,13 +23,13 @@ class PlayerService:
 
 
 class SeasonService:
-    def __init__(self, season: int | Season | None = None):
+    def __init__(self, season: int):
         if isinstance(season, Season):
             self.season = season
         elif isinstance(season, int):
             self.season = Season.objects.get(year=season)
         else:
-            self.season = None
+            raise ValueError("Invalid season")
 
     @staticmethod
     def get_current():

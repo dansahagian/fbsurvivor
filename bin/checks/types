@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 
-uv run basedpyright
+uv run ty check
 echo ""

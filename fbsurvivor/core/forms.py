@@ -18,7 +18,7 @@ class PickForm(forms.Form):
 
         # Get current pick for this week if it exists
         current_pick = Pick.objects.filter(player=player, week=week, team__isnull=False).first()
-        initial_team = current_pick.team.team_code if current_pick else ""  # pyright: ignore
+        initial_team = current_pick.team.team_code if current_pick else ""
 
         # Get all teams this player has picked in this season
         picks = Pick.objects.filter(
