@@ -1,26 +1,35 @@
-dictionaries = ["en_us", "en_gb"]
-
+dictionaries = [
+    "en_us",
+    "en_gb",
+]
 words = [
     "codebook",
-    "pyright",
-    "urlpatterns",
-    "fbsurvivor",
     "endfor",
-    "venmo",
-    "templatetags",
-    "runserver",
-    "venv",
+    "favicons",
+    "fbsurvivor",
+    "justfile",
+    "leaderboard",
+    "makemigrations",
+    "mstile",
+    "passwordless",
     "playerstatus",
     "playerstatuses",
-    "queryset",
-    "favicons",
-    "mstile",
+    "psycopg",
+    "pyproject",
     "pyrefly",
+    "pyright",
+    "queryset",
+    "querysets",
+    "runserver",
+    "showmigrations",
+    "templatetags",
+    "urlpatterns",
+    "venmo",
+    "venv",
 ]
-
 ignore_paths = [
     "**/settings.py",
     "**/pyproject.toml",
     "**/*.json",
-    "**/*.toml"
+    "**/*.toml",
 ]
