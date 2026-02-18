@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-
-rm -rf .venv
-uv venv
-uv sync
-pre-commit install

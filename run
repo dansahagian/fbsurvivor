@@ -1,0 +1,125 @@
+#!/usr/bin/env sh
+
+set -e
+
+usage() {
+    echo "Usage: $(basename "$0") <command>"
+    echo ""
+    echo "Commands:"
+    echo "  check             Run lint, format, types, and test"
+    echo "  lint              Run ruff linter with auto-fix"
+    echo "  format            Run ruff formatter"
+    echo "  types             Run type checking"
+    echo "  test              Run tests with pytest"
+    echo ""
+    echo "  deploy            Deploy the app"
+    echo ""
+    echo "  runserver         Start Django dev server"
+    echo "  shell_plus        Open Django shell_plus"
+    echo ""
+    echo "  showmigrations    Show Django migrations"
+    echo "  makemigrations    Create Django migrations"
+    echo "  migrate           Apply Django migrations"
+    echo ""
+    echo "  update_packages   Upgrade and sync uv packages"
+    echo "  init_env          Create fresh .venv and install deps"
+    echo "  init_db           Initialize the database with production data"
+    echo ""
+}
+
+cmd_lint()             { uv run ruff check --fix; }
+cmd_format()           { uv run ruff format; }
+cmd_types()            { uv run ty check; }
+cmd_test()             { uv run pytest .; }
+cmd_runserver()        { uv run python manage.py runserver; }
+cmd_shell_plus()       { uv run python manage.py shell_plus; }
+cmd_showmigrations()   { uv run python manage.py showmigrations; }
+cmd_makemigrations()   { uv run python manage.py makemigrations; }
+cmd_migrate()          { uv run python manage.py migrate; }
+
+cmd_update_packages() {
+    uv lock --upgrade
+    uv sync
+}
+
+cmd_init_env() {
+    rm -rf .venv
+    uv venv
+    uv sync
+    uv run pre-commit install
+}
+
+cmd_init_db() {
+    ssh dan@linode "pg_dump -U fbsurvivor2 fbsurvivor2 > /tmp/fbsurvivor_dump"
+    scp dan@linode:/tmp/fbsurvivor_dump ~/d/code/fbsurvivor/tmp/fbsurvivor_dump
+    ssh dan@linode "rm /tmp/fbsurvivor_dump"
+
+    psql -U postgres -d fbsurvivor2 -c "DROP SCHEMA IF EXISTS public CASCADE;"
+    psql -U postgres -d postgres -c "DROP DATABASE fbsurvivor2;"
+    psql -U postgres -d postgres -c "DROP ROLE fbsurvivor2;"
+    psql -U postgres -d postgres -c "CREATE DATABASE fbsurvivor2;"
+    psql -U postgres -d postgres -c "CREATE ROLE fbsurvivor2 WITH PASSWORD 'password';"
+    psql -U postgres -d postgres -c "ALTER ROLE fbsurvivor2 WITH CREATEDB LOGIN;"
+    psql -U postgres -d postgres -c "GRANT ALL ON DATABASE fbsurvivor2 to fbsurvivor2;"
+    psql -U postgres -d fbsurvivor2 -c "DROP SCHEMA IF EXISTS public;"
+    psql -U postgres -d fbsurvivor2 -c "CREATE SCHEMA IF NOT EXISTS public AUTHORIZATION fbsurvivor2;"
+
+    psql fbsurvivor2 < ~/d/code/fbsurvivor/tmp/fbsurvivor_dump
+}
+
+cmd_deploy() {
+    set -e
+
+    cmd_check
+
+    echo "\nDeploying...\n"
+
+    rsync -a ./fbsurvivor dan@linode:/opt/fbsurvivor
+    rsync -a ./pyproject.toml dan@linode:/opt/fbsurvivor
+    rsync -a ./uv.lock dan@linode:/opt/fbsurvivor
+    rsync -a ./manage.py dan@linode:/opt/fbsurvivor
+    rsync -a ./infra/deploy dan@linode:/opt/fbsurvivor
+    rsync -a ./prod.env dan@linode:/opt/fbsurvivor/.env
+    rsync -a ./uploads dan@linode:/opt/fbsurvivor
+
+    ssh linode /opt/fbsurvivor/deploy
+
+    curl -X GET -I https://fbsurvivor.com
+}
+
+cmd_check() {
+    cmd_lint
+    cmd_format
+    cmd_types
+    cmd_test
+    echo "✅"
+}
+
+if [ $# -eq 0 ]; then
+    usage
+    exit 1
+fi
+
+case "$1" in
+    lint)              cmd_lint ;;
+    format)            cmd_format ;;
+    types)             cmd_types ;;
+    test)              cmd_test ;;
+    check)             cmd_check ;;
+    deploy)            cmd_deploy ;;
+    runserver)         cmd_runserver ;;
+    shell_plus)        cmd_shell ;;
+    showmigrations)    cmd_showmigrations ;;
+    makemigrations)    cmd_makemigrations ;;
+    migrate)           cmd_migrate ;;
+    update_packages)   cmd_update_packages ;;
+    init_env)          cmd_init_env ;;
+    init_db)           cmd_init_db ;;
+    help|-h|--help)    usage ;;
+    *)
+        echo "Unknown command: $1" >&2
+        echo ""
+        usage
+        exit 1
+        ;;
+esac

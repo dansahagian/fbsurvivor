@@ -3,7 +3,7 @@ name = "fbsurvivor"
 version = "3.0"
 description = "Run an NFL Survivor Pool"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "django",
     "django-extensions",
@@ -25,7 +25,9 @@ dev = [
     "ipython",
     "pytest",
     "pytest-django",
+    "ruff",
     "ty",
+    "pre-commit",
 ]
 
 [tool.ruff]
