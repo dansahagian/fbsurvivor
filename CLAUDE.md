@@ -18,40 +18,40 @@ It replaces previous versions that used Flask with raw SQL queries.
 
 ## Development Commands
 
-All commands use `just` (justfile) or direct `bin/` scripts:
+All commands use the ./run script:
 
 **Running the application:**
 ```bash
-just runserver           # Start development server
-just shell_plus          # Django shell with models auto-imported
+./run runserver           # Start development server
+./run shell_plus          # Django shell with models auto-imported
 ```
 
 **Quality checks:**
 ```bash
-just check               # Run all checks (lint, format, types, test)
-just lint                # Ruff linting with auto-fix
-just format              # Ruff formatting
-just types               # Type checking with ty
-just test                # Run pytest suite
+./run check               # Run all checks (lint, format, types, test)
+./run lint                # Ruff linting with auto-fix
+./run format              # Ruff formatting
+./run types               # Type checking with ty
+./run test                # Run pytest suite
 ```
 
 **Database migrations:**
 ```bash
-just showmigrations      # Show migration status
-just makemigrations      # Create new migrations
-just migrate             # Apply migrations
+./run showmigrations      # Show migration status
+./run makemigrations      # Create new migrations
+./run migrate             # Apply migrations
 ```
 
 **Development setup:**
 ```bash
-just initialize_env      # Set up environment
-just initialize_db       # Initialize database
-just update_packages     # Update dependencies
+./run init_env      # Set up environment
+./run init_db       # Initialize database
+./run update_packages     # Update dependencies
 ```
 
 **Deployment:**
 ```bash
-just deploy              # Deploy to production (runs bin/deploy)
+./run deploy              # Deploy to production (runs bin/deploy)
 ```
 
 **Testing:**
