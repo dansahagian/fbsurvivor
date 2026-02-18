@@ -3,24 +3,24 @@ repos:
     hooks:
       - id: lint
         name: lint
-        entry: ./bin/checks/lint
+        entry: ./run lint
         language: script
         pass_filenames: false
 
       - id: format
         name: format
-        entry: ./bin/checks/format
+        entry: ./run format
         language: script
         pass_filenames: false
 
       - id: types
         name: types
-        entry: ./bin/checks/types
+        entry: ./run types
         language: script
         pass_filenames: false
 
       - id: tests
         name: tests
-        entry: ./bin/checks/test
+        entry: ./run test
         language: script
         pass_filenames: false

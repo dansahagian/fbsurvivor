@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-
-uv run ty check
-echo ""
