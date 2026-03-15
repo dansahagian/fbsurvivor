@@ -27,9 +27,9 @@ usage() {
     echo ""
 }
 
-cmd_lint()             { uv run ruff check --fix; }
-cmd_format()           { uv run ruff format; }
-cmd_types()            { uv run ty check; }
+cmd_lint()             { ruff check --fix; }
+cmd_format()           { ruff format; }
+cmd_types()            { ty check; }
 cmd_test()             { uv run pytest .; }
 cmd_runserver()        { uv run python manage.py runserver; }
 cmd_shell_plus()       { uv run python manage.py shell_plus; }
@@ -46,7 +46,7 @@ cmd_init_env() {
     rm -rf .venv
     uv venv
     uv sync
-    uv run pre-commit install
+    pre-commit install
 }
 
 cmd_init_db() {

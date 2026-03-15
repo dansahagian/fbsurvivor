@@ -30,7 +30,7 @@ def verify_token(token: str) -> Player | None:
             payload = decode(token, SECRET_KEY, algorithms="HS256")
             username = payload.get("username")
             return Player.objects.get(username=username)
-        except (ExpiredSignatureError, InvalidSignatureError, Player.DoesNotExist, DecodeError):
+        except ExpiredSignatureError, InvalidSignatureError, Player.DoesNotExist, DecodeError:
             return None
 
 
