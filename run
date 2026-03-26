@@ -50,9 +50,9 @@ cmd_init_env() {
 }
 
 cmd_init_db() {
-    ssh dan@linode "pg_dump -U fbsurvivor2 fbsurvivor2 > /tmp/fbsurvivor_dump"
-    scp dan@linode:/tmp/fbsurvivor_dump ~/d/code/fbsurvivor/tmp/fbsurvivor_dump
-    ssh dan@linode "rm /tmp/fbsurvivor_dump"
+    ssh dan@skadi "pg_dump -U fbsurvivor2 fbsurvivor2 > /tmp/fbsurvivor_dump"
+    scp dan@skadi:/tmp/fbsurvivor_dump ~/d/code/fbsurvivor/tmp/fbsurvivor_dump
+    ssh dan@skadi "rm /tmp/fbsurvivor_dump"
 
     psql -U postgres -d fbsurvivor2 -c "DROP SCHEMA IF EXISTS public CASCADE;"
     psql -U postgres -d postgres -c "DROP DATABASE fbsurvivor2;"
@@ -74,15 +74,15 @@ cmd_deploy() {
 
     echo "\nDeploying...\n"
 
-    rsync -a ./fbsurvivor dan@linode:/opt/fbsurvivor
-    rsync -a ./pyproject.toml dan@linode:/opt/fbsurvivor
-    rsync -a ./uv.lock dan@linode:/opt/fbsurvivor
-    rsync -a ./manage.py dan@linode:/opt/fbsurvivor
-    rsync -a ./infra/deploy dan@linode:/opt/fbsurvivor
-    rsync -a ./prod.env dan@linode:/opt/fbsurvivor/.env
-    rsync -a ./uploads dan@linode:/opt/fbsurvivor
+    rsync -a ./fbsurvivor dan@skadi:/opt/fbsurvivor
+    rsync -a ./pyproject.toml dan@skadi:/opt/fbsurvivor
+    rsync -a ./uv.lock dan@skadi:/opt/fbsurvivor
+    rsync -a ./manage.py dan@skadi:/opt/fbsurvivor
+    rsync -a ./infra/deploy dan@skadi:/opt/fbsurvivor
+    rsync -a ./prod.env dan@skadi:/opt/fbsurvivor/.env
+    rsync -a ./uploads dan@skadi:/opt/fbsurvivor
 
-    ssh linode /opt/fbsurvivor/deploy
+    ssh skadi /opt/fbsurvivor/deploy
 
     curl -X GET -I https://fbsurvivor.com
 }
