@@ -5,7 +5,7 @@
         <div class="container">
             {{ season.description }} >
             <a class="pill picks" href="{% url 'picks' season.year %}">Picks</a>
-            {% if next_week and next_pick%}
+            {% if next_week and next_pick %}
                 > <a class="pill picks" href="{% url 'pick' season.year next_week %}">{{ next_pick }}</a>
             {% endif %}
             <div class="container">
@@ -22,43 +22,43 @@
                     {% for row in board %}
                         {% if row.player_status.player == player %}
                             <tr class="user-row">
-                        {% else %}
+                                {% else %}
                             <tr>
                         {% endif %}
-                            <td style="white-space: nowrap;">
-                                {% if row.player_status.is_survivor %}
-                                ★
-                                {% endif %}
-                                {{ row.player_status.player.username }}
-                            </td>
-                            <td>{{ row.player_status.win_count }}-{{ row.player_status.loss_count }}</td>
-                            {% for week in weeks %}
-                                <td
-                                    {% if row|get_result_week:week == "R" %}
-                                        class="none"
-                                    {% elif row|get_result_week:week == "W" %}
-                                        class="win"
-                                    {% elif row|get_result_week:week == "L" %}
-                                        class="loss"
-                                    {% endif %}
-                                >
+                    <td style="white-space: nowrap;">
+                        {% if row.player_status.is_survivor %}
+                            ★
+                        {% endif %}
+                        {{ row.player_status.player.username }}
+                    </td>
+                    <td>{{ row.player_status.win_count }}-{{ row.player_status.loss_count }}</td>
+                    {% for week in weeks %}
+                        <td
                                 {% if row|get_result_week:week == "R" %}
-                                    🌴
-                                {% elif row|get_pick_week:week %}
-                                    {% if row|get_result_week:week == "L" %}
-                                        <strike>{{ row|get_pick_week:week }}</strike>
-                                    {% elif row|get_result_week:week == "W" %}
-                                        {{ row|get_pick_week:week }}
-                                    {% else %}
-                                        {{ row|get_pick_week:week }}
-                                    {% endif %}
-
-                                {% else %}
-                                    🤬
+                                    class="none"
+                                {% elif row|get_result_week:week == "W" %}
+                                    class="win"
+                                {% elif row|get_result_week:week == "L" %}
+                                    class="loss"
                                 {% endif %}
-                                </td>
-                            {% endfor %}
-                            </tr>
+                        >
+                            {% if row|get_result_week:week == "R" %}
+                                🌴
+                            {% elif row|get_pick_week:week %}
+                                {% if row|get_result_week:week == "L" %}
+                                    <span style="text-decoration: line-through;">{{ row|get_pick_week:week }}</span>
+                                {% elif row|get_result_week:week == "W" %}
+                                    {{ row|get_pick_week:week }}
+                                {% else %}
+                                    {{ row|get_pick_week:week }}
+                                {% endif %}
+
+                            {% else %}
+                                🤬
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                    </tr>
                     {% endfor %}
                 </table>
             </div>

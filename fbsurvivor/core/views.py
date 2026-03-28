@@ -56,6 +56,8 @@ def login(request):
 
         return render(request, "fbsurvivor/templates/login-sent.html")
 
+    raise Http404
+
 
 def enter(request, magic_link_id):
     try:
@@ -157,13 +159,7 @@ def play(request, year: int, **kwargs):
     if season.is_locked:
         return send_to_latest_season_played(request, player)
 
-    context.update(
-        {
-            "player": player,
-            "season": season,
-            "contact": CONTACT,
-        }
-    )
+    context.update({"player": player, "season": season, "contact": CONTACT})
 
     if request.method == "GET":
         return render(request, "rules-confirm.html", context=context)
@@ -179,6 +175,8 @@ def play(request, year: int, **kwargs):
         send_email("Survivor New Player!", [CONTACT], message)
 
         return redirect(reverse("board", args=[year]))
+
+    raise Http404
 
 
 @authenticate_player
@@ -344,6 +342,8 @@ def pick(request, year, week, **kwargs):
         else:
             return render(request, "pick-error.html", context=context)
 
+    raise Http404
+
 
 @authenticate_admin
 def manager(request, year, **kwargs):
@@ -388,15 +388,15 @@ def result(request, year, week, team, outcome, **kwargs):
 
     team = get_object_or_404(Team, team_code=team, season=season)
     PickQuery.for_no_picks(week).update(result="L")
-    picks = PickQuery.for_result_updates(week, team)
+    weekly_picks = PickQuery.for_result_updates(week, team)
 
-    # if it's a loss, query for the player statuses and set their is_survivor to false
+    # if it's a loss, query for the player statuses and set the is_survivor flag to false
     if outcome == "L":
         PlayerStatus.objects.filter(player__pick__in=picks, season=season).update(
             is_survivor=False
         )
 
-    picks.update(result=outcome)
+    weekly_picks.update(result=outcome)
     _player_records_updated = update_player_records(year)
     cache_board(season)
 

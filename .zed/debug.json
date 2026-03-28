@@ -1,7 +1,3 @@
-// Project-local debug tasks
-//
-// For more documentation on how to configure debug tasks,
-// see: https://zed.dev/docs/debugger
 [
   {
     "adapter": "Debugpy",
@@ -10,7 +6,9 @@
     "subProcess": true,
     "redirectOutput": true,
     "program": "./manage.py",
-    "args": ["runserver"],
+    "args": [
+      "runserver"
+    ],
     "stopOnEntry": false,
     "cwd": "/Users/dan/d/code/fbsurvivor"
   }
