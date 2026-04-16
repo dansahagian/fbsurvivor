@@ -12,4 +12,5 @@ tmp
 
 *.pid
 .pytest_cache
+.ruff_cache
 notebook.ipynb

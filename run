@@ -46,7 +46,7 @@ cmd_init_env() {
     rm -rf .venv
     uv venv
     uv sync
-    pre-commit install
+    uv run pre-commit install
 }
 
 cmd_init_db() {

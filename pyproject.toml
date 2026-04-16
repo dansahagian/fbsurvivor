@@ -23,10 +23,11 @@ dev = [
     "django-types",
     "factory-boy",
     "ipython",
+    "pre-commit",
     "pytest",
     "pytest-django",
-    "ruff>=0.15.8",
-    "ty>=0.0.26",
+    "ruff",
+    "ty",
 ]
 
 [tool.ruff]
