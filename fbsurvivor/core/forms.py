@@ -9,7 +9,7 @@ class EmailForm(forms.Form):
 
 class PlayerForm(forms.Form):
     username = forms.CharField(label="username", max_length=20)
-    email = forms.EmailField(label="email (won't be displayed)")
+    email = forms.EmailField(label="email")
 
 
 class PickForm(forms.Form):

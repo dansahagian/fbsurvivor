@@ -108,7 +108,7 @@ case "$1" in
     check)             cmd_check ;;
     deploy)            cmd_deploy ;;
     runserver)         cmd_runserver ;;
-    shell_plus)        cmd_shell ;;
+    shell_plus)        cmd_shell_plus ;;
     showmigrations)    cmd_showmigrations ;;
     makemigrations)    cmd_makemigrations ;;
     migrate)           cmd_migrate ;;

@@ -1,8 +1,9 @@
+from django.db import IntegrityError
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from fbsurvivor.core.forms import EmailForm, PickForm
+from fbsurvivor.core.forms import EmailForm, PickForm, PlayerForm
 from fbsurvivor.core.models import (
     Board,
     LoggedOutTokens,
@@ -14,7 +15,19 @@ from fbsurvivor.core.models import (
     Team,
     Week,
 )
-from fbsurvivor.core.services import PayoutQuery, PickQuery, PlayerStatusQuery, WeekQuery
+from fbsurvivor.core.queries import (
+    get_current_week,
+    get_locked_weeks_for_season,
+    get_next_week,
+    get_payouts,
+    get_player_statuses_for_season_board,
+    get_player_statuses_paid_for_season,
+    get_player_years,
+    no_picks_for_result_update,
+    picks_for_player_season,
+    picks_for_result_updates,
+    picks_for_results,
+)
 from fbsurvivor.core.utils.auth import (
     authenticate_admin,
     authenticate_player,
@@ -22,7 +35,7 @@ from fbsurvivor.core.utils.auth import (
     get_season_context,
     send_magic_link,
 )
-from fbsurvivor.core.utils.emails import send_email
+from fbsurvivor.core.utils.emails import send_email, send_new_player_email
 from fbsurvivor.core.utils.helpers import (
     cache_board,
     can_buy_back,
@@ -38,9 +51,7 @@ def login(request):
         if request.session.get("token"):
             return redirect(reverse("board_redirect"))
 
-        context = {
-            "form": EmailForm(),
-        }
+        context = {"form": EmailForm()}
         return render(request, "fbsurvivor/templates/login.html", context=context)
 
     if request.method == "POST":
@@ -110,7 +121,7 @@ def board(request, year: int, **kwargs):
         if season.is_locked:
             return send_to_latest_season_played(request, player)
         else:
-            context["player_count"] = PlayerStatusQuery.for_season_board(season).count()
+            context["player_count"] = get_player_statuses_for_season_board(season).count()
             return render(request, "player-play.html", context=context)
 
     if not player_status.is_paid:
@@ -119,10 +130,10 @@ def board(request, year: int, **kwargs):
     if can_buy_back(player_status, player, season):
         return render(request, "player-buy-back.html", context=context)
 
-    weeks = WeekQuery.for_display(season).order_by("-week_num").values_list("week_num", flat=True)
+    weeks = get_locked_weeks_for_season(season).values_list("week_num", flat=True)
     season_board = get_board(season)
 
-    next_week = WeekQuery.get_next(season)
+    next_week = get_next_week(season)
 
     context["next_week"] = None
     if next_week:
@@ -217,7 +228,7 @@ def decline_buy_back(request, year: int, **kwargs):
 @authenticate_player
 def payouts(request, **kwargs):
     player = kwargs["player"]
-    player_payouts = PayoutQuery.for_payout_table()
+    player_payouts = get_payouts()
 
     context = {
         "player": player,
@@ -243,7 +254,7 @@ def rules(request, **kwargs):
 def seasons(request, **kwargs):
     player = kwargs["player"]
 
-    years = list(PlayerStatusQuery.player_years(player))
+    years = list(get_player_years(player))
 
     context = {
         "player": player,
@@ -291,9 +302,7 @@ def picks(request, year, **kwargs):
 
     can_retire = player_status and (not player_status.is_retired) and season.is_current
 
-    context["picks"] = (
-        PickQuery.for_player_season(player, season).select_related("week").select_related("team")
-    )
+    context["picks"] = picks_for_player_season(player, season).select_related("week", "team")
     context["status"] = "Retired" if player_status.is_retired else "Playing"
     context["can_retire"] = can_retire
     context["current"] = "picks"
@@ -352,9 +361,34 @@ def manager(request, year, **kwargs):
 
 
 @authenticate_admin
+def create_player(request, **kwargs):
+    if request.method == "GET":
+        context = {"form": PlayerForm()}
+        return render(request, "manager-create-player.html", context=context)
+
+    if request.method == "POST":
+        form = PlayerForm(request.POST)
+
+        if form.is_valid():
+            username = form.cleaned_data["username"]
+            email = form.cleaned_data["email"]
+
+            try:
+                player, created = Player.objects.get_or_create(username=username, email=email)
+            except IntegrityError:
+                return render(request, "player-not-created.html")
+
+            if created:
+                send_new_player_email(player)
+                return render(request, "player-created.html")
+
+            return render(request, "player-not-created.html")
+
+
+@authenticate_admin
 def paid(request, year, **kwargs):
     season, context = get_season_context(year, **kwargs)
-    player_statuses = PlayerStatusQuery.paid_for_season(season).prefetch_related("player")
+    player_statuses = get_player_statuses_paid_for_season(season)
     context["player_statuses"] = player_statuses
     return render(request, "manager-paid.html", context=context)
 
@@ -372,8 +406,8 @@ def user_paid(request, year, username, **kwargs):
 @authenticate_admin
 def results(request, year, **kwargs):
     season, context = get_season_context(year, **kwargs)
-    current_week = WeekQuery.get_current(season)
-    teams = PickQuery.for_results(current_week)
+    current_week = get_current_week(season)
+    teams = picks_for_results(current_week) if current_week else []
 
     context["week"] = current_week
     context["teams"] = teams
@@ -387,8 +421,8 @@ def result(request, year, week, team, outcome, **kwargs):
     week = get_object_or_404(Week, season=season, week_num=week)
 
     team = get_object_or_404(Team, team_code=team, season=season)
-    PickQuery.for_no_picks(week).update(result="L")
-    weekly_picks = PickQuery.for_result_updates(week, team)
+    no_picks_for_result_update(week).update(result="L")
+    weekly_picks = picks_for_result_updates(week, team)
 
     # if it's a loss, query for the player statuses and set the is_survivor flag to false
     if outcome == "L":

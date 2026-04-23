@@ -3,7 +3,13 @@ from typing import Dict, Tuple
 from django.shortcuts import get_object_or_404
 
 from fbsurvivor.core.models import Board, Pick, Player, PlayerStatus, Season
-from fbsurvivor.core.services import PickQuery, PlayerStatusQuery, SeasonService, WeekQuery
+from fbsurvivor.core.queries import (
+    get_current_week,
+    get_live_seasons,
+    get_next_week,
+    get_player_statuses_for_season_board,
+    picks_for_board,
+)
 
 
 def get_player_context(player: Player, year: int) -> Tuple[Season, PlayerStatus | None, dict]:
@@ -53,10 +59,8 @@ def get_board(season: Season):
 
 
 def cache_board(season: Season) -> bool:
-    ps = PlayerStatusQuery.for_season_board(season).select_related("player")
-    pick_data = [
-        (x, list(PickQuery.for_board(x.player, season).select_related("team"))) for x in ps
-    ]
+    ps = get_player_statuses_for_season_board(season)
+    pick_data = [(x, list(picks_for_board(x.player, season).select_related("team"))) for x in ps]
 
     r = 1
     for row in pick_data:
@@ -76,7 +80,7 @@ def cache_board(season: Season) -> bool:
 
 
 def cache_current_board() -> bool:
-    for season in SeasonService.get_live():
+    for season in get_live_seasons():
         cache_board(season)
     return True
 
@@ -101,13 +105,13 @@ def can_buy_back(
     if not player_status.can_buy_back:
         return False
 
-    if not (current_week := WeekQuery.get_current(season)):
+    if not (current_week := get_current_week(season)):
         return False
 
     if player_status.loss_count != 1:
         return False
 
-    if (next_week := WeekQuery.get_next(season)) and next_week.is_locked:
+    if (next_week := get_next_week(season)) and next_week.is_locked:
         return False
 
     try:

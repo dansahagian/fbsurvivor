@@ -1,7 +1,9 @@
 import smtplib
 from email.mime.text import MIMEText
 
-from fbsurvivor.core.models import EmailLogRecord
+from django.conf import settings
+
+from fbsurvivor.core.models import EmailLogRecord, Player
 from fbsurvivor.settings import ENV, SMTP_PASSWORD, SMTP_SENDER, SMTP_SERVER, SMTP_USER
 
 
@@ -38,3 +40,13 @@ def send_email(subject, recipients, message) -> None:
     log_email(subject, recipients)
 
     return None
+
+
+def send_new_player_email(player: Player) -> None:
+    ps = f"If you didn't sign up, please email Dan at {settings.CONTACT}"
+    login = f"{settings.DOMAIN}"
+    subject = "Survivor User Account"
+    recipients = [player.email]
+    message = f"You can login here:\n\n{login}\n\n{ps}"
+
+    send_email(subject, recipients, message)

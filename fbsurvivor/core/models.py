@@ -6,7 +6,7 @@ from django.utils import timezone
 
 class Player(models.Model):
     username = models.CharField(max_length=20, unique=True)
-    email = models.CharField(max_length=100, blank=True, default="")
+    email = models.CharField(max_length=100, unique=True, null=True, default=None)
 
     emoji = models.CharField(max_length=8, blank=True, default="")
     notes = models.TextField(blank=True, default="")
@@ -15,6 +15,9 @@ class Player(models.Model):
     is_dark_mode = models.BooleanField(default=False)
 
     has_email_reminders = models.BooleanField(default=True)
+
+    player_statuses: models.Manager["PlayerStatus"]
+    picks: models.Manager["Pick"]
 
     class Meta:
         indexes = [models.Index(fields=["username"]), models.Index(fields=["email"])]
@@ -51,6 +54,9 @@ class Season(models.Model):
     is_current = models.BooleanField(default=False)
     is_live = models.BooleanField(default=False)
 
+    weeks: models.Manager["Week"]
+    player_statuses: models.Manager["PlayerStatus"]
+
     def __str__(self):
         return f"{self.year}"
 
@@ -61,7 +67,12 @@ class Season(models.Model):
 
 class PlayerStatus(models.Model):
     player = models.ForeignKey(Player, on_delete=models.DO_NOTHING)
-    season = models.ForeignKey(Season, on_delete=models.DO_NOTHING)
+    season = models.ForeignKey(
+        Season,
+        on_delete=models.DO_NOTHING,
+        related_name="player_statuses",
+        related_query_name="player_status",
+    )
     is_paid = models.BooleanField(default=False)
     is_retired = models.BooleanField(default=False)
     is_survivor = models.BooleanField(default=True)
@@ -93,9 +104,13 @@ class Payout(models.Model):
 
 
 class Week(models.Model):
-    season = models.ForeignKey(Season, on_delete=models.DO_NOTHING)
+    season = models.ForeignKey(
+        Season, on_delete=models.DO_NOTHING, related_name="weeks", related_query_name="week"
+    )
     week_num = models.PositiveSmallIntegerField(db_index=True)
     lock_datetime = models.DateTimeField(db_index=True, null=True)
+
+    picks: models.Manager["Pick"]
 
     @property
     def is_locked(self):
@@ -148,8 +163,18 @@ class Pick(models.Model):
         ("R", "RETIRED"),
         (None, "None"),
     ]
-    player = models.ForeignKey(Player, on_delete=models.DO_NOTHING)
-    week = models.ForeignKey(Week, on_delete=models.DO_NOTHING)
+    player = models.ForeignKey(
+        Player,
+        on_delete=models.DO_NOTHING,
+        related_name="picks",
+        related_query_name="pick",
+    )
+    week = models.ForeignKey(
+        Week,
+        on_delete=models.DO_NOTHING,
+        related_name="picks",
+        related_query_name="pick",
+    )
     team = models.ForeignKey(Team, on_delete=models.DO_NOTHING, null=True)
     result = models.CharField(choices=result_choices, max_length=1, null=True, blank=True)
 
