@@ -24,18 +24,20 @@ usage() {
     echo "  update            Upgrade and sync uv packages"
     echo "  init_env          Create fresh .venv and install deps"
     echo "  init_db           Initialize the database with production data"
+    echo "  create_secret_key Create a secrekt key for Django"
     echo ""
 }
 
-cmd_lint()             { uv run ruff check --fix; }
-cmd_format()           { uv run ruff format; }
-cmd_types()            { uv run ty check; }
-cmd_test()             { uv run pytest .; }
-cmd_runserver()        { uv run python manage.py runserver; }
-cmd_shell_plus()       { uv run python manage.py shell_plus; }
-cmd_showmigrations()   { uv run python manage.py showmigrations; }
-cmd_makemigrations()   { uv run python manage.py makemigrations; }
-cmd_migrate()          { uv run python manage.py migrate; }
+cmd_lint()              { uv run ruff check --fix; }
+cmd_format()            { uv run ruff format; }
+cmd_types()             { uv run ty check; }
+cmd_test()              { uv run pytest .; }
+cmd_runserver()         { uv run python manage.py runserver; }
+cmd_shell_plus()        { uv run python manage.py shell_plus; }
+cmd_showmigrations()    { uv run python manage.py showmigrations; }
+cmd_makemigrations()    { uv run python manage.py makemigrations; }
+cmd_migrate()           { uv run python manage.py migrate; }
+cmd_create_secret_key() { uv run python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'; }
 
 cmd_update() {
     uv lock --upgrade
@@ -115,6 +117,7 @@ case "$1" in
     update)            cmd_update ;;
     init_env)          cmd_init_env ;;
     init_db)           cmd_init_db ;;
+    create_secret_key) cmd_create_secret_key ;;
     help|-h|--help)    usage ;;
     *)
         echo "Unknown command: $1" >&2
