@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+
+set -e
+
+./dj check
+
+echo "\nDeploying...\n"
+
+rsync -a ./fbsurvivor dan@skadi:/opt/fbsurvivor
+rsync -a ./pyproject.toml dan@skadi:/opt/fbsurvivor
+rsync -a ./uv.lock dan@skadi:/opt/fbsurvivor
+rsync -a ./manage.py dan@skadi:/opt/fbsurvivor
+rsync -a ./infra/deploy dan@skadi:/opt/fbsurvivor
+rsync -a ./uploads dan@skadi:/opt/fbsurvivor
+
+ssh skadi /opt/fbsurvivor/deploy
+
+curl -X GET -I https://fbsurvivor.com
