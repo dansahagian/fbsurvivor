@@ -21,7 +21,7 @@ usage() {
     echo "  makemigrations    Create Django migrations"
     echo "  migrate           Apply Django migrations"
     echo ""
-    echo "  update_packages   Upgrade and sync uv packages"
+    echo "  update            Upgrade and sync uv packages"
     echo "  init_env          Create fresh .venv and install deps"
     echo "  init_db           Initialize the database with production data"
     echo ""
@@ -37,7 +37,7 @@ cmd_showmigrations()   { uv run python manage.py showmigrations; }
 cmd_makemigrations()   { uv run python manage.py makemigrations; }
 cmd_migrate()          { uv run python manage.py migrate; }
 
-cmd_update_packages() {
+cmd_update() {
     uv lock --upgrade
     uv sync
 }
@@ -112,7 +112,7 @@ case "$1" in
     showmigrations)    cmd_showmigrations ;;
     makemigrations)    cmd_makemigrations ;;
     migrate)           cmd_migrate ;;
-    update_packages)   cmd_update_packages ;;
+    update)            cmd_update ;;
     init_env)          cmd_init_env ;;
     init_db)           cmd_init_db ;;
     help|-h|--help)    usage ;;
