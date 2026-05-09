@@ -3,24 +3,24 @@ repos:
     hooks:
       - id: lint
         name: lint
-        entry: ./dj lint
+        entry: ./scripts/checks/lint
         language: script
         pass_filenames: false
 
       - id: format
         name: format
-        entry: ./dj format
+        entry: ./scripts/checks/format
         language: script
         pass_filenames: false
 
       - id: types
         name: types
-        entry: ./dj types
+        entry: ./scripts/checks/types
         language: script
         pass_filenames: false
 
       - id: tests
         name: tests
-        entry: ./dj test
+        entry: ./scripts/checks/test
         language: script
         pass_filenames: false

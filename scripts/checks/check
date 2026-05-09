@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+./scripts/checks/lint
+./scripts/checks/format
+./scripts/checks/types
+./scripts/checks/test
