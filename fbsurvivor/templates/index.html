@@ -4,7 +4,7 @@
         <p>Private NFL Survivor Pool</p>
         <p>Have an account?</p>
         <p>Enter your email address</p>
-            <form action="{% url 'login' %}" method="POST">
+            <form action="{% url 'index' %}" method="POST">
                 {% csrf_token %}
                 <div class="email-form">
                     {{ form.email }}

@@ -2,6 +2,7 @@ from django.db import IntegrityError
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views import View
 
 from fbsurvivor.core.forms import EmailForm, PickForm, PlayerForm
 from fbsurvivor.core.models import (
@@ -46,15 +47,15 @@ from fbsurvivor.core.utils.helpers import (
 from fbsurvivor.settings import CONTACT, VENMO
 
 
-def login(request):
-    if request.method == "GET":
+class IndexView(View):
+    def get(self, request):
         if request.session.get("token"):
             return redirect(reverse("board_redirect"))
 
         context = {"form": EmailForm()}
-        return render(request, "fbsurvivor/templates/login.html", context=context)
+        return render(request, "fbsurvivor/templates/index.html", context=context)
 
-    if request.method == "POST":
+    def post(self, request):
         form = EmailForm(request.POST)
 
         if form.is_valid():
@@ -66,8 +67,6 @@ def login(request):
                 pass
 
         return render(request, "fbsurvivor/templates/login-sent.html")
-
-    raise Http404
 
 
 def enter(request, magic_link_id):
@@ -91,7 +90,7 @@ def logout(request, **kwargs):
     token = request.session["token"]
     LoggedOutTokens.objects.create(id=token)
     request.session.delete("token")
-    return redirect(reverse("login"))
+    return redirect(reverse("index"))
 
 
 @authenticate_admin
@@ -156,7 +155,7 @@ def send_to_latest_season_played(request, player: Player):
         context = {"player": player, "latest": ps[0].season.year, "contact": CONTACT}
         return render(request, "error-board.html", context=context)
     else:
-        return redirect(reverse("login"))
+        return redirect(reverse("index"))
 
 
 @authenticate_player

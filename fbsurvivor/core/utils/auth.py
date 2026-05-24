@@ -44,7 +44,7 @@ def authenticate_player(view):
             return view(*args, **kwargs)
         request.session.delete("token")
 
-        return redirect(reverse("login"))
+        return redirect(reverse("index"))
 
     return inner
 
@@ -59,7 +59,7 @@ def authenticate_admin(view):
             return view(*args, **kwargs)
         request.session.delete("token")
 
-        return redirect(reverse("login"))
+        return redirect(reverse("index"))
 
     return inner
 
