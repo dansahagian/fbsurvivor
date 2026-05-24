@@ -66,7 +66,12 @@ class Season(models.Model):
 
 
 class PlayerStatus(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.DO_NOTHING)
+    player = models.ForeignKey(
+        Player,
+        on_delete=models.DO_NOTHING,
+        related_name="player_statuses",
+        related_query_name="player_status",
+    )
     season = models.ForeignKey(
         Season,
         on_delete=models.DO_NOTHING,

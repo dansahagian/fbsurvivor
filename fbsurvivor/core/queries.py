@@ -65,8 +65,7 @@ def get_locked_weeks_for_season(season: Season) -> QuerySet[Week]:
 
 def get_payouts():
     return (
-        Payout.objects.values("player")
-        .annotate(total=Sum("amount"))
+        Payout.objects.annotate(total=Sum("amount"))
         .order_by("-total")
         .select_related("player")
         .values("player__username", "total", "player__notes")
