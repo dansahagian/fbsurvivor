@@ -53,7 +53,7 @@ def get_player_statuses_for_reminders(week: Week) -> list[PlayerStatus]:
             player__pick__week=week,
             player__pick__team__isnull=True,
             player__has_email_reminders=True,
-        ).values_list("player__email", flat=True)
+        ).values_list("player__user__email", flat=True)
     )
 
 

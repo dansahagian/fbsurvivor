@@ -10,16 +10,19 @@ from fbsurvivor.core.tests.factories import (
     PlayerStatusFactory,
     SeasonFactory,
     TeamFactory,
+    UserFactory,
     WeekFactory,
 )
 
 
 @pytest.fixture(autouse=True)
+def users(db):
+    return UserFactory.create_batch(size=2)
+
+
+@pytest.fixture(autouse=True)
 def players(db):
-    return PlayerFactory.create_batch(
-        size=2,
-        username=Iterator(["Automator", "Roboto"]),
-    )
+    return PlayerFactory.create_batch(size=2)
 
 
 @pytest.fixture(autouse=True)

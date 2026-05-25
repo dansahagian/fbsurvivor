@@ -71,7 +71,7 @@ class TestReminders:
 
         emails = get_player_statuses_for_reminders(current_week)
 
-        assert emails == [players[0].email, players[1].email]
+        assert emails == [players[0].user.email, players[1].user.email]
 
     def test_for_email_reminders_is_retired(self, db, current_week, players, player_statuses):
         self.clear_pick(players[0], current_week)
@@ -83,7 +83,7 @@ class TestReminders:
 
         emails = get_player_statuses_for_reminders(current_week)
 
-        assert emails == [players[1].email]
+        assert emails == [players[1].user.email]
 
     def test_for_email_reminders_has_email_reminders(self, db, current_week, players):
         self.clear_pick(players[0], current_week)
@@ -94,7 +94,7 @@ class TestReminders:
 
         emails = get_player_statuses_for_reminders(current_week)
 
-        assert emails == [players[0].email]
+        assert emails == [players[0].user.email]
 
 
 class TestWeeks:

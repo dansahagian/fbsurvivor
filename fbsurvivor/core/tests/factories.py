@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.utils import timezone
 from factory.declarations import LazyAttribute, Sequence, SubFactory
 from factory.django import DjangoModelFactory
@@ -5,13 +6,19 @@ from factory.django import DjangoModelFactory
 from fbsurvivor.core.models import Pick, Player, PlayerStatus, Season, Team, Week
 
 
-class PlayerFactory(DjangoModelFactory):
-    # pyrefly: ignore  # bad-override
+class UserFactory(DjangoModelFactory):
     class Meta:
-        model = Player
+        model = User
 
     username = Sequence(lambda n: f"Player{n + 1}")
     email = LazyAttribute(lambda a: f"{a.username}@fbsurvivor.com")
+
+
+class PlayerFactory(DjangoModelFactory):
+    class Meta:
+        model = Player
+
+    user = SubFactory(UserFactory)
     has_email_reminders = True
 
 
