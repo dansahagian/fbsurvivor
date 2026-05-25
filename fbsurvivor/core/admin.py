@@ -17,9 +17,7 @@ admin.AdminSite.enable_nav_sidebar = False
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
     list_display = [
-        "username",
-        "email",
-        "is_admin",
+        "user__username",
         "has_email_reminders",
     ]
 

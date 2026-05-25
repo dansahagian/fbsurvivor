@@ -1,3 +1,7 @@
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -7,7 +11,6 @@ from django.views import View
 from fbsurvivor.core.forms import EmailForm, PickForm, PlayerForm
 from fbsurvivor.core.models import (
     Board,
-    LoggedOutTokens,
     MagicLink,
     Pick,
     Player,
@@ -29,19 +32,14 @@ from fbsurvivor.core.queries import (
     picks_for_result_updates,
     picks_for_results,
 )
-from fbsurvivor.core.utils.auth import (
-    authenticate_admin,
-    authenticate_player,
-    create_token,
-    get_season_context,
-    send_magic_link,
-)
-from fbsurvivor.core.utils.emails import send_email, send_new_player_email
+from fbsurvivor.core.utils.context import get_season_context
+from fbsurvivor.core.utils.emails import send_email, send_magic_link, send_new_player_email
 from fbsurvivor.core.utils.helpers import (
     cache_board,
     can_buy_back,
     get_board,
-    get_player_context,
+    get_player_status,
+    send_to_latest_season_played,
     update_player_records,
 )
 from fbsurvivor.settings import CONTACT, VENMO
@@ -61,60 +59,56 @@ class IndexView(View):
         if form.is_valid():
             email = form.cleaned_data["email"]
             try:
-                player = Player.objects.get(email=email)
-                send_magic_link(player)
+                user = User.objects.get(email=email)
+                send_magic_link(user)
             except Player.DoesNotExist:
                 pass
 
         return render(request, "fbsurvivor/templates/login-sent.html")
 
 
-def enter(request, magic_link_id):
+def enter(request, token):
     try:
-        magic_link = MagicLink.objects.get(id=magic_link_id)
+        magic_link = MagicLink.objects.get(token=token)
     except MagicLink.DoesNotExist:
         return render(request, "fbsurvivor/templates/error-magic-link.html")
 
-    if magic_link.is_expired:
+    if not magic_link.is_valid:
         render(request, "fbsurvivor/templates/error-magic-link.html")
 
-    token = create_token(magic_link.player)
-    magic_link.delete()
-    request.session["token"] = token
+    magic_link.login(request)
 
     return redirect(reverse("board_redirect"))
 
 
-@authenticate_player
-def logout(request, **kwargs):
-    token = request.session["token"]
-    LoggedOutTokens.objects.create(id=token)
-    request.session.delete("token")
-    return redirect(reverse("index"))
+@login_required
+def logout_view(request):
+    logout(request)
+    return render(request, "fbsurvivor/templates/logout-success.html")
 
 
-@authenticate_admin
-def assume(request, username, **kwargs):
-    player = get_object_or_404(Player, username=username)
-    token = create_token(player)
-    request.session["token"] = token
-    return redirect(reverse("board_redirect"))
-
-
-@authenticate_player
+@login_required
 def board_redirect(request, **kwargs):
     current_season = Season.objects.get(is_current=True)
 
     return redirect(reverse("board", args=[current_season.year]))
 
 
-@authenticate_player
+@login_required
 def board(request, year: int, **kwargs):
-    player = kwargs["player"]
-    season, player_status, context = get_player_context(player, year)
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+    player_status = get_player_status(player, season)
 
-    context["venmo"] = VENMO
-    context["contact"] = CONTACT
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+        "player_status": player_status,
+        "venmo": VENMO,
+        "contact": CONTACT,
+    }
 
     if not player_status:
         if season.is_locked:
@@ -149,19 +143,19 @@ def board(request, year: int, **kwargs):
     return render(request, "board.html", context=context)
 
 
-def send_to_latest_season_played(request, player: Player):
-    ps = PlayerStatus.objects.filter(player=player).order_by("-season__year")
-    if ps:
-        context = {"player": player, "latest": ps[0].season.year, "contact": CONTACT}
-        return render(request, "error-board.html", context=context)
-    else:
-        return redirect(reverse("index"))
-
-
-@authenticate_player
+@login_required
 def play(request, year: int, **kwargs):
-    player = kwargs["player"]
-    season, player_status, context = get_player_context(player, year)
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+    player_status = get_player_status(player, season)
+
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+        "player_status": player_status,
+    }
 
     if player_status:
         return redirect(reverse("board", args=[year]))
@@ -181,7 +175,7 @@ def play(request, year: int, **kwargs):
         Pick.objects.bulk_create(player_picks)
         cache_board(season)
 
-        message = f"{player.username} in for {season.year}"
+        message = f"{user.username} in for {season.year}"
         send_email("Survivor New Player!", [CONTACT], message)
 
         return redirect(reverse("board", args=[year]))
@@ -189,10 +183,20 @@ def play(request, year: int, **kwargs):
     raise Http404
 
 
-@authenticate_player
+@login_required
 def buy_back(request, year: int, **kwargs):
-    player = kwargs["player"]
-    season, player_status, context = get_player_context(player, year)
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+    player_status = get_player_status(player, season)
+
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+        "player_status": player_status,
+    }
+
     if not player_status:
         return redirect(reverse("board"))
 
@@ -207,10 +211,20 @@ def buy_back(request, year: int, **kwargs):
         return render(request, "error-buy-back.html", context=context)
 
 
-@authenticate_player
+@login_required
 def decline_buy_back(request, year: int, **kwargs):
-    player = kwargs["player"]
-    season, player_status, context = get_player_context(player, year)
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+    player_status = get_player_status(player, season)
+
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+        "player_status": player_status,
+    }
+
     if not player_status:
         return redirect(reverse("board"))
 
@@ -224,22 +238,23 @@ def decline_buy_back(request, year: int, **kwargs):
         return render(request, "error-buy-back.html", context=context)
 
 
-@authenticate_player
+@login_required
 def payouts(request, **kwargs):
-    player = kwargs["player"]
-    player_payouts = get_payouts()
+    user = request.user
+    player = get_object_or_404(Player, user=user)
 
     context = {
         "player": player,
-        "payouts": player_payouts,
+        "payouts": get_payouts(),
     }
 
     return render(request, "payouts.html", context=context)
 
 
-@authenticate_player
+@login_required
 def rules(request, **kwargs):
-    player = kwargs["player"]
+    user = request.user
+    player = get_object_or_404(Player, user=user)
 
     context = {
         "player": player,
@@ -249,32 +264,34 @@ def rules(request, **kwargs):
     return render(request, "rules.html", context=context)
 
 
-@authenticate_player
+@login_required
 def seasons(request, **kwargs):
-    player = kwargs["player"]
-
-    years = list(get_player_years(player))
+    user = request.user
+    player = get_object_or_404(Player, user=user)
 
     context = {
         "player": player,
-        "years": years,
+        "years": list(get_player_years(player)),
     }
 
     return render(request, "seasons.html", context=context)
 
 
-@authenticate_player
+@login_required
 def theme(request, **kwargs):
-    player = kwargs["player"]
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+
     player.is_dark_mode = not player.is_dark_mode
     player.save()
 
     return board_redirect(request)
 
 
-@authenticate_player
+@login_required
 def update_reminders(request, kind, status, **kwargs):
-    player = kwargs["player"]
+    user = request.user
+    player = get_object_or_404(Player, user=user)
 
     statuses = {
         "on": True,
@@ -291,10 +308,19 @@ def update_reminders(request, kind, status, **kwargs):
     return board_redirect(request)
 
 
-@authenticate_player
+@login_required
 def picks(request, year, **kwargs):
-    player = kwargs["player"]
-    season, player_status, context = get_player_context(player, year)
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+    player_status = get_player_status(player, season)
+
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+        "player_status": player_status,
+    }
 
     if not player_status:
         return redirect(reverse("board", args=year))
@@ -309,10 +335,19 @@ def picks(request, year, **kwargs):
     return render(request, "picks.html", context=context)
 
 
-@authenticate_player
+@login_required
 def pick(request, year, week, **kwargs):
-    player = kwargs["player"]
-    season, _player_status, context = get_player_context(player, year)
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+    player_status = get_player_status(player, season)
+
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+        "player_status": player_status,
+    }
 
     week = get_object_or_404(Week, season=season, week_num=week)
 
@@ -353,13 +388,13 @@ def pick(request, year, week, **kwargs):
     raise Http404
 
 
-@authenticate_admin
+@staff_member_required
 def manager(request, year, **kwargs):
     _season, context = get_season_context(year, **kwargs)
     return render(request, "manager.html", context=context)
 
 
-@authenticate_admin
+@staff_member_required
 def create_player(request, **kwargs):
     if request.method == "GET":
         context = {"form": PlayerForm()}
@@ -373,18 +408,19 @@ def create_player(request, **kwargs):
             email = form.cleaned_data["email"]
 
             try:
-                player, created = Player.objects.get_or_create(username=username, email=email)
+                user = User.objects.create(username=username, email=email)
+                player, created = Player.objects.get_or_create(user=user)
             except IntegrityError:
                 return render(request, "player-not-created.html")
 
             if created:
-                send_new_player_email(player)
+                send_new_player_email(user.email)
                 return render(request, "player-created.html")
 
             return render(request, "player-not-created.html")
 
 
-@authenticate_admin
+@staff_member_required
 def paid(request, year, **kwargs):
     season, context = get_season_context(year, **kwargs)
     player_statuses = get_player_statuses_paid_for_season(season)
@@ -392,7 +428,7 @@ def paid(request, year, **kwargs):
     return render(request, "manager-paid.html", context=context)
 
 
-@authenticate_admin
+@staff_member_required
 def user_paid(request, year, username, **kwargs):
     season, _context = get_season_context(year, **kwargs)
     ps = get_object_or_404(PlayerStatus, player__username=username, season=season)
@@ -402,7 +438,7 @@ def user_paid(request, year, username, **kwargs):
     return redirect(reverse("paid", args=[year]))
 
 
-@authenticate_admin
+@staff_member_required
 def results(request, year, **kwargs):
     season, context = get_season_context(year, **kwargs)
     current_week = get_current_week(season)
@@ -414,7 +450,7 @@ def results(request, year, **kwargs):
     return render(request, "manager-results.html", context=context)
 
 
-@authenticate_admin
+@staff_member_required
 def result(request, year, week, team, outcome, **kwargs):
     season, _context = get_season_context(year, **kwargs)
     week = get_object_or_404(Week, season=season, week_num=week)
@@ -436,7 +472,7 @@ def result(request, year, week, team, outcome, **kwargs):
     return redirect(reverse("results", args=[year]))
 
 
-@authenticate_admin
+@staff_member_required
 def get_players(request, year, **kwargs):
     _season, context = get_season_context(year, **kwargs)
     context["players"] = (
@@ -446,7 +482,7 @@ def get_players(request, year, **kwargs):
     return render(request, "manager-players.html", context=context)
 
 
-@authenticate_admin
+@staff_member_required
 def cache_season(request, year, **kwargs):
     season, _context = get_season_context(year, **kwargs)
 

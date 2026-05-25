@@ -8,7 +8,6 @@ dependencies = [
     "django",
     "django-extensions",
     "django-htmlmin",
-    "pyjwt",
     "python-decouple",
     "requests",
     "gunicorn",

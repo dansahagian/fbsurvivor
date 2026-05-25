@@ -2,7 +2,6 @@ from django.urls import path
 
 from fbsurvivor.core.views import (
     IndexView,
-    assume,
     board,
     board_redirect,
     buy_back,
@@ -11,7 +10,7 @@ from fbsurvivor.core.views import (
     decline_buy_back,
     enter,
     get_players,
-    logout,
+    logout_view,
     manager,
     paid,
     payouts,
@@ -29,9 +28,8 @@ from fbsurvivor.core.views import (
 
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
-    path("logout", logout, name="logout"),
-    path("enter/<str:magic_link_id>/", enter, name="enter"),
-    path("assume/<str:username>/", assume, name="assume"),
+    path("enter/<str:token>/", enter, name="enter"),
+    path("logout/", logout_view, name="logout"),
     path("board/", board_redirect, name="board_redirect"),
     path("board/<int:year>/", board, name="board"),
     path("play/<int:year>/", play, name="play"),

@@ -1,50 +1,57 @@
+import secrets
 from datetime import timedelta
 
+from django.contrib.auth import login
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
+TOKEN_EXPIRATION_MINUTES = 15
+
+
+def generate_token():
+    return secrets.token_urlsafe(32)
+
+
+def calculate_expires_at():
+    return timezone.now() + timedelta(minutes=TOKEN_EXPIRATION_MINUTES)
+
 
 class Player(models.Model):
-    username = models.CharField(max_length=20, unique=True)
-    email = models.CharField(max_length=100, unique=True, null=True, default=None)
-
-    emoji = models.CharField(max_length=8, blank=True, default="")
-    notes = models.TextField(blank=True, default="")
-
-    is_admin = models.BooleanField(default=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_dark_mode = models.BooleanField(default=False)
-
     has_email_reminders = models.BooleanField(default=True)
 
     player_statuses: models.Manager["PlayerStatus"]
     picks: models.Manager["Pick"]
 
-    class Meta:
-        indexes = [models.Index(fields=["username"]), models.Index(fields=["email"])]
-
     def __str__(self):
-        return f"{self.username}"
+        return f"{self.user.username}"
 
 
 class MagicLink(models.Model):
-    id = models.CharField(max_length=64, primary_key=True, editable=False)
-    player = models.ForeignKey(
-        Player,
-        on_delete=models.CASCADE,
-        related_name="magic_links",
-        related_query_name="magic_link",
-    )
+    token = models.CharField(max_length=48, primary_key=True, default=generate_token)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="magic_links")
     created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(default=calculate_expires_at)
+    logged_in_at = models.DateTimeField(null=True)
 
     @property
-    def is_expired(self):
-        expiration_time = self.created_at + timedelta(minutes=30)
-        return timezone.now() > expiration_time
+    def has_expired(self) -> bool:
+        return self.expires_at < timezone.now()
 
+    @property
+    def has_been_used(self) -> bool:
+        return self.logged_in_at is not None
 
-class LoggedOutTokens(models.Model):
-    id = models.CharField(max_length=1024, primary_key=True, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    @property
+    def is_valid(self) -> bool:
+        return not (self.has_expired or self.has_been_used)
+
+    def login(self, request) -> None:
+        login(request, self.user)
+        self.logged_in_at = timezone.now()
+        self.save()
 
 
 class Season(models.Model):

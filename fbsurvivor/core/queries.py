@@ -67,8 +67,8 @@ def get_payouts():
     return (
         Payout.objects.annotate(total=Sum("amount"))
         .order_by("-total")
-        .select_related("player")
-        .values("player__username", "total", "player__notes")
+        .select_related("player", "player__user")
+        .values("player__user__username", "total")
     )
 
 

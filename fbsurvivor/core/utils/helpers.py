@@ -1,6 +1,7 @@
-from typing import Dict, Tuple
+from typing import Dict
 
-from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from fbsurvivor.core.models import Board, Pick, Player, PlayerStatus, Season
 from fbsurvivor.core.queries import (
@@ -10,23 +11,23 @@ from fbsurvivor.core.queries import (
     get_player_statuses_for_season_board,
     picks_for_board,
 )
+from fbsurvivor.settings import CONTACT
 
 
-def get_player_context(player: Player, year: int) -> Tuple[Season, PlayerStatus | None, dict]:
-    season = get_object_or_404(Season, year=year)
-
+def get_player_status(player: Player, season: Season) -> PlayerStatus | None:
     try:
-        player_status = PlayerStatus.objects.get(player=player, season=season)
+        return PlayerStatus.objects.get(player=player, season=season)
     except PlayerStatus.DoesNotExist:
-        player_status = None
+        return None
 
-    context = {
-        "player": player,
-        "season": season,
-        "player_status": player_status,
-    }
 
-    return season, player_status, context
+def send_to_latest_season_played(request, player: Player):
+    ps = PlayerStatus.objects.filter(player=player).order_by("-season__year")
+    if ps:
+        context = {"player": player, "latest": ps[0].season.year, "contact": CONTACT}
+        return render(request, "error-board.html", context=context)
+    else:
+        return redirect(reverse("index"))
 
 
 def update_player_records(year: int):
@@ -53,7 +54,7 @@ def update_record(player_status: PlayerStatus) -> bool:
 def get_board(season: Season):
     return (
         Board.objects.filter(season=season)
-        .select_related("player_status", "player_status__player")
+        .select_related("player_status", "player_status__player", "player_status__player__user")
         .order_by("ranking")
     )
 
