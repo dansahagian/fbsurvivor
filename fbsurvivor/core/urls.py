@@ -2,6 +2,7 @@ from django.urls import path
 
 from fbsurvivor.core.views import (
     IndexView,
+    assume_player,
     board,
     board_redirect,
     buy_back,
@@ -48,6 +49,7 @@ urlpatterns = [
     path("results/<int:year>/", results, name="results"),
     path("results/<int:year>/<int:week>/<str:team>/<str:outcome>/", result, name="result"),
     path("players/<int:year>", get_players, name="players"),
+    path("assume/<str:username>/", assume_player, name="assume_player"),
     path("reminders/<str:kind>/<str:status>/", update_reminders, name="update_reminders"),
     path("cache_season/<int:year>/", cache_season, name="cache_season"),
 ]

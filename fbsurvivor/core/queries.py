@@ -31,18 +31,18 @@ def get_player_years(player: Player) -> QuerySet[PlayerStatus]:
 
 def get_player_statuses_for_season_board(season: Season) -> QuerySet[PlayerStatus]:
     return (
-        season.player_statuses.annotate(lower=Lower("player__username"))
+        season.player_statuses.annotate(lower=Lower("player__user__username"))
         .filter(is_paid=True)
         .order_by("-is_survivor", "is_retired", "-win_count", "loss_count", "lower")
-        .select_related("player")
+        .select_related("player", "player__user")
     )
 
 
 def get_player_statuses_paid_for_season(season: Season) -> QuerySet[PlayerStatus]:
     return (
-        season.player_statuses.annotate(lower=Lower("player__username"))
+        season.player_statuses.annotate(lower=Lower("player__user__username"))
         .order_by("-is_paid", "lower")
-        .prefetch_related("player")
+        .prefetch_related("player", "player__user")
     )
 
 

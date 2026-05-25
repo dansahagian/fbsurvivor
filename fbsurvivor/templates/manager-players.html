@@ -5,7 +5,7 @@
     </div>
     <div class="container">
         {% for username in players %}
-            <div class="vertical-link"><a href="{% url 'assume' username %}">{{ username }}</a></div>
+            <div class="vertical-link"><a href="{% url 'assume_player' username %}">{{ username }}</a></div>
         {% endfor %}
     </div>
 {% endblock %}

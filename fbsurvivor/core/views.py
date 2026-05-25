@@ -1,5 +1,5 @@
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
@@ -32,7 +32,6 @@ from fbsurvivor.core.queries import (
     picks_for_result_updates,
     picks_for_results,
 )
-from fbsurvivor.core.utils.context import get_season_context
 from fbsurvivor.core.utils.emails import send_email, send_magic_link, send_new_player_email
 from fbsurvivor.core.utils.helpers import (
     cache_board,
@@ -390,7 +389,16 @@ def pick(request, year, week, **kwargs):
 
 @staff_member_required
 def manager(request, year, **kwargs):
-    _season, context = get_season_context(year, **kwargs)
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+    }
+
     return render(request, "manager.html", context=context)
 
 
@@ -422,16 +430,25 @@ def create_player(request, **kwargs):
 
 @staff_member_required
 def paid(request, year, **kwargs):
-    season, context = get_season_context(year, **kwargs)
-    player_statuses = get_player_statuses_paid_for_season(season)
-    context["player_statuses"] = player_statuses
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+    }
+
+    context["player_statuses"] = get_player_statuses_paid_for_season(season)
     return render(request, "manager-paid.html", context=context)
 
 
 @staff_member_required
 def user_paid(request, year, username, **kwargs):
-    season, _context = get_season_context(year, **kwargs)
-    ps = get_object_or_404(PlayerStatus, player__username=username, season=season)
+    season = get_object_or_404(Season, year=year)
+
+    ps = get_object_or_404(PlayerStatus, player__user__username=username, season=season)
     ps.is_paid = True
     ps.save()
     cache_board(season)
@@ -440,7 +457,16 @@ def user_paid(request, year, username, **kwargs):
 
 @staff_member_required
 def results(request, year, **kwargs):
-    season, context = get_season_context(year, **kwargs)
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+    }
+
     current_week = get_current_week(season)
     teams = picks_for_results(current_week) if current_week else []
 
@@ -452,10 +478,10 @@ def results(request, year, **kwargs):
 
 @staff_member_required
 def result(request, year, week, team, outcome, **kwargs):
-    season, _context = get_season_context(year, **kwargs)
+    season = get_object_or_404(Season, year=year)
     week = get_object_or_404(Week, season=season, week_num=week)
-
     team = get_object_or_404(Team, team_code=team, season=season)
+
     no_picks_for_result_update(week).update(result="L")
     weekly_picks = picks_for_result_updates(week, team)
 
@@ -474,17 +500,36 @@ def result(request, year, week, team, outcome, **kwargs):
 
 @staff_member_required
 def get_players(request, year, **kwargs):
-    _season, context = get_season_context(year, **kwargs)
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+    }
+
     context["players"] = (
-        Player.objects.values_list("username", flat=True).distinct().order_by("username")
+        Player.objects.values_list("user__username", flat=True)
+        .distinct()
+        .order_by("user__username")
     )
 
     return render(request, "manager-players.html", context=context)
 
 
 @staff_member_required
+def assume_player(request, username: str):
+    user = User.objects.get(username=username)
+    login(request, user)
+
+    return redirect(reverse("board_redirect"))
+
+
+@staff_member_required
 def cache_season(request, year, **kwargs):
-    season, _context = get_season_context(year, **kwargs)
+    season = get_object_or_404(Season, year=year)
 
     Board.objects.filter(season=season).delete()
     cache_board(season)
