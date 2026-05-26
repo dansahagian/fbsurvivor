@@ -50,7 +50,7 @@ class IndexView(View):
             return redirect(reverse("board_redirect"))
 
         context = {"form": EmailForm()}
-        return render(request, "fbsurvivor/templates/index.html", context=context)
+        return render(request, "index.html", context=context)
 
     def post(self, request):
         form = EmailForm(request.POST)
@@ -63,27 +63,28 @@ class IndexView(View):
             except Player.DoesNotExist:
                 pass
 
-        return render(request, "fbsurvivor/templates/login-sent.html")
+        return render(request, "login-sent.html")
 
 
-def enter(request, token):
-    try:
-        magic_link = MagicLink.objects.get(token=token)
-    except MagicLink.DoesNotExist:
-        return render(request, "fbsurvivor/templates/error-magic-link.html")
+class LoginView(View):
+    def get(self, request, token):
+        try:
+            magic_link = MagicLink.objects.get(token=token)
+        except MagicLink.DoesNotExist:
+            return render(request, "login-error.html")
 
-    if not magic_link.is_valid:
-        render(request, "fbsurvivor/templates/error-magic-link.html")
+        if not magic_link.is_valid:
+            render(request, "login-error.html")
 
-    magic_link.login(request)
+        magic_link.login(request)
 
-    return redirect(reverse("board_redirect"))
+        return redirect(reverse("board_redirect"))
 
 
 @login_required
 def logout_view(request):
     logout(request)
-    return render(request, "fbsurvivor/templates/logout-success.html")
+    return render(request, "logout-success.html")
 
 
 @login_required
@@ -111,7 +112,7 @@ def board(request, year: int, **kwargs):
 
     if not player_status:
         if season.is_locked:
-            return send_to_latest_season_played(request, player)
+            return render(request, "board-error.html", context=context)
         else:
             context["player_count"] = get_player_statuses_for_season_board(season).count()
             return render(request, "player-play.html", context=context)
@@ -165,7 +166,7 @@ def play(request, year: int, **kwargs):
     context.update({"player": player, "season": season, "contact": CONTACT})
 
     if request.method == "GET":
-        return render(request, "rules-confirm.html", context=context)
+        return render(request, "player-accept-rules.html", context=context)
 
     if request.method == "POST":
         PlayerStatus.objects.create(player=player, season=season)
@@ -207,7 +208,7 @@ def buy_back(request, year: int, **kwargs):
         cache_board(season)
         return redirect(reverse("board", args=[year]))
     else:
-        return render(request, "error-buy-back.html", context=context)
+        return render(request, "player-buy-back-error.html", context=context)
 
 
 @login_required
@@ -234,7 +235,7 @@ def decline_buy_back(request, year: int, **kwargs):
         cache_board(season)
         return redirect(reverse("board", args=[year]))
     else:
-        return render(request, "error-buy-back.html", context=context)
+        return render(request, "player-buy-back-error.html", context=context)
 
 
 @login_required
@@ -419,13 +420,13 @@ def create_player(request, **kwargs):
                 user = User.objects.create(username=username, email=email)
                 player, created = Player.objects.get_or_create(user=user)
             except IntegrityError:
-                return render(request, "player-not-created.html")
+                return render(request, "manager-create-player-error.html")
 
             if created:
                 send_new_player_email(user.email)
-                return render(request, "player-created.html")
+                return render(request, "manager-create-player-success.html")
 
-            return render(request, "player-not-created.html")
+            return render(request, "manager-create-player-error.html")
 
 
 @staff_member_required

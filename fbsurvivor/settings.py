@@ -82,7 +82,13 @@ ROOT_URLCONF = "fbsurvivor.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR, "fbsurvivor/templates"],
+        "DIRS": [
+            BASE_DIR / "fbsurvivor/templates",
+            BASE_DIR / "fbsurvivor/templates/board",
+            BASE_DIR / "fbsurvivor/templates/login",
+            BASE_DIR / "fbsurvivor/templates/manager",
+            BASE_DIR / "fbsurvivor/templates/picks",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -155,3 +161,5 @@ HTML_MINIFY = True
 STATICFILES_DIRS = [BASE_DIR / "fbsurvivor/static"]
 STATIC_URL = "/static/"
 STATIC_ROOT = "/srv/www/fbsurvivor/static/"  # noqa
+
+APPEND_SLASH = False

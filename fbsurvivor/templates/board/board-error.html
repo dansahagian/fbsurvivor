@@ -4,8 +4,8 @@
         Season Missing
     </div>
     <div class="container">
-        You didn't play this season.<br>
-        Go to the <a href="{% url 'board' latest %}">{{ latest }}</a> season.
+        You didn't play in {{season.year}}.<br>
+        View all <a href="{% url 'seasons'%}">seasons</a>.
     </div>
     <div class="container">
         Having a problem? Email me!

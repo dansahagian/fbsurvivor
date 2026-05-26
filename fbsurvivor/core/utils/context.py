@@ -18,11 +18,3 @@ def get_context(user: User, year: int) -> Tuple[Player, Season, PlayerStatus, di
     }
 
     return player, season, player_status, context
-
-
-def get_season_context(year: int, **kwargs) -> Tuple[Season, dict]:
-    season = get_object_or_404(Season, year=year)
-    return season, {
-        "season": season,
-        "player": kwargs["player"],
-    }
