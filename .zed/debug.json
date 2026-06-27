@@ -1,15 +1,13 @@
 [
-  {
-    "adapter": "Debugpy",
-    "label": "runserver",
-    "request": "launch",
-    "subProcess": true,
-    "redirectOutput": true,
-    "program": "./manage.py",
-    "args": [
-      "runserver"
-    ],
-    "stopOnEntry": false,
-    "cwd": "/Users/dan/d/code/fbsurvivor"
-  }
+    {
+        "adapter": "Debugpy",
+        "label": "runserver",
+        "request": "launch",
+        "subProcess": true,
+        "redirectOutput": true,
+        "program": "./manage.py",
+        "args": ["runserver", "0.0.0.0:8000"],
+        "stopOnEntry": false,
+        "cwd": "${ZED_WORKTREE_ROOT}"
+    }
 ]

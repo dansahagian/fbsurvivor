@@ -423,7 +423,7 @@ def create_player(request, **kwargs):
                 return render(request, "manager-create-player-error.html")
 
             if created:
-                send_new_player_email(user.email)
+                send_new_player_email(user)
                 return render(request, "manager-create-player-success.html")
 
             return render(request, "manager-create-player-error.html")
