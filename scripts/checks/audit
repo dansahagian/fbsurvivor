@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+uv audit --preview-features audit-command
+echo ""
