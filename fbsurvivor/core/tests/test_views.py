@@ -42,6 +42,7 @@ class TestPickViews:
         pick = Pick.objects.get(player=p1, week__season__year=year, week__week_num=5)
 
         assert response.status_code == 200
+        assert pick.team is not None
         assert pick.team.team_code == "BUF"
 
     def test_view_pick_post_bad_team(self, client, magic_link, year, players):
