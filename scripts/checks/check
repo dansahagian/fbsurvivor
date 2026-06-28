@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 ./scripts/checks/lint
 ./scripts/checks/format
 ./scripts/checks/types
