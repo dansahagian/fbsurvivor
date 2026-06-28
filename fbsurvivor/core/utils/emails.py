@@ -54,10 +54,10 @@ def send_new_player_email(user: User) -> None:
 
 
 def send_magic_link(user: User) -> None:
-    magic_link = MagicLink.objects.create(user=user)
+    _magic_link, token = MagicLink.issue(user)
 
     subject = "Survivor Login"
-    link = f"{DOMAIN}/enter/{magic_link.token}"
+    link = f"{DOMAIN}/enter/{token}"
     minutes = f"{TOKEN_EXPIRATION_MINUTES} minutes"
 
     message = f"Click the link below to login. It expires in {minutes}.\n\n{link}"

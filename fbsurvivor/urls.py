@@ -18,7 +18,7 @@ def favicon(request: HttpRequest) -> FileResponse:
 @require_GET  # ty: ignore[invalid-argument-type]
 def font(request: HttpRequest) -> FileResponse:
     name = request.path.lstrip("/")
-    file = (settings.BASE_DIR / "homepage" / "static" / "fonts" / name).open("rb")
+    file = (settings.BASE_DIR / "fbsurvivor" / "static" / "fonts" / name).open("rb")
     return FileResponse(file)
 
 

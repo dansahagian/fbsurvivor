@@ -1,3 +1,4 @@
+import hashlib
 import secrets
 from datetime import timedelta
 
@@ -11,6 +12,10 @@ TOKEN_EXPIRATION_MINUTES = 15
 
 def generate_token():
     return secrets.token_urlsafe(32)
+
+
+def hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 def calculate_expires_at():
@@ -30,11 +35,29 @@ class Player(models.Model):
 
 
 class MagicLink(models.Model):
-    token = models.CharField(max_length=48, primary_key=True, default=generate_token)
+    token_hash = models.CharField(max_length=64, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="magic_links")
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(default=calculate_expires_at)
     logged_in_at = models.DateTimeField(null=True)
+
+    @classmethod
+    def issue(cls, user: User) -> tuple["MagicLink", str]:
+        """Create a magic link, returning the instance and the raw token.
+
+        Only the hash of the token is stored; the raw token is returned once
+        so it can be emailed and is never persisted.
+        """
+        # Invalidate any outstanding unused links for this user.
+        cls.objects.filter(user=user, logged_in_at__isnull=True).delete()
+
+        token = generate_token()
+        magic_link = cls.objects.create(token_hash=hash_token(token), user=user)
+        return magic_link, token
+
+    @classmethod
+    def from_token(cls, token: str) -> "MagicLink":
+        return cls.objects.get(token_hash=hash_token(token))
 
     @property
     def has_expired(self) -> bool:

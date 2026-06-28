@@ -67,8 +67,21 @@ class IndexView(View):
 
 class LoginView(View):
     def get(self, request, token):
+        # Render a confirmation page rather than consuming the link on GET, so
+        # email scanners and link prefetchers can't burn the single-use token.
         try:
-            magic_link = MagicLink.objects.get(token=token)
+            magic_link = MagicLink.from_token(token)
+        except MagicLink.DoesNotExist:
+            return render(request, "login-error.html")
+
+        if not magic_link.is_valid:
+            return render(request, "login-error.html")
+
+        return render(request, "login-confirm.html", context={"token": token})
+
+    def post(self, request, token):
+        try:
+            magic_link = MagicLink.from_token(token)
         except MagicLink.DoesNotExist:
             return render(request, "login-error.html")
 

@@ -89,6 +89,7 @@ TEMPLATES = [
             BASE_DIR / "fbsurvivor/templates/login",
             BASE_DIR / "fbsurvivor/templates/manager",
             BASE_DIR / "fbsurvivor/templates/picks",
+            BASE_DIR / "fbsurvivor/templates/player",
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -119,9 +120,8 @@ DATABASES = {
     }
 }
 
-SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_HTTPONLY = True
-SESSION_CACHE_ALIAS = "default"
 
 CACHE_TTL = 60 * 15
 
