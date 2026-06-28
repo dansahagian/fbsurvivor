@@ -66,7 +66,7 @@ class TestResultView:
         # In conftest, players[0] picks "NE" and players[1] picks "BUF" in week 1.
         week = Week.objects.get(season__year=year, week_num=1)
         pick = Pick.objects.get(player=players[0], week=week)
-        team_code = pick.team.team_code
+        team_code = pick.team.team_code if pick.team
 
         url = reverse("result", args=[year, 1, team_code, "L"])
         response = staff_client.post(url)
@@ -85,7 +85,8 @@ class TestResultView:
 
     def test_invalid_outcome_is_rejected(self, staff_client, year, players):
         week = Week.objects.get(season__year=year, week_num=1)
-        team_code = Pick.objects.get(player=players[0], week=week).team.team_code
+        pick = Pick.objects.get(player=players[0], week=week)
+        team_code = pick.team.team_code if pick.team
 
         url = reverse("result", args=[year, 1, team_code, "X"])
         response = staff_client.post(url)
