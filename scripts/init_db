@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
-ssh dan@ran "pg_dump -U fbsurvivor2 fbsurvivor2 > /tmp/fbsurvivor_dump"
-scp dan@ran:/tmp/fbsurvivor_dump tmp/fbsurvivor_dump
-ssh dan@ran "rm /tmp/fbsurvivor_dump"
+ssh dan@ran.tail1db16e.ts.net "pg_dump -U fbsurvivor2 fbsurvivor2 > /tmp/fbsurvivor_dump"
+scp dan@ran.tail1db16e.ts.net:/tmp/fbsurvivor_dump tmp/fbsurvivor_dump
+ssh dan@ran.tail1db16e.ts.net "rm /tmp/fbsurvivor_dump"
 
 psql -U postgres -d fbsurvivor2 -c "DROP SCHEMA IF EXISTS public CASCADE;"
 psql -U postgres -d postgres -c "DROP DATABASE fbsurvivor2;"
