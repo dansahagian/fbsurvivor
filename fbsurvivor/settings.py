@@ -39,6 +39,7 @@ else:
     session_cookie_secure = True
     csrf_cookie_secure = True
     CSRF_TRUSTED_ORIGINS = ["https://fbsurvivor.com"]
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 DEBUG = debug_flag
 ALLOWED_HOSTS = allowed_hosts
