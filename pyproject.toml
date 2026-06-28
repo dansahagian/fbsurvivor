@@ -19,7 +19,6 @@ dev = [
     "decouple-types",
     "django-debug-toolbar",
     "django-stubs",
-    "django-types",
     "factory-boy",
     "ipython",
     "pre-commit",

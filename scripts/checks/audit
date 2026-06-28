@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 
-uv audit --preview-features audit-command
+uv audit --preview-features audit
 echo ""

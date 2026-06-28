@@ -182,8 +182,8 @@ def play(request, year: int, **kwargs):
     raise Http404
 
 
-@login_required
-@require_POST
+@login_required  # ty: ignore[no-matching-overload]
+@require_POST  # ty: ignore[invalid-argument-type]
 def buy_back(request, year: int, **kwargs):
     user = request.user
     player = get_object_or_404(Player, user=user)
@@ -211,8 +211,8 @@ def buy_back(request, year: int, **kwargs):
         return render(request, "player-buy-back-error.html", context=context)
 
 
-@login_required
-@require_POST
+@login_required  # ty: ignore[no-matching-overload]
+@require_POST  # ty: ignore[invalid-argument-type]
 def decline_buy_back(request, year: int, **kwargs):
     user = request.user
     player = get_object_or_404(Player, user=user)
@@ -278,8 +278,8 @@ def seasons(request, **kwargs):
     return render(request, "seasons.html", context=context)
 
 
-@login_required
-@require_POST
+@login_required  # ty: ignore[no-matching-overload]
+@require_POST  # ty: ignore[invalid-argument-type]
 def theme(request, **kwargs):
     user = request.user
     player = get_object_or_404(Player, user=user)
@@ -290,8 +290,8 @@ def theme(request, **kwargs):
     return board_redirect(request)
 
 
-@login_required
-@require_POST
+@login_required  # ty: ignore[no-matching-overload]
+@require_POST  # ty: ignore[invalid-argument-type]
 def update_reminders(request, kind, status, **kwargs):
     user = request.user
     player = get_object_or_404(Player, user=user)
@@ -448,8 +448,8 @@ def paid(request, year, **kwargs):
     return render(request, "manager-paid.html", context=context)
 
 
-@staff_member_required
-@require_POST
+@staff_member_required  # ty: ignore[no-matching-overload]
+@require_POST  # ty: ignore[invalid-argument-type]
 def user_paid(request, year, username, **kwargs):
     season = get_object_or_404(Season, year=year)
 
@@ -481,8 +481,8 @@ def results(request, year, **kwargs):
     return render(request, "manager-results.html", context=context)
 
 
-@staff_member_required
-@require_POST
+@staff_member_required  # ty: ignore[no-matching-overload]
+@require_POST  # ty: ignore[invalid-argument-type]
 def result(request, year, week, team, outcome, **kwargs):
     if outcome not in ("W", "L"):
         raise Http404
@@ -528,8 +528,8 @@ def get_players(request, year, **kwargs):
     return render(request, "manager-players.html", context=context)
 
 
-@staff_member_required
-@require_POST
+@staff_member_required  # ty: ignore[no-matching-overload]
+@require_POST  # ty: ignore[invalid-argument-type]
 def assume_player(request, username: str):
     user = User.objects.get(username=username)
     login(request, user)
@@ -537,8 +537,8 @@ def assume_player(request, username: str):
     return redirect(reverse("board_redirect"))
 
 
-@staff_member_required
-@require_POST
+@staff_member_required  # ty: ignore[no-matching-overload]
+@require_POST  # ty: ignore[invalid-argument-type]
 def cache_season(request, year, **kwargs):
     season = get_object_or_404(Season, year=year)
 
