@@ -15,10 +15,16 @@
 
     </div>
     <div class="container">
-        <a class="submit-button green-button" href="{% url 'buy_back' season.year %}">Buy Back</a>
+        <form action="{% url 'buy_back' season.year %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="submit-button green-button">Buy Back</button>
+        </form>
     </div>
     <br>
     <div class="container">
-        <a class="submit-button red-button" href="{% url 'decline_buy_back' season.year %}">Decline</a>
+        <form action="{% url 'decline_buy_back' season.year %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="submit-button red-button">Decline</button>
+        </form>
     </div>
 {% endblock %}

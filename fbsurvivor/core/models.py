@@ -97,7 +97,9 @@ class PlayerStatus(models.Model):
         return f"{self.player} - {self.season}"
 
     class Meta:
-        models.UniqueConstraint(fields=["player", "season"], name="unique_playerstatus")
+        constraints = [
+            models.UniqueConstraint(fields=["player", "season"], name="unique_playerstatus"),
+        ]
         verbose_name_plural = "playerstatuses"
         indexes = [models.Index(fields=["player", "season"])]
 
@@ -109,10 +111,6 @@ class Payout(models.Model):
 
     def __str__(self):
         return f"{self.player} - {self.season} - {self.amount}"
-
-    class Meta:
-        models.UniqueConstraint(fields=["player", "season"], name="unique_payout")
-        verbose_name_plural = "payouts"
 
 
 class Week(models.Model):
@@ -132,7 +130,9 @@ class Week(models.Model):
         return f"{self.season} | {self.week_num}"
 
     class Meta:
-        models.UniqueConstraint(fields=["season", "week_num"], name="unique_week")
+        constraints = [
+            models.UniqueConstraint(fields=["season", "week_num"], name="unique_week"),
+        ]
 
 
 class Team(models.Model):
@@ -145,7 +145,9 @@ class Team(models.Model):
         return f"{self.season} | {self.team_code}"
 
     class Meta:
-        models.UniqueConstraint(fields=["season", "team_code"], name="unique_team")
+        constraints = [
+            models.UniqueConstraint(fields=["season", "team_code"], name="unique_team"),
+        ]
         ordering = ["-season", "team_code"]
 
     def is_locked(self, week: Week) -> bool:
@@ -165,7 +167,9 @@ class Lock(models.Model):
         return f"{self.week} | {self.team}"
 
     class Meta:
-        models.UniqueConstraint(fields=["week", "team"], name="unique_lock")
+        constraints = [
+            models.UniqueConstraint(fields=["week", "team"], name="unique_lock"),
+        ]
 
 
 class Pick(models.Model):
@@ -210,7 +214,9 @@ class Pick(models.Model):
         return f"{self.player} - {self.week} - {self.team}"
 
     class Meta:
-        models.UniqueConstraint(fields=["player", "week"], name="unique_pick")
+        constraints = [
+            models.UniqueConstraint(fields=["player", "week"], name="unique_pick"),
+        ]
         indexes = [models.Index(fields=["player", "week"])]
 
 

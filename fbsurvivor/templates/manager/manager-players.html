@@ -5,7 +5,12 @@
     </div>
     <div class="container">
         {% for username in players %}
-            <div class="vertical-link"><a href="{% url 'assume_player' username %}">{{ username }}</a></div>
+            <div class="vertical-link">
+                <form action="{% url 'assume_player' username %}" method="POST" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button">{{ username }}</button>
+                </form>
+            </div>
         {% endfor %}
     </div>
 {% endblock %}

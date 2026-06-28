@@ -7,6 +7,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
+from django.views.decorators.http import require_POST
 
 from fbsurvivor.core.forms import EmailForm, PickForm, PlayerForm
 from fbsurvivor.core.models import (
@@ -57,11 +58,9 @@ class IndexView(View):
 
         if form.is_valid():
             email = form.cleaned_data["email"]
-            try:
-                user = User.objects.get(email=email)
+            user = User.objects.filter(email=email).first()
+            if user:
                 send_magic_link(user)
-            except Player.DoesNotExist:
-                pass
 
         return render(request, "login-sent.html")
 
@@ -74,7 +73,7 @@ class LoginView(View):
             return render(request, "login-error.html")
 
         if not magic_link.is_valid:
-            render(request, "login-error.html")
+            return render(request, "login-error.html")
 
         magic_link.login(request)
 
@@ -184,6 +183,7 @@ def play(request, year: int, **kwargs):
 
 
 @login_required
+@require_POST
 def buy_back(request, year: int, **kwargs):
     user = request.user
     player = get_object_or_404(Player, user=user)
@@ -212,6 +212,7 @@ def buy_back(request, year: int, **kwargs):
 
 
 @login_required
+@require_POST
 def decline_buy_back(request, year: int, **kwargs):
     user = request.user
     player = get_object_or_404(Player, user=user)
@@ -278,6 +279,7 @@ def seasons(request, **kwargs):
 
 
 @login_required
+@require_POST
 def theme(request, **kwargs):
     user = request.user
     player = get_object_or_404(Player, user=user)
@@ -289,6 +291,7 @@ def theme(request, **kwargs):
 
 
 @login_required
+@require_POST
 def update_reminders(request, kind, status, **kwargs):
     user = request.user
     player = get_object_or_404(Player, user=user)
@@ -446,6 +449,7 @@ def paid(request, year, **kwargs):
 
 
 @staff_member_required
+@require_POST
 def user_paid(request, year, username, **kwargs):
     season = get_object_or_404(Season, year=year)
 
@@ -478,7 +482,11 @@ def results(request, year, **kwargs):
 
 
 @staff_member_required
+@require_POST
 def result(request, year, week, team, outcome, **kwargs):
+    if outcome not in ("W", "L"):
+        raise Http404
+
     season = get_object_or_404(Season, year=year)
     week = get_object_or_404(Week, season=season, week_num=week)
     team = get_object_or_404(Team, team_code=team, season=season)
@@ -488,7 +496,7 @@ def result(request, year, week, team, outcome, **kwargs):
 
     # if it's a loss, query for the player statuses and set the is_survivor flag to false
     if outcome == "L":
-        PlayerStatus.objects.filter(player__pick__in=picks, season=season).update(
+        PlayerStatus.objects.filter(player__pick__in=weekly_picks, season=season).update(
             is_survivor=False
         )
 
@@ -521,6 +529,7 @@ def get_players(request, year, **kwargs):
 
 
 @staff_member_required
+@require_POST
 def assume_player(request, username: str):
     user = User.objects.get(username=username)
     login(request, user)
@@ -529,6 +538,7 @@ def assume_player(request, username: str):
 
 
 @staff_member_required
+@require_POST
 def cache_season(request, year, **kwargs):
     season = get_object_or_404(Season, year=year)
 

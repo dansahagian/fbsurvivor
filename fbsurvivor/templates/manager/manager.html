@@ -7,7 +7,12 @@
         <div class="vertical-link"><a href="{% url 'paid' season.year %}">Paid</a></div>
         <div class="vertical-link"><a href="{% url 'results' season.year %}">Results</a></div>
         <div class="vertical-link"><a href="{% url 'players' season.year %}">Player Links</a></div>
-        <div class="vertical-link"><a href="{% url 'cache_season' season.year %}">Cache Season</a></div>
+        <div class="vertical-link">
+            <form action="{% url 'cache_season' season.year %}" method="POST" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="link-button">Cache Season</button>
+            </form>
+        </div>
         <div class="vertical-link"><a href="{% url 'create_player' %}">Create Player</a></div>
     </div>
 {% endblock %}

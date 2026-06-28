@@ -7,9 +7,10 @@
         {% for player_status in player_statuses %}
             {% if not player_status.is_paid %}
                 <div class="vertical-link">
-                    <a href="{% url 'user_paid' season.year player_status.player.username %}">
-                        {{ player_status.player.username }}
-                    </a>
+                    <form action="{% url 'user_paid' season.year player_status.player.username %}" method="POST" class="inline-form">
+                        {% csrf_token %}
+                        <button type="submit" class="link-button">{{ player_status.player.username }}</button>
+                    </form>
                 </div>
             {% endif %}
         {% endfor %}

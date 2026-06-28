@@ -23,12 +23,23 @@
         <div class="vertical-link"><a href="{% url 'seasons' %}">seasons</a></div>
         <div class="vertical-link"><a href="{% url 'payouts' %}">payouts</a></div>
         <div class="vertical-link"><a href="{% url 'rules' %}">rules</a></div>
-        <div class="vertical-link"><a href="{% url 'theme' %}">switch theme</a></div>
+        <div class="vertical-link">
+            <form action="{% url 'theme' %}" method="POST" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="link-button">switch theme</button>
+            </form>
+        </div>
         <div class="vertical-link">
             {% if player.has_email_reminders %}
-                <a href="{% url 'update_reminders' 'email' 'off' %}">disable reminders</a>
+                <form action="{% url 'update_reminders' 'email' 'off' %}" method="POST" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button">disable reminders</button>
+                </form>
             {% else %}
-                <a href="{% url 'update_reminders' 'email' 'on' %}">enable reminders</a>
+                <form action="{% url 'update_reminders' 'email' 'on' %}" method="POST" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button">enable reminders</button>
+                </form>
             {% endif %}
         </div>
         <div class="vertical-link"><a href="{% url 'logout' %}">logout</a></div>

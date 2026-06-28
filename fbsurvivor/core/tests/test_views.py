@@ -1,7 +1,8 @@
 import pytest
+from django.contrib.auth.models import User
 from django.urls import reverse
 
-from fbsurvivor.core.models import MagicLink, Pick
+from fbsurvivor.core.models import MagicLink, Pick, PlayerStatus, Week
 
 
 @pytest.fixture
@@ -12,6 +13,13 @@ def magic_link(players):
 @pytest.fixture
 def year(seasons):
     return seasons[1].year
+
+
+@pytest.fixture
+def staff_client(client, db):
+    user = User.objects.create(username="staffer", email="staffer@fbsurvivor.com", is_staff=True)
+    client.force_login(user)
+    return client
 
 
 class TestPickViews:
@@ -51,3 +59,34 @@ class TestPickViews:
         response = client.post(url, {"team": "WAS"}, follow=True)
 
         assert response.status_code == 200
+
+
+class TestResultView:
+    def test_loss_eliminates_picker_only(self, staff_client, year, players):
+        # In conftest, players[0] picks "NE" and players[1] picks "BUF" in week 1.
+        week = Week.objects.get(season__year=year, week_num=1)
+        pick = Pick.objects.get(player=players[0], week=week)
+        team_code = pick.team.team_code
+
+        url = reverse("result", args=[year, 1, team_code, "L"])
+        response = staff_client.post(url)
+        assert response.status_code == 302
+
+        pick.refresh_from_db()
+        assert pick.result == "L"
+
+        # the player who picked the losing team is eliminated
+        loser = PlayerStatus.objects.get(player=players[0], season__year=year)
+        assert loser.is_survivor is False
+
+        # a player who picked a different team is untouched
+        survivor = PlayerStatus.objects.get(player=players[1], season__year=year)
+        assert survivor.is_survivor is True
+
+    def test_invalid_outcome_is_rejected(self, staff_client, year, players):
+        week = Week.objects.get(season__year=year, week_num=1)
+        team_code = Pick.objects.get(player=players[0], week=week).team.team_code
+
+        url = reverse("result", args=[year, 1, team_code, "X"])
+        response = staff_client.post(url)
+        assert response.status_code == 404
