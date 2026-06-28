@@ -4,34 +4,35 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0062_alter_magiclink_logged_in_at'),
+        ("core", "0062_alter_magiclink_logged_in_at"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='payout',
+            name="payout",
             options={},
         ),
         migrations.AddConstraint(
-            model_name='lock',
-            constraint=models.UniqueConstraint(fields=('week', 'team'), name='unique_lock'),
+            model_name="lock",
+            constraint=models.UniqueConstraint(fields=("week", "team"), name="unique_lock"),
         ),
         migrations.AddConstraint(
-            model_name='pick',
-            constraint=models.UniqueConstraint(fields=('player', 'week'), name='unique_pick'),
+            model_name="pick",
+            constraint=models.UniqueConstraint(fields=("player", "week"), name="unique_pick"),
         ),
         migrations.AddConstraint(
-            model_name='playerstatus',
-            constraint=models.UniqueConstraint(fields=('player', 'season'), name='unique_playerstatus'),
+            model_name="playerstatus",
+            constraint=models.UniqueConstraint(
+                fields=("player", "season"), name="unique_playerstatus"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='team',
-            constraint=models.UniqueConstraint(fields=('season', 'team_code'), name='unique_team'),
+            model_name="team",
+            constraint=models.UniqueConstraint(fields=("season", "team_code"), name="unique_team"),
         ),
         migrations.AddConstraint(
-            model_name='week',
-            constraint=models.UniqueConstraint(fields=('season', 'week_num'), name='unique_week'),
+            model_name="week",
+            constraint=models.UniqueConstraint(fields=("season", "week_num"), name="unique_week"),
         ),
     ]
