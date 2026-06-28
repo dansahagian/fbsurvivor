@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
         with open(filename, "r") as f:
             for line in f:
-                bye_week, team_code, name = line.strip("/n").split(",")
+                bye_week, team_code, name = line.strip("\n").split(",")
 
                 _, created = Team.objects.update_or_create(
                     season=season,

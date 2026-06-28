@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
         with open(filename, "r") as f:
             for line in f:
-                week_num, lock_datetime = line.strip("/n").split(",")
+                week_num, lock_datetime = line.strip("\n").split(",")
                 lock_datetime = datetime.fromisoformat(lock_datetime)
 
                 _, created = Week.objects.update_or_create(
