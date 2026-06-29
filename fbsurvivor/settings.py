@@ -85,11 +85,6 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             BASE_DIR / "fbsurvivor/templates",
-            BASE_DIR / "fbsurvivor/templates/board",
-            BASE_DIR / "fbsurvivor/templates/login",
-            BASE_DIR / "fbsurvivor/templates/manager",
-            BASE_DIR / "fbsurvivor/templates/picks",
-            BASE_DIR / "fbsurvivor/templates/player",
         ],
         "APP_DIRS": True,
         "OPTIONS": {
