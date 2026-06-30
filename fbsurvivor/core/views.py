@@ -47,7 +47,7 @@ from fbsurvivor.settings import CONTACT, VENMO
 
 class IndexView(View):
     def get(self, request):
-        if request.session.get("token"):
+        if request.user.is_authenticated:
             return redirect(reverse("board_redirect"))
 
         context = {"form": EmailForm()}

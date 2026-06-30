@@ -1,16 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
     <div class="container login">
-            <form action="{% url 'create_player' %}" method="POST">
-                {% csrf_token %}
-                    Email:
-                    {{ form.email }}
-                <br><br>
-                    Username:
-                    {{ form.username }}
-                <div class="container">
-                    <input class="submit-button blue-button" type="submit" value="Create User" />
-                </div>
-            </form>
+        <p>Create Player</p>
+        <form action="{% url 'create_player' %}" method="POST">
+            {% csrf_token %}
+            <p>Username</p>
+            <div class="email-form">
+                {{ form.username }}
+            </div>
+            <p>Email</p>
+            <div class="email-form">
+                {{ form.email }}
+            </div>
+            <div class="container">
+                <input class="submit-button blue-button" type="submit" value="Create User" />
+            </div>
+        </form>
     </div>
 {% endblock %}

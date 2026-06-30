@@ -126,8 +126,6 @@ td {
 }
 
 .pick-form-container {
-    background-color: var(--table-header);
-    border-radius: 8px;
     max-width: 200px;
 }
 
@@ -235,7 +233,8 @@ td {
     display: flex;
 }
 
-.email-form input[type="email"] {
+.email-form input[type="email"],
+.email-form input[type="text"] {
     width: 90%;
     padding: 16px 20px;
     text-align: center;
