@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container login">
+        <p>You're almost in!</p>
+        <p>Click below to finish logging in.</p>
+        <form action="{% url 'enter' token %}" method="POST">
+            {% csrf_token %}
+            <div class="container">
+                <input class="submit-button blue-button" type="submit" value="Log In" />
+            </div>
+        </form>
+    </div>
+{% endblock %}

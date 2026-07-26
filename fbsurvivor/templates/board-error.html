@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        Season Missing
+    </div>
+    <div class="container">
+        You didn't play in {{season.year}}.<br>
+        View all the <a href="{% url 'seasons'%}">seasons you played</a>.
+    </div>
+    <div class="container">
+        Having a problem? Email me!
+        <br><br>
+        {{ contact }}
+    </div>
+    <div class="container">
+        <div class="vertical-link">
+            {% if user.is_staff and season %}
+                <a href="{% url 'manager' season.year %}">admin</a>
+            {% endif %}
+        </div>
+        <div class="vertical-link"><a href="{% url 'seasons' %}">seasons</a></div>
+        <div class="vertical-link"><a href="{% url 'payouts' %}">payouts</a></div>
+        <div class="vertical-link"><a href="{% url 'rules' %}">rules</a></div>
+        <div class="vertical-link">
+            <form action="{% url 'theme' %}" method="POST" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="link-button">switch theme</button>
+            </form>
+        </div>
+        <div class="vertical-link">
+            {% if player.has_email_reminders %}
+                <form action="{% url 'update_reminders' 'email' 'off' %}" method="POST" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button">disable reminders</button>
+                </form>
+            {% else %}
+                <form action="{% url 'update_reminders' 'email' 'on' %}" method="POST" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button">enable reminders</button>
+                </form>
+            {% endif %}
+        </div>
+        <div class="vertical-link"><a href="{% url 'logout' %}">logout</a></div>
+    </div>
+{% endblock %}

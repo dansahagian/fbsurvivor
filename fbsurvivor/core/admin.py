@@ -23,7 +23,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(PlayerAdmin, self).get_queryset(request)
-        return qs.order_by("username")
+        return qs.order_by("user__username")
 
 
 @admin.register(PlayerStatus)
@@ -47,7 +47,7 @@ class PlayerStatusAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(PlayerStatusAdmin, self).get_queryset(request)
-        return qs.order_by("player__username")
+        return qs.order_by("player__user__username")
 
 
 @admin.register(Season)

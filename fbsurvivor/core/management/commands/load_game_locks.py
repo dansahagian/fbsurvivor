@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
         with open(filename, "r") as f:
             for line in f:
-                week_num, team_code1, team_code2, lock_datetime = line.strip("/n").split(",")
+                week_num, team_code1, team_code2, lock_datetime = line.strip("\n").split(",")
                 week = Week.objects.get(season=season, week_num=week_num)
                 team1 = Team.objects.get(season=season, team_code=team_code1)
                 team2 = Team.objects.get(season=season, team_code=team_code2)

@@ -25,7 +25,7 @@ def send_to_latest_season_played(request, player: Player):
     ps = PlayerStatus.objects.filter(player=player).order_by("-season__id")
     if ps:
         context = {"player": player, "latest": ps[0].season.year, "contact": CONTACT}
-        return render(request, "error-board.html", context=context)
+        return render(request, "board-error.html", context=context)
     else:
         return redirect(reverse("index"))
 

@@ -39,6 +39,7 @@ else:
     session_cookie_secure = True
     csrf_cookie_secure = True
     CSRF_TRUSTED_ORIGINS = ["https://fbsurvivor.com"]
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 DEBUG = debug_flag
 ALLOWED_HOSTS = allowed_hosts
@@ -84,10 +85,6 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             BASE_DIR / "fbsurvivor/templates",
-            BASE_DIR / "fbsurvivor/templates/board",
-            BASE_DIR / "fbsurvivor/templates/login",
-            BASE_DIR / "fbsurvivor/templates/manager",
-            BASE_DIR / "fbsurvivor/templates/picks",
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -118,9 +115,8 @@ DATABASES = {
     }
 }
 
-SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_HTTPONLY = True
-SESSION_CACHE_ALIAS = "default"
 
 CACHE_TTL = 60 * 15
 

@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+"""Generate uploads/<season>_game_locks.txt from the ESPN schedule.
+
+A "game lock" is any game that kicks off strictly BEFORE that week's Sunday
+10:00 AM Pacific deadline (read from uploads/<season>_weeks.txt). In practice
+that's Thu/Fri/Sat games, Sunday-morning international games, and the
+Thanksgiving/Christmas slates. Games at the 1:00 PM ET Sunday slate kick off
+exactly at the lock and are excluded.
+
+Games whose kickoff time ESPN hasn't finalized yet (late-season Sunday flex,
+marked timeValid=false) are skipped and reported, since their real time is
+unknown. Re-run later once those firm up.
+
+Usage:
+    scripts/gen_game_locks [SEASON]   # SEASON defaults to 2026
+
+Output line format:  week,away,home,ISO8601-with-pacific-offset
+"""
+
+import json
+import sys
+import urllib.request
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+API = (
+    "https://site.api.espn.com/apis/site/v2/sports/football/nfl/"
+    "scoreboard?seasontype=2&week={week}&dates={season}"
+)
+
+# ESPN abbreviation -> the codes used in uploads/*_teams.txt
+ABBR = {"WSH": "WAS"}
+
+UPLOADS = Path(__file__).resolve().parent.parent / "uploads"
+
+
+def parse_locks(season):
+    """week -> lock instant (UTC), from uploads/<season>_weeks.txt."""
+    path = UPLOADS / f"{season}_weeks.txt"
+    locks = {}
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        week, ts = line.split(",", 1)
+        locks[int(week)] = datetime.fromisoformat(ts).astimezone(timezone.utc)
+    return locks
+
+
+def fetch_week(season, week):
+    url = API.format(week=week, season=season)
+    with urllib.request.urlopen(url, timeout=30) as resp:
+        return json.load(resp)
+
+
+def pacific(dt):
+    """Render a UTC instant in US Pacific wall time (handles the DST switch)."""
+    # DST ends 2:00 AM local on the first Sunday of November.
+    year = dt.year
+    nov1 = datetime(year, 11, 1, tzinfo=timezone.utc)
+    first_sun = nov1 + timedelta(days=(6 - nov1.weekday()) % 7)
+    dst_end = first_sun.replace(hour=9)  # 02:00 PDT == 09:00 UTC
+    # DST starts 2:00 AM local on the second Sunday of March.
+    mar1 = datetime(year, 3, 1, tzinfo=timezone.utc)
+    second_sun = mar1 + timedelta(days=(6 - mar1.weekday()) % 7 + 7)
+    dst_start = second_sun.replace(hour=10)  # 02:00 PST == 10:00 UTC
+    off = -7 if dst_start <= dt < dst_end else -8
+    loc = dt.astimezone(timezone(timedelta(hours=off)))
+    z = loc.strftime("%z")
+    return f"{loc.strftime('%Y-%m-%dT%H:%M:%S')}{z[:3]}:{z[3:]}"
+
+
+def main():
+    season = int(sys.argv[1]) if len(sys.argv) > 1 else 2026
+    locks = parse_locks(season)
+
+    out, skipped = [], []
+    for week in sorted(locks):
+        data = fetch_week(season, week)
+        rows = []
+        for ev in data["events"]:
+            comp = ev["competitions"][0]
+            dt = datetime.fromisoformat(ev["date"].replace("Z", "+00:00"))
+            home = away = None
+            for t in comp["competitors"]:
+                ab = t["team"]["abbreviation"]
+                ab = ABBR.get(ab, ab)
+                if t["homeAway"] == "home":
+                    home = ab
+                else:
+                    away = ab
+            rows.append((dt, away, home, comp.get("timeValid", True)))
+        rows.sort()
+        for dt, away, home, valid in rows:
+            if dt >= locks[week]:
+                continue
+            if not valid:
+                skipped.append((week, away, home))
+                continue
+            out.append(f"{week},{away},{home},{pacific(dt)}")
+
+    dest = UPLOADS / f"{season}_game_locks.txt"
+    dest.write_text("\n".join(out) + "\n")
+
+    print(f"Wrote {len(out)} games -> {dest}")
+    if skipped:
+        from collections import Counter
+
+        by_week = dict(sorted(Counter(w for w, *_ in skipped).items()))
+        print(
+            f"Skipped {len(skipped)} games with unscheduled (TBD) times; "
+            f"re-run later. By week: {by_week}"
+        )
+
+
+if __name__ == "__main__":
+    main()

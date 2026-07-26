@@ -16,7 +16,7 @@
     </div>
     <div class="container">
         <div class="vertical-link">
-            {% if player.is_admin and season %}
+            {% if player.user.is_staff and season %}
                 <a href="{% url 'manager' season.year %}">admin</a>
             {% endif %}
         </div>
