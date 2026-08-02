@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-SERVER="ran"
+SERVER="oyuki"
 
 set -e
 
@@ -15,6 +15,6 @@ rsync -a ./manage.py $SERVER:/opt/fbsurvivor
 rsync -a ./infra/deploy $SERVER:/opt/fbsurvivor
 rsync -a ./uploads $SERVER:/opt/fbsurvivor
 
-ssh ran /opt/fbsurvivor/deploy
+ssh $SERVER /opt/fbsurvivor/deploy
 
 curl -X GET -I https://fbsurvivor.com
