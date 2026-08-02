@@ -1,8 +1,12 @@
 #!/bin/zsh
 # Used to deploy on server
 
-echo "\nInstalling Dependencies...\n"
+echo "\nDeploying...\n"
 cd /opt/fbsurvivor
+git pull origin main
+
+echo "\nInstalling Dependencies...\n"
+
 /home/dan/.cargo/bin/uv sync --no-dev
 
 echo "\nStopping services...\n"
@@ -16,3 +20,4 @@ echo "\nStarting services...\n"
 sudo systemctl start wsgi-server-fbsurvivor.service
 
 sleep 2
+curl -X GET -I https://fbsurvivor.com
