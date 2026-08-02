@@ -5,7 +5,7 @@ set -euo pipefail
 
 # Guard: only run on the production server
 if [[ "$(hostname -s)" != "oyuki" ]]; then
-    print -u2 "Refusing to run: this script only runs on oyuki (this is $(hostname -s))."
+    print -u2 "Deploy failed: deployment runs on oyuki (this is $(hostname -s))."
     exit 1
 fi
 
