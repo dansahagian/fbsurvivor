@@ -1,6 +1,14 @@
 #!/bin/zsh
 # Used to deploy on server
 
+set -euo pipefail
+
+# Guard: only run on the production server
+if [[ "$(hostname -s)" != "oyuki" ]]; then
+    print -u2 "Refusing to run: this script only runs on oyuki (this is $(hostname -s))."
+    exit 1
+fi
+
 echo "\nDeploying...\n"
 cd /opt/fbsurvivor
 git pull origin main
