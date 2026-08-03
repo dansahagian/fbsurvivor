@@ -4,10 +4,7 @@
 set -euo pipefail
 
 # Guard: only run on the production server
-if [[ "$(hostname -s)" != "oyuki" ]]; then
-    print -u2 "Deploy failed: deployment runs on oyuki (this is $(hostname -s))."
-    exit 1
-fi
+[ "$(hostname -s)" = "oyuki" ] || { echo "Failed: Not oyuki"; exit 1; }
 
 echo "\nDeploying...\n"
 cd /opt/fbsurvivor
