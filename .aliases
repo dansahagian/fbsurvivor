@@ -12,7 +12,7 @@ alias init-env="./bin/dev/init-env"
 alias upgrade="./bin/deploy/upgrade"
 
 # management commands
-alias runserver="DJANGO_SETTINGS_MODULE=$SETTINGS uv run python manage.py runserver"
+alias runserver="DJANGO_SETTINGS_MODULE=$SETTINGS uv run python manage.py runserver 0.0.0.0:8000"
 alias shell_plus="DJANGO_SETTINGS_MODULE=$SETTINGS uv run python manage.py shell_plus"
 alias showmigrations="DJANGO_SETTINGS_MODULE=$SETTINGS uv run python manage.py showmigrations"
 alias makemigrations="DJANGO_SETTINGS_MODULE=$SETTINGS uv run python manage.py makemigrations"
