@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+PROD=oyuki
+DEV=onryo
+
+ssh $PROD "pg_dump -U fbsurvivor2 fbsurvivor2" > /tmp/fbsurvivor_dump
+scp /tmp/fbsurvivor_dump $DEV:/tmp/fbsurvivor_dump
+rm /tmp/fbsurvivor_dump
