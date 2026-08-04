@@ -1,4 +1,11 @@
 #!/usr/bin/env sh
 
+HOSTNAME=onryo
+
+set -euo pipefail
+
+# Guard: only run on the correct hostname
+[ "$(hostname -s)" = "$HOSTNAME" ] || { echo "❌ Failed: Not $HOSTNAME"; exit 1; }
+
 uv lock --upgrade
 uv sync

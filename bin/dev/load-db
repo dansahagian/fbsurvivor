@@ -3,8 +3,10 @@
 HOSTNAME=onryo
 DB_FILE=/tmp/fbsurvivor_dump
 
+set -euo pipefail
+
 # Guard: only run on the correct hostname
-[ "$(hostname -s)" = "$HOSTNAME" ] || { echo "Failed: Wrong hostname"; exit 1; }
+[ "$(hostname -s)" = "$HOSTNAME" ] || { echo "❌ Failed: Not $HOSTNAME"; exit 1; }
 [ -s "$DB_FILE" ] || { echo "Failed: $DB_FILE missing or empty" >&2; exit 1; }
 
 psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS fbsurvivor2;"

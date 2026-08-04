@@ -1,5 +1,10 @@
 #!/usr/bin/env sh
 
+HOSTNAME=onryo
+
+# Guard: only run on the correct hostname
+[ "$(hostname -s)" = "$HOSTNAME" ] || { echo "❌ Failed: Not $HOSTNAME"; exit 1; }
+
 rm -rf .venv
 uv venv
 uv sync

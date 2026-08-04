@@ -1,10 +1,11 @@
-#!/bin/zsh
-# Used to deploy on server
+#!/usr/bin/env sh
+
+HOSTNAME=oyuki
 
 set -euo pipefail
 
-# Guard: only run on the production server
-[ "$(hostname -s)" = "oyuki" ] || { echo "Failed: Not oyuki"; exit 1; }
+# Guard: only run on the correct hostname
+[ "$(hostname -s)" = "$HOSTNAME" ] || { echo "❌ Failed: Not $HOSTNAME"; exit 1; }
 
 echo "\nDeploying...\n"
 cd /opt/fbsurvivor
@@ -15,6 +16,8 @@ echo "\nInstalling Dependencies...\n"
 /home/dan/.cargo/bin/uv sync --no-dev
 
 echo "\nStopping services...\n"
+# Guard: set -e must not leave the site down if a step below fails
+trap 'sudo systemctl start wsgi-server-fbsurvivor.service' EXIT
 sudo systemctl stop wsgi-server-fbsurvivor.service
 
 /home/dan/.cargo/bin/uv run --no-dev python manage.py migrate
@@ -23,6 +26,7 @@ sudo systemctl stop wsgi-server-fbsurvivor.service
 
 echo "\nStarting services...\n"
 sudo systemctl start wsgi-server-fbsurvivor.service
+trap - EXIT
 
 sleep 2
 curl -X GET -I https://fbsurvivor.com
