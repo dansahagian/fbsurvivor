@@ -12,7 +12,7 @@ marked timeValid=false) are skipped and reported, since their real time is
 unknown. Re-run later once those firm up.
 
 Usage:
-    scripts/gen_game_locks [SEASON]   # SEASON defaults to 2026
+    bin/setup/gen_game_locks [SEASON]   # SEASON defaults to 2026
 
 Output line format:  week,away,home,ISO8601-with-pacific-offset
 """
