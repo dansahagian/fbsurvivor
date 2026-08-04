@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+HOSTNAME=oyuki
+DEV=onryo
+
+# Guard: only run on the correct hostname
+[ "$(hostname -s)" = "$HOSTNAME" ] || { echo "Failed: Wrong hostname"; exit 1; }
+
+pg_dump -U fbsurvivor2 fbsurvivor2 | ssh $DEV "cat > /tmp/fbsurvivor_dump"

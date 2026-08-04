@@ -1,9 +1,10 @@
 #!/usr/bin/env sh
 
+HOSTNAME=onryo
 DB_FILE=/tmp/fbsurvivor_dump
 
-# Guard: only run on the production server and if the file exists
-[ "$(hostname -s)" = "onryo" ] || { echo "Failed: Not onryo"; exit 1; }
+# Guard: only run on the correct hostname
+[ "$(hostname -s)" = "$HOSTNAME" ] || { echo "Failed: Wrong hostname"; exit 1; }
 [ -s "$DB_FILE" ] || { echo "Failed: $DB_FILE missing or empty" >&2; exit 1; }
 
 psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS fbsurvivor2;"
