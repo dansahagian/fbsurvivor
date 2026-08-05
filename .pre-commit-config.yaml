@@ -3,30 +3,30 @@ repos:
     hooks:
       - id: audit
         name: audit
-        entry: ./bin/checks/audit
-        language: script
+        entry: just audit
+        language: system
         pass_filenames: false
 
       - id: lint
         name: lint
-        entry: ./bin/checks/lint
-        language: script
+        entry: just lint
+        language: system
         pass_filenames: false
 
       - id: format
         name: format
-        entry: ./bin/checks/format
-        language: script
+        entry: just format
+        language: system
         pass_filenames: false
 
       - id: types
         name: types
-        entry: ./bin/checks/types
-        language: script
+        entry: just types
+        language: system
         pass_filenames: false
 
       - id: tests
         name: tests
-        entry: ./bin/checks/test
-        language: script
+        entry: just test
+        language: system
         pass_filenames: false
