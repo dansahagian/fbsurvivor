@@ -8,6 +8,7 @@ from fbsurvivor.core.views import (
     board_redirect,
     buy_back,
     cache_season,
+    clean_session,
     create_player,
     decline_buy_back,
     get_players,
@@ -30,6 +31,7 @@ from fbsurvivor.core.views import (
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
     path("login", LoginView.as_view(), name="login"),
+    path("clean-session", clean_session, name="clean_session"),
     path("logout", logout_view, name="logout"),
     path("board", board_redirect, name="board_redirect"),
     path("board/<int:year>", board, name="board"),

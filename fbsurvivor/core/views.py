@@ -129,6 +129,11 @@ class LoginView(View):
         return render(request, "login-error-code-retry.html", context=context)
 
 
+def clean_session(request):
+    clean_session_data(request)
+    return redirect(reverse("index"))
+
+
 @login_required
 def logout_view(request):
     logout(request)
