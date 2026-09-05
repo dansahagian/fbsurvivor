@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container login">
+        Login Error
+        <p>Something went wrong. This code may have expired or been used already.</p>
+        <p>
+            <a href="{% url 'index' %}">Please try again</a>
+            or contact me if the problem continues.
+        </p>
+    </div>
+{% endblock %}

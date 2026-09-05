@@ -1,8 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="login">
-        Check your email!<br><br>
-        If we found a match, your magic link should be on the way.<br><br>
-        If you don't see it, please check your spam folder.
+    <div class="container login">
+        Check your email for the code!<br>
+        Check spam if you can't find it.
+        <p>{{ email }} <span>wrong email?</span></p>
+        <p>Enter the login code:</p>
+        <form action="{% url 'login' %}" method="POST">
+            {% csrf_token %}
+            <div class="email-form">
+                {{ form.code.errors }}
+                {{ form.code }}
+            </div>
+            <div class="container">
+                <input class="submit-button blue-button" type="submit" value="Let me in" />
+            </div>
+        </form>
     </div>
 {% endblock %}

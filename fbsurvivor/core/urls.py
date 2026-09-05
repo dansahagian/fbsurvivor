@@ -29,7 +29,7 @@ from fbsurvivor.core.views import (
 
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
-    path("enter/<str:token>", LoginView.as_view(), name="enter"),
+    path("login", LoginView.as_view(), name="login"),
     path("logout", logout_view, name="logout"),
     path("board", board_redirect, name="board_redirect"),
     path("board/<int:year>", board, name="board"),

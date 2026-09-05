@@ -1,3 +1,6 @@
+from datetime import datetime
+from hmac import compare_digest
+
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -6,13 +9,13 @@ from django.db import IntegrityError
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views import View
 from django.views.decorators.http import require_POST
 
-from fbsurvivor.core.forms import EmailForm, PickForm, PlayerForm
+from fbsurvivor.core.forms import CodeForm, EmailForm, PickForm, PlayerForm
 from fbsurvivor.core.models import (
     Board,
-    MagicLink,
     Pick,
     Player,
     PlayerStatus,
@@ -33,7 +36,12 @@ from fbsurvivor.core.queries import (
     picks_for_result_updates,
     picks_for_results,
 )
-from fbsurvivor.core.utils.emails import send_email, send_magic_link, send_new_player_email
+from fbsurvivor.core.utils.authentication import calculate_expires_at, generate_code, hash_code
+from fbsurvivor.core.utils.emails import (
+    send_email,
+    send_login_code,
+    send_new_player_email,
+)
 from fbsurvivor.core.utils.helpers import (
     cache_board,
     can_buy_back,
@@ -45,52 +53,80 @@ from fbsurvivor.core.utils.helpers import (
 from fbsurvivor.settings import CONTACT, VENMO
 
 
+def clean_session_data(request):
+    request.session.pop("user_id", None)
+    request.session.pop("email", None)
+    request.session.pop("code_hash", None)
+    request.session.pop("code_tries", None)
+    request.session.pop("code_expires_at", None)
+
+
 class IndexView(View):
     def get(self, request):
         if request.user.is_authenticated:
             return redirect(reverse("board_redirect"))
 
-        context = {"form": EmailForm()}
-        return render(request, "index.html", context=context)
+        return render(request, "index.html", context={"form": EmailForm()})
 
     def post(self, request):
         form = EmailForm(request.POST)
 
         if form.is_valid():
             email = form.cleaned_data["email"]
-            user = User.objects.filter(email=email).first()
-            if user:
-                send_magic_link(user)
+            code = generate_code()
 
-        return render(request, "login-sent.html")
+            if user := User.objects.filter(email=email).first():
+                send_login_code(user, code)
+                request.session["user_id"] = user.pk
+
+            request.session["email"] = email
+            request.session["code_hash"] = hash_code(code)
+            request.session["code_tries"] = 0
+            request.session["code_expires_at"] = calculate_expires_at().isoformat()
+
+        return redirect(reverse("login"))
 
 
 class LoginView(View):
-    def get(self, request, token):
-        # Render a confirmation page rather than consuming the link on GET, so
-        # email scanners and link prefetchers can't burn the single-use token.
-        try:
-            magic_link = MagicLink.from_token(token)
-        except MagicLink.DoesNotExist:
-            return render(request, "login-error.html")
+    def get(self, request):
+        email = request.session.get("email", None)
+        if email is None:
+            return redirect(reverse("index"))
 
-        if not magic_link.is_valid:
-            return render(request, "login-error.html")
+        context = {"form": CodeForm(), "email": email}
+        return render(request, "login-sent.html", context=context)
 
-        return render(request, "login-confirm.html", context={"token": token})
+    def post(self, request):
+        if "email" not in request.session:
+            clean_session_data(request)
+            return render(request, "login-error-code.html")
 
-    def post(self, request, token):
-        try:
-            magic_link = MagicLink.from_token(token)
-        except MagicLink.DoesNotExist:
-            return render(request, "login-error.html")
+        if timezone.now() > datetime.fromisoformat(request.session["code_expires_at"]):
+            clean_session_data(request)
+            return render(request, "login-error-code.html")
 
-        if not magic_link.is_valid:
-            return render(request, "login-error.html")
+        code_tries = request.session["code_tries"] + 1
+        form = CodeForm(request.POST)
 
-        magic_link.login(request)
+        if not form.is_valid():
+            context = {"form": form, "email": request.session["email"]}
+            return render(request, "login-sent.html", context=context)
 
-        return redirect(reverse("board_redirect"))
+        if (user_id := request.session.get("user_id", None)) and compare_digest(
+            request.session["code_hash"], hash_code(form.cleaned_data["code"])
+        ):
+            if user := User.objects.filter(id=user_id).first():
+                login(request, user)
+                clean_session_data(request)
+                return redirect(reverse("board_redirect"))
+
+        if code_tries > 2:
+            clean_session_data(request)
+            return render(request, "login-error-code-tries.html")
+
+        request.session["code_tries"] = code_tries
+        context = {"form": CodeForm(), "email": request.session["email"], "tries": 3 - code_tries}
+        return render(request, "login-error-code-retry.html", context=context)
 
 
 @login_required

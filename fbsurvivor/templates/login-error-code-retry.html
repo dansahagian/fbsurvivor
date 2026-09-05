@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container login">
+    Login Error
+    <p>{{ email }} <span>wrong email?</span></p>
+    <p>Incorrect code. {{ tries }} tries remaining.</p>
+    <form action="{% url 'login' %}" method="POST">
+        {% csrf_token %}
+        <div class="email-form">
+            {{ form.code.errors }}
+            {{ form.code }}
+        </div>
+        <div class="container">
+            <input class="submit-button blue-button" type="submit" value="Let me in" />
+        </div>
+    </form>
+</div>
+{% endblock %}

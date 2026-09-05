@@ -2,18 +2,25 @@ import pytest
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from fbsurvivor.core.models import MagicLink, Pick, PlayerStatus, Week
+from fbsurvivor.core.models import EmailLogRecord, Pick, PlayerStatus, Week
 
 
 @pytest.fixture
-def magic_link(players):
-    _magic_link, token = MagicLink.issue(players[0].user)
-    return token
+def code(monkeypatch):
+    """Pin the emailed code so tests can submit it."""
+    monkeypatch.setattr("fbsurvivor.core.views.generate_code", lambda: "123456")
+    return "123456"
 
 
 @pytest.fixture
 def year(seasons):
     return seasons[1].year
+
+
+@pytest.fixture
+def player_client(client, players):
+    client.force_login(players[0].user)
+    return client
 
 
 @pytest.fixture
@@ -23,80 +30,148 @@ def staff_client(client, db):
     return client
 
 
+def request_code(client, email):
+    return client.post(reverse("index"), {"email": email})
+
+
 class TestLoginView:
-    def test_get_does_not_consume_token(self, client, magic_link):
-        # A GET (e.g. an email scanner prefetch) must show the confirmation
-        # page without logging in or consuming the single-use token.
-        response = client.get(reverse("enter", args=[magic_link]))
+    def test_correct_code_logs_in_and_clears_pending_state(self, client, players, code):
+        request_code(client, players[0].user.email)
 
-        assert response.status_code == 200
-        assert "_auth_user_id" not in client.session
-        assert not MagicLink.from_token(magic_link).has_been_used
-
-    def test_post_consumes_token_and_logs_in(self, client, magic_link):
-        response = client.post(reverse("enter", args=[magic_link]))
+        response = client.post(reverse("login"), {"code": code})
 
         assert response.status_code == 302
         assert "_auth_user_id" in client.session
-        assert MagicLink.from_token(magic_link).has_been_used
+        for key in ("email", "code_hash", "code_tries", "code_expires_at", "user_id"):
+            assert key not in client.session
 
-    def test_post_with_used_token_errors(self, client, magic_link):
-        client.post(reverse("enter", args=[magic_link]))
-        client.logout()
+    def test_unknown_email_behaves_like_a_wrong_code(self, client, db, code):
+        # Regression: the unknown-email session has no user_id, and reading it
+        # unconditionally 500'd -- which also leaked which addresses exist.
+        request_code(client, "nobody@example.com")
 
-        response = client.post(reverse("enter", args=[magic_link]))
+        response = client.post(reverse("login"), {"code": code})
 
         assert response.status_code == 200
         assert "_auth_user_id" not in client.session
 
+    def test_unknown_email_is_not_emailed(self, client, db):
+        request_code(client, "nobody@example.com")
+
+        assert EmailLogRecord.objects.count() == 0
+
+    def test_known_email_is_emailed(self, client, players):
+        request_code(client, players[0].user.email)
+
+        assert EmailLogRecord.objects.count() == 1
+
+    def test_padded_code_is_accepted(self, client, players, code):
+        request_code(client, players[0].user.email)
+
+        response = client.post(reverse("login"), {"code": f"  {code}  "})
+
+        assert response.status_code == 302
+
+    @pytest.mark.parametrize("bad_code", ["", "12345", "1234567"])
+    def test_wrong_length_does_not_burn_a_try(self, client, players, code, bad_code):
+        # A malformed entry can never be the right code, so it costs a message,
+        # not the pending login.
+        request_code(client, players[0].user.email)
+
+        response = client.post(reverse("login"), {"code": bad_code})
+
+        assert response.status_code == 200
+        assert client.session["code_tries"] == 0
+        assert 'id="id_code_error"' in response.content.decode()
+        assert client.post(reverse("login"), {"code": code}).status_code == 302
+
+    def test_wrong_code_burns_a_try(self, client, players, code):
+        request_code(client, players[0].user.email)
+
+        response = client.post(reverse("login"), {"code": "000000"})
+
+        assert response.status_code == 200
+        assert client.session["code_tries"] == 1
+        assert "_auth_user_id" not in client.session
+
+    def test_three_wrong_codes_discard_the_code(self, client, players, code):
+        request_code(client, players[0].user.email)
+
+        for _ in range(3):
+            client.post(reverse("login"), {"code": "000000"})
+
+        assert "code_hash" not in client.session
+        assert client.post(reverse("login"), {"code": code}).status_code == 200
+        assert "_auth_user_id" not in client.session
+
+    def test_expired_code_is_rejected(self, client, players, code):
+        request_code(client, players[0].user.email)
+        session = client.session
+        session["code_expires_at"] = "2020-01-01T00:00:00+00:00"
+        session.save()
+
+        response = client.post(reverse("login"), {"code": code})
+
+        assert response.status_code == 200
+        assert "_auth_user_id" not in client.session
+        assert "code_hash" not in client.session
+
+    def test_login_page_without_a_pending_code_redirects(self, client, db):
+        response = client.get(reverse("login"))
+
+        assert response.status_code == 302
+
+    def test_code_input_supports_autofill(self, client, players, code):
+        request_code(client, players[0].user.email)
+
+        body = client.get(reverse("login")).content.decode()
+
+        assert 'autocomplete="one-time-code"' in body
+        assert 'inputmode="numeric"' in body
+        assert 'minlength="6"' in body
+        assert 'maxlength="6"' in body
+
 
 class TestBoardView:
-    def test_board_renders_for_unpaid_player(self, client, magic_link, year):
+    def test_board_renders_for_unpaid_player(self, player_client, year):
         # Regression: the player-* templates were unreachable because
         # templates/player was missing from TEMPLATES["DIRS"], so the
         # unpaid-player board flow raised TemplateDoesNotExist (500).
-        client.post(reverse("enter", args=[magic_link]))
-
-        response = client.get(reverse("board", args=[year]))
+        response = player_client.get(reverse("board", args=[year]))
 
         assert response.status_code == 200
 
 
 class TestPickViews:
-    def test_view_picks(self, client, magic_link, year):
-        client.post(reverse("enter", args=[magic_link]))
+    def test_view_picks(self, player_client, year):
         url = reverse("picks", args=[year])
-        response = client.get(url)
+        response = player_client.get(url)
         assert response.status_code == 200
 
-    def test_view_pick_week_is_locked(self, client, magic_link, year):
-        client.post(reverse("enter", args=[magic_link]))
+    def test_view_pick_week_is_locked(self, player_client, year):
         url = reverse("pick", args=[year, 1])
-        response = client.get(url, follow=True)
+        response = player_client.get(url, follow=True)
         assert response.status_code == 200
 
-    def test_view_pick_get(self, client, magic_link, year):
-        client.post(reverse("enter", args=[magic_link]))
+    def test_view_pick_get(self, player_client, year):
         url = reverse("pick", args=[year, 5])
-        response = client.get(url)
+        response = player_client.get(url)
         assert response.status_code == 200
 
-    def test_view_pick_post(self, client, magic_link, year, players):
-        client.post(reverse("enter", args=[magic_link]))
+    def test_view_pick_post(self, player_client, year, players):
         p1 = players[0]
 
         url = reverse("pick", args=[year, 5])
-        response = client.post(url, {"team": "BUF"}, follow=True)
+        response = player_client.post(url, {"team": "BUF"}, follow=True)
         pick = Pick.objects.get(player=p1, week__season__year=year, week__week_num=5)
 
         assert response.status_code == 200
         assert pick.team is not None
         assert pick.team.team_code == "BUF"
 
-    def test_view_pick_post_bad_team(self, client, magic_link, year, players):
-        client.post(reverse("enter", args=[magic_link]))
+    def test_view_pick_post_bad_team(self, player_client, year):
         url = reverse("pick", args=[year, 5])
-        response = client.post(url, {"team": "WAS"}, follow=True)
+        response = player_client.post(url, {"team": "WAS"}, follow=True)
 
         assert response.status_code == 200
 

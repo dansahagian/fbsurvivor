@@ -7,6 +7,15 @@ class EmailForm(forms.Form):
     email = forms.EmailField(label="email")
 
 
+class CodeForm(forms.Form):
+    code = forms.CharField(
+        label="code",
+        min_length=6,
+        max_length=6,
+        widget=forms.TextInput(attrs={"autocomplete": "one-time-code", "inputmode": "numeric"}),
+    )
+
+
 class PlayerForm(forms.Form):
     username = forms.CharField(label="username", max_length=20)
     email = forms.EmailField(label="email")
