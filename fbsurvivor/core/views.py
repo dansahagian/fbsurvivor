@@ -66,6 +66,7 @@ class IndexView(View):
         if request.user.is_authenticated:
             return redirect(reverse("board_redirect"))
 
+        request.session.flush()
         return render(request, "index.html", context={"form": EmailForm()})
 
     def post(self, request):
