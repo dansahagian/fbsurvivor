@@ -8,11 +8,11 @@
             {{ team }}
             <form action="{% url 'result' season.year week.week_num team 'W' %}" method="POST" class="inline-form">
                 {% csrf_token %}
-                <button type="submit" class="link-button">Won</button>
+                <button type="submit" class="result">Won</button>
             </form>
             <form action="{% url 'result' season.year week.week_num team 'L' %}" method="POST" class="inline-form">
                 {% csrf_token %}
-                <button type="submit" class="link-button">Lost</button>
+                <button type="submit" class="result">Lost</button>
             </form>
             <br><br>
         {% endfor %}

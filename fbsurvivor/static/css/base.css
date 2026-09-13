@@ -110,6 +110,17 @@ td {
     text-decoration: none;
 }
 
+.result {
+    background: none;
+    border: none;
+    padding-left: 2em;
+    margin: 0;
+    font: inherit;
+    color: var(--link-color);
+    cursor: pointer;
+    text-decoration: none;
+}
+
 .pill {
     color: var(--background);
     padding: 0.1rem 0.5rem;
