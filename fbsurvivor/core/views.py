@@ -135,7 +135,6 @@ def clean_session(request):
     return redirect(reverse("index"))
 
 
-@login_required
 def logout_view(request):
     logout(request)
     return render(request, "logout-success.html")
