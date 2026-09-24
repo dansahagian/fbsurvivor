@@ -260,6 +260,10 @@ def buy_back(request, year: int, **kwargs):
         player_status.is_survivor = True
         player_status.save()
         cache_board(season)
+
+        message = f"{user.username} for {season.year}"
+        send_email("Survivor Buy-Back Accepted", [CONTACT], message)
+
         return redirect(reverse("board", args=[year]))
     else:
         return render(request, "player-buy-back-error.html", context=context)
@@ -288,6 +292,10 @@ def decline_buy_back(request, year: int, **kwargs):
         player_status.is_survivor = False
         player_status.save()
         cache_board(season)
+
+        message = f"{user.username} for {season.year}"
+        send_email("Survivor Buy-Back Declined", [CONTACT], message)
+
         return redirect(reverse("board", args=[year]))
     else:
         return render(request, "player-buy-back-error.html", context=context)

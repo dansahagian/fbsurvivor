@@ -1,5 +1,7 @@
 SELECT
-	u.username
+	u.username,
+	ps.can_buy_back,
+	ps.did_buy_back
 FROM
 	core_playerstatus ps
 	JOIN core_player p ON p.id = ps.player_id
@@ -7,6 +9,5 @@ FROM
 	JOIN core_season s ON s.id = ps.season_id
 WHERE
 	s.is_current = TRUE
-	AND ps.did_buy_back = TRUE
 ORDER BY
 	p.id
