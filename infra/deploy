@@ -1,0 +1,24 @@
+#!/bin/zsh
+# Used to deploy on server
+
+set -euo pipefail
+
+echo "\nInstalling Dependencies...\n"
+cd /opt/fbsurvivor
+/home/dan/.cargo/bin/uv sync --no-dev
+
+trap 'sudo systemctl start wsgi-server-fbsurvivor.service' EXIT
+
+echo "\nStopping services...\n"
+sudo systemctl stop wsgi-server-fbsurvivor.service
+
+/home/dan/.cargo/bin/uv run --no-dev python manage.py migrate
+/home/dan/.cargo/bin/uv run --no-dev python manage.py collectstatic --clear --no-input
+/home/dan/.cargo/bin/uv run --no-dev python manage.py check --deploy
+
+echo "\nStarting services...\n"
+sudo systemctl start wsgi-server-fbsurvivor.service
+
+trap - EXIT
+
+sleep 2
