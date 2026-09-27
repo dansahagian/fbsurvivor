@@ -4,20 +4,17 @@ _list:
     @echo "Available recipes:"
     @first=1; for g in {{GROUPS}}; do [ $first = 1 ] || echo; first=0; just --list --unsorted --group "$g" --list-heading ""; done
 
-SERVER   := "oyuki"
-DOMAIN   := "fbsurvivor.com"
+PROJECT       := "fbsurvivor"
+DB_USER       := "fbsurvivor2"
+DB_NAME       := "fbsurvivor2"
+DOMAIN        := "fbsurvivor.com"
+SERVER        := "oyuki"
 
-PROJECT  := "fbsurvivor"
-SETTINGS := PROJECT + ".settings"
-PORT     := "8000"
-
-DB_NAME  := "fbsurvivor2"
-DB_USER  := "fbsurvivor2"
-DB_PASS  := "password"
-DB_DUMP  := "tmp/fbsurvivor_dump"
-
-SERVICE   := "wsgi-server-" + PROJECT + ".service"
-PROD_UV   := "/home/dan/.cargo/bin/uv"
+SETTINGS      := PROJECT + ".settings"
+PROD_DIR      := SERVER + ":/opt/" + PROJECT
+PROD_DB_FILE  := "/tmp/" + PROJECT + "_db"
+LOCAL_DB_FILE := "tmp/" + PROJECT + "_db"
+SERVICE       := "wsgi-server-" + PROJECT + ".service"
 
 
 # CHECK
@@ -53,7 +50,7 @@ manage *ARGS:
     DJANGO_SETTINGS_MODULE={{SETTINGS}} uv run python manage.py {{ARGS}}
 
 [group('django')]
-runserver: (manage "runserver 127.0.0.1:" + PORT)
+runserver: (manage "runserver")
 
 [group('django')]
 shell_plus: (manage "shell_plus")
@@ -76,32 +73,32 @@ init-db:
     psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS {{DB_NAME}};"
     psql -U postgres -d postgres -c "DROP ROLE IF EXISTS {{DB_USER}};"
     psql -U postgres -d postgres -c "CREATE DATABASE {{DB_NAME}};"
-    psql -U postgres -d postgres -c "CREATE ROLE {{DB_USER}} WITH PASSWORD '{{DB_PASS}}';"
+    psql -U postgres -d postgres -c "CREATE ROLE {{DB_USER}} WITH PASSWORD 'password';"
     psql -U postgres -d postgres -c "ALTER ROLE {{DB_USER}} WITH CREATEDB LOGIN;"
     psql -U postgres -d postgres -c "GRANT ALL ON DATABASE {{DB_NAME}} TO {{DB_USER}};"
 
 # Copy the production db down to the dev host
 [group('database')]
 copy-db:
-    ssh {{SERVER}} "pg_dump -U fbsurvivor2 fbsurvivor2 > /tmp/fbsurvivor_dump"
-    scp {{SERVER}}:/tmp/fbsurvivor_dump tmp/fbsurvivor_dump
-    ssh {{SERVER}} "rm /tmp/fbsurvivor_dump"
+    ssh {{SERVER}} "pg_dump -U {{DB_USER}} {{DB_NAME}} > {{PROD_DB_FILE}}"
+    scp {{SERVER}}:{{PROD_DB_FILE}} {{LOCAL_DB_FILE}}
+    ssh {{SERVER}} "rm {{PROD_DB_FILE}}"
 
-# Load the dev database from DB_DUMP
+# Load the dev database from LOCAL_DB_FILE
 [group('database')]
 load-db:
     #!/usr/bin/env bash
     set -euo pipefail
-    [ -s "{{DB_DUMP}}" ] || { echo "❌ {{DB_DUMP}} missing or empty" >&2; exit 1; }
+    [ -s "{{LOCAL_DB_FILE}}" ] || { echo "❌ file missing or empty" >&2; exit 1; }
     psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS {{DB_NAME}};"
     psql -U postgres -d postgres -c "DROP ROLE IF EXISTS {{DB_USER}};"
     psql -U postgres -d postgres -c "CREATE DATABASE {{DB_NAME}};"
-    psql -U postgres -d postgres -c "CREATE ROLE {{DB_USER}} WITH PASSWORD '{{DB_PASS}}';"
+    psql -U postgres -d postgres -c "CREATE ROLE {{DB_USER}} WITH PASSWORD 'password';"
     psql -U postgres -d postgres -c "ALTER ROLE {{DB_USER}} WITH CREATEDB LOGIN;"
     psql -U postgres -d postgres -c "GRANT ALL ON DATABASE {{DB_NAME}} TO {{DB_USER}};"
     psql -U postgres -d {{DB_NAME}} -c "DROP SCHEMA IF EXISTS public;"
     psql -U postgres -d {{DB_NAME}} -c "CREATE SCHEMA public AUTHORIZATION {{DB_USER}};"
-    psql -U postgres -v ON_ERROR_STOP=1 {{DB_NAME}} < "{{DB_DUMP}}"
+    psql -U postgres -v ON_ERROR_STOP=1 {{DB_NAME}} < "{{LOCAL_DB_FILE}}"
 
 
 # SETUP
@@ -125,19 +122,19 @@ upgrade:
 [group('prod')]
 deploy: check
     #!/usr/bin/env bash
-    SERVER="oyuki"
-
     set -e
+
+    DIRECTORY={{SERVER}}:/opt/{{PROJECT}}
 
     echo "Deploying..."
 
-    rsync -a ./fbsurvivor $SERVER:/opt/fbsurvivor
-    rsync -a ./pyproject.toml $SERVER:/opt/fbsurvivor
-    rsync -a ./uv.lock $SERVER:/opt/fbsurvivor
-    rsync -a ./manage.py $SERVER:/opt/fbsurvivor
-    rsync -a ./infra/deploy $SERVER:/opt/fbsurvivor
-    rsync -a ./uploads $SERVER:/opt/fbsurvivor
+    rsync -a ./{{PROJECT}} $DIRECTORY
+    rsync -a ./pyproject.toml $DIRECTORY
+    rsync -a ./uv.lock $DIRECTORY
+    rsync -a ./manage.py $DIRECTORY
+    rsync -a ./infra/deploy $DIRECTORY
+    rsync -a ./uploads $DIRECTORY
 
-    ssh $SERVER /opt/fbsurvivor/deploy
+    ssh {{SERVER}} /opt/{{PROJECT}}/deploy
 
-    curl -X GET -I https://fbsurvivor.com
+    curl -X GET -I https://{{DOMAIN}}

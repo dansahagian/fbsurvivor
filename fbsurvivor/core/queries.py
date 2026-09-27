@@ -19,19 +19,25 @@ def get_current_week(season: Season) -> Week | None:
 
 
 def get_next_week(season: Season) -> Week | None:
-    weeks = season.weeks.filter(lock_datetime__gt=timezone.now()).order_by("week_num")
+    weeks = Week.objects.filter(
+        season=season,
+        lock_datetime__gt=timezone.now(),
+    ).order_by("week_num")
     return weeks.first() if weeks else None
 
 
 def get_player_years(player: Player) -> QuerySet[PlayerStatus]:
-    return player.player_statuses.order_by("-season__description").values_list(
-        "season__year", flat=True
+    return (
+        PlayerStatus.objects.filter(player=player)
+        .order_by("-season__description")
+        .values_list("season__year", flat=True)
     )
 
 
 def get_player_statuses_for_season_board(season: Season) -> QuerySet[PlayerStatus]:
     return (
-        season.player_statuses.annotate(lower=Lower("player__user__username"))
+        PlayerStatus.objects.filter(season=season)
+        .annotate(lower=Lower("player__user__username"))
         .filter(is_paid=True)
         .order_by("-is_survivor", "is_retired", "-win_count", "loss_count", "lower")
         .select_related("player", "player__user")
@@ -40,7 +46,8 @@ def get_player_statuses_for_season_board(season: Season) -> QuerySet[PlayerStatu
 
 def get_player_statuses_paid_for_season(season: Season) -> QuerySet[PlayerStatus]:
     return (
-        season.player_statuses.annotate(lower=Lower("player__user__username"))
+        PlayerStatus.objects.filter(season=season)
+        .annotate(lower=Lower("player__user__username"))
         .order_by("-is_paid", "lower")
         .prefetch_related("player", "player__user")
     )
@@ -58,9 +65,9 @@ def get_player_statuses_for_reminders(week: Week) -> list[PlayerStatus]:
 
 
 def get_locked_weeks_for_season(season: Season) -> QuerySet[Week]:
-    return season.weeks.filter(
-        lock_datetime__lte=timezone.now(),
-    ).order_by("-week_num")
+    return Week.objects.filter(season=season, lock_datetime__lte=timezone.now()).order_by(
+        "-week_num"
+    )
 
 
 def get_payouts():
@@ -73,12 +80,12 @@ def get_payouts():
 
 
 def picks_for_player_season(player: Player, season: Season) -> QuerySet[Pick]:
-    return player.picks.filter(week__season=season).order_by("week__week_num")
+    return Pick.objects.filter(player=player, week__season=season).order_by("week__week_num")
 
 
 def picks_for_board(player: Player, season: Season) -> QuerySet[Pick]:
     return (
-        player.picks.filter(week__season=season)
+        Pick.objects.filter(player=player, week__season=season)
         .order_by("-week__week_num")
         .filter(week__lock_datetime__lte=timezone.now())
     )
@@ -86,15 +93,15 @@ def picks_for_board(player: Player, season: Season) -> QuerySet[Pick]:
 
 def picks_for_results(week: Week) -> QuerySet[Pick]:
     return (
-        week.picks.filter(result__isnull=True, team__isnull=False)
+        Pick.objects.filter(week=week, result__isnull=True, team__isnull=False)
         .values_list("team__team_code", flat=True)
         .distinct()
     )
 
 
 def picks_for_result_updates(week: Week, team: Team) -> QuerySet[Pick]:
-    return week.picks.filter(team=team, result__isnull=True)
+    return Pick.objects.filter(week=week, team=team, result__isnull=True)
 
 
 def no_picks_for_result_update(week: Week) -> QuerySet[Pick]:
-    return week.picks.filter(team__isnull=True, result__isnull=True)
+    return Pick.objects.filter(week=week, team__isnull=True, result__isnull=True)
