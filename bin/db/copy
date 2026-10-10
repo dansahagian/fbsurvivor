@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+SERVER=oyuki
+DB_USER=fbsurvivor2
+DB_NAME=fbsurvivor2
+
+ssh $SERVER "pg_dump -U $DB_USER $DB_NAME > /tmp/database_file"
+scp "$SERVER:/tmp/database_file" tmp/database_file
+ssh $SERVER "rm /tmp/database_file"

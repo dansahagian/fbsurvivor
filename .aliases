@@ -1,0 +1,16 @@
+alias runserver="uv run python manage.py runserver"
+alias shell_plus="uv run python manage.py shell_plus"
+alias showmigrations="uv run python manage.py showmigrations"
+alias makemigrations="uv run python manage.py makemigrations"
+alias migrate="uv run python manage.py migrate"
+
+alias check="bin/check"
+alias audit="bin/checks/audit"
+alias format="bin/checks/format"
+alias lint="bin/checks/lint"
+alias test="bin/checks/test"
+alias types="bin/checks/types"
+
+alias init_db="bin/db/init"
+alias copy_db="bin/db/copy"
+alias load_db="bin/db/load"

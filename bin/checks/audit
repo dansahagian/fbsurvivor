@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+uv audit --preview-features audit

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+##### START CONFIG #####
+SERVER=oyuki
+PROJECT=fbsurvivor
+DOMAIN=https://fbsurvivor.com
+##### END CONFIG #####
+
+DIRECTORY=$SERVER:/opt/$PROJECT
+
+set -e
+
+bin/check
+
+echo "Deploying..."
+
+rsync -a ./$PROJECT $DIRECTORY
+rsync -a ./pyproject.toml $DIRECTORY
+rsync -a ./uv.lock $DIRECTORY
+rsync -a ./manage.py $DIRECTORY
+rsync -a ./infra/deploy $DIRECTORY
+rsync -a ./uploads $DIRECTORY
+
+ssh $SERVER /opt/$PROJECT/deploy
+
+curl -X GET -I $DOMAIN

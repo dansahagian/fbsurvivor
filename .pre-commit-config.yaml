@@ -1,32 +1,8 @@
 repos:
   - repo: local
     hooks:
-      - id: audit
-        name: audit
-        entry: just audit
-        language: system
-        pass_filenames: false
-
-      - id: lint
-        name: lint
-        entry: just lint
-        language: system
-        pass_filenames: false
-
-      - id: format
-        name: format
-        entry: just format
-        language: system
-        pass_filenames: false
-
-      - id: types
-        name: types
-        entry: just types
-        language: system
-        pass_filenames: false
-
-      - id: tests
-        name: tests
-        entry: just test
+      - id: check
+        name: check
+        entry: bin/check
         language: system
         pass_filenames: false
