@@ -8,19 +8,23 @@ DOMAIN=https://fbsurvivor.com
 
 DIRECTORY=$SERVER:/opt/$PROJECT
 
-set -e
+set -euo pipefail
 
 bin/check
 
 echo "Deploying..."
+SOCK="$HOME/.ssh/deploy-%r@%h:%p"
 
-rsync -a ./$PROJECT $DIRECTORY
-rsync -a ./pyproject.toml $DIRECTORY
-rsync -a ./uv.lock $DIRECTORY
-rsync -a ./manage.py $DIRECTORY
-rsync -a ./infra/deploy $DIRECTORY
-rsync -a ./uploads $DIRECTORY
+# Prompts for your key passphrase once, then backgrounds
+ssh -fNM -S "$SOCK" "$SERVER"
+trap 'ssh -S "$SOCK" -O exit "$SERVER" 2>/dev/null' EXIT
 
-ssh $SERVER /opt/$PROJECT/deploy
+RSH="ssh -S $SOCK"
+
+rsync -a -e "$RSH" \
+  "./$PROJECT" ./pyproject.toml ./uv.lock ./manage.py ./infra/deploy ./uploads \
+  "$DIRECTORY"
+
+ssh -S "$SOCK" "$SERVER" "/opt/$PROJECT/deploy"
 
 curl -X GET -I $DOMAIN
