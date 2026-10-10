@@ -3,9 +3,11 @@
 DB_USER=fbsurvivor2
 DB_NAME=fbsurvivor2
 
-psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS $DB_NAME;"
-psql -U postgres -d postgres -c "DROP ROLE IF EXISTS $DB_USER;"
-psql -U postgres -d postgres -c "CREATE DATABASE $DB_NAME;"
-psql -U postgres -d postgres -c "CREATE ROLE $DB_USER WITH PASSWORD 'password';"
-psql -U postgres -d postgres -c "ALTER ROLE $DB_USER WITH CREATEDB LOGIN;"
-psql -U postgres -d postgres -c "GRANT ALL ON DATABASE $DB_NAME TO $DB_USER;"
+psql -c "DROP DATABASE IF EXISTS $DB_NAME;"
+psql -c "DROP ROLE IF EXISTS $DB_USER;"
+psql -c "CREATE DATABASE $DB_NAME;"
+psql -c "CREATE ROLE $DB_USER WITH PASSWORD 'password';"
+psql -c "ALTER ROLE $DB_USER WITH CREATEDB LOGIN;"
+psql -c "GRANT ALL ON DATABASE $DB_NAME TO $DB_USER;"
+psql -U postgres -d $DB_NAME -c "DROP SCHEMA IF EXISTS public;"
+psql -U postgres -d $DB_NAME -c "CREATE SCHEMA public AUTHORIZATION $DB_USER;"
