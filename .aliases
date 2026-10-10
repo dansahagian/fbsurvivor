@@ -10,7 +10,3 @@ alias format="bin/checks/format"
 alias lint="bin/checks/lint"
 alias test="bin/checks/test"
 alias types="bin/checks/types"
-
-alias init_db="bin/db/init"
-alias copy_db="bin/db/copy"
-alias load_db="bin/db/load"
