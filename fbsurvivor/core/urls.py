@@ -15,7 +15,9 @@ from fbsurvivor.core.views import (
     logout_view,
     manager,
     paid,
+    paid_buyback,
     payouts,
+    payouts_current,
     pick,
     picks,
     play,
@@ -26,6 +28,7 @@ from fbsurvivor.core.views import (
     theme,
     update_reminders,
     user_paid,
+    user_paid_buyback,
 )
 
 urlpatterns = [
@@ -39,6 +42,7 @@ urlpatterns = [
     path("buy-back/<int:year>", buy_back, name="buy_back"),
     path("decline-buy-back/<int:year>", decline_buy_back, name="decline_buy_back"),
     path("payouts", payouts, name="payouts"),
+    path("payouts/current", payouts_current, name="payouts_current"),
     path("rules", rules, name="rules"),
     path("seasons", seasons, name="seasons"),
     path("theme", theme, name="theme"),
@@ -48,6 +52,8 @@ urlpatterns = [
     path("create_player", create_player, name="create_player"),
     path("paid/<int:year>", paid, name="paid"),
     path("paid/<int:year>/<str:username>", user_paid, name="user_paid"),
+    path("paid-buyback/<int:year>", paid_buyback, name="paid_buyback"),
+    path("paid-buyback/<int:year>/<str:username>", user_paid_buyback, name="user_paid_buyback"),
     path("results/<int:year>", results, name="results"),
     path("results/<int:year>/<int:week>/<str:team>/<str:outcome>", result, name="result"),
     path("players/<int:year>", get_players, name="players"),

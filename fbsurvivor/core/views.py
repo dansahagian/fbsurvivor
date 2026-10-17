@@ -28,7 +28,9 @@ from fbsurvivor.core.queries import (
     get_locked_weeks_for_season,
     get_next_week,
     get_payouts,
+    get_payouts_current,
     get_player_statuses_for_season_board,
+    get_player_statuses_paid_buyback_for_season,
     get_player_statuses_paid_for_season,
     get_player_years,
     no_picks_for_result_update,
@@ -302,6 +304,23 @@ def decline_buy_back(request, year: int, **kwargs):
 
 
 @login_required
+def payouts_current(request, **kwargs):
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+
+    survivor, best_record, survivor_bonus = get_payouts_current()
+
+    context = {
+        "player": player,
+        "survivor_payout": survivor,
+        "record_payout": best_record,
+        "bonus_payout": survivor_bonus,
+    }
+
+    return render(request, "payouts_current.html", context=context)
+
+
+@login_required
 def payouts(request, **kwargs):
     user = request.user
     player = get_object_or_404(Player, user=user)
@@ -510,6 +529,22 @@ def paid(request, year, **kwargs):
     return render(request, "manager-paid.html", context=context)
 
 
+@staff_member_required
+def paid_buyback(request, year, **kwargs):
+    user = request.user
+    player = get_object_or_404(Player, user=user)
+    season = get_object_or_404(Season, year=year)
+
+    context = {
+        "user": user,
+        "player": player,
+        "season": season,
+    }
+
+    context["player_statuses"] = get_player_statuses_paid_buyback_for_season(season)
+    return render(request, "manager-paid-buyback.html", context=context)
+
+
 @staff_member_required  # ty: ignore[no-matching-overload]
 @require_POST  # ty: ignore[invalid-argument-type]
 def user_paid(request, year, username, **kwargs):
@@ -520,6 +555,18 @@ def user_paid(request, year, username, **kwargs):
     ps.save()
     cache_board(season)
     return redirect(reverse("paid", args=[year]))
+
+
+@staff_member_required  # ty: ignore[no-matching-overload]
+@require_POST  # ty: ignore[invalid-argument-type]
+def user_paid_buyback(request, year, username, **kwargs):
+    season = get_object_or_404(Season, year=year)
+
+    ps = get_object_or_404(PlayerStatus, player__user__username=username, season=season)
+    ps.is_paid_buyback = True
+    ps.save()
+    cache_board(season)
+    return redirect(reverse("paid_buyback", args=[year]))
 
 
 @staff_member_required

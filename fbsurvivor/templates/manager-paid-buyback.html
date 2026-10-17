@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        Mark Buyback Paid
+    </div>
+    <div class="container">
+        {% for player_status in player_statuses %}
+            <div class="vertical-link">
+                <form action="{% url 'user_paid_buyback' season.year player_status.player.user.username %}" method="POST" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button">{{ player_status.player.user.username }}</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

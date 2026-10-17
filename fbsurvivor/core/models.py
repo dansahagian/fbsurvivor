@@ -51,6 +51,7 @@ class PlayerStatus(models.Model):
     is_survivor = models.BooleanField(default=True)
     can_buy_back = models.BooleanField(default=True)
     did_buy_back = models.BooleanField(default=False)
+    is_paid_buyback = models.BooleanField(default=False)
     win_count = models.SmallIntegerField(default=0)
     loss_count = models.SmallIntegerField(default=0)
 

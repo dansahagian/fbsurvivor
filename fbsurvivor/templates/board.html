@@ -8,6 +8,11 @@
             {% if next_week and next_pick %}
                 > <a class="pill picks" href="{% url 'pick' season.year next_week %}">{{ next_pick }}</a>
             {% endif %}
+            {% if season.is_current %}
+                <div class="vertical-link">
+                    <a href="{% url 'payouts_current' %}">Current Payouts</a>
+                </div>
+            {% endif %}
             <div class="container">
                 <table>
                     <tr>

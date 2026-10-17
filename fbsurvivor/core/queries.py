@@ -46,9 +46,18 @@ def get_player_statuses_for_season_board(season: Season) -> QuerySet[PlayerStatu
 
 def get_player_statuses_paid_for_season(season: Season) -> QuerySet[PlayerStatus]:
     return (
-        PlayerStatus.objects.filter(season=season)
+        PlayerStatus.objects.filter(season=season, is_paid=False)
         .annotate(lower=Lower("player__user__username"))
-        .order_by("-is_paid", "lower")
+        .order_by("lower")
+        .prefetch_related("player", "player__user")
+    )
+
+
+def get_player_statuses_paid_buyback_for_season(season: Season) -> QuerySet[PlayerStatus]:
+    return (
+        PlayerStatus.objects.filter(season=season, is_paid_buyback=False)
+        .annotate(lower=Lower("player__user__username"))
+        .order_by("lower")
         .prefetch_related("player", "player__user")
     )
 
@@ -68,6 +77,19 @@ def get_locked_weeks_for_season(season: Season) -> QuerySet[Week]:
     return Week.objects.filter(season=season, lock_datetime__lte=timezone.now()).order_by(
         "-week_num"
     )
+
+
+def get_payouts_current():
+    season = get_current_season()
+
+    _buy_ins = PlayerStatus.objects.filter(season=season).count()
+    buy_backs = PlayerStatus.objects.filter(season=season, did_buy_back=True).count()
+
+    survivor = 460 + (20 * buy_backs)
+    best_record = 230 + (10 * buy_backs)
+    survivor_bonus = 300
+
+    return survivor, best_record, survivor_bonus
 
 
 def get_payouts():
