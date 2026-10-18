@@ -55,7 +55,7 @@ def get_player_statuses_paid_for_season(season: Season) -> QuerySet[PlayerStatus
 
 def get_player_statuses_paid_buyback_for_season(season: Season) -> QuerySet[PlayerStatus]:
     return (
-        PlayerStatus.objects.filter(season=season, is_paid_buyback=False)
+        PlayerStatus.objects.filter(season=season, did_buy_back=True, is_paid_buyback=False)
         .annotate(lower=Lower("player__user__username"))
         .order_by("lower")
         .prefetch_related("player", "player__user")
@@ -94,10 +94,10 @@ def get_payouts_current():
 
 def get_payouts():
     return (
-        Payout.objects.annotate(total=Sum("amount"))
+        Payout.objects.select_related("player", "player__user")
+        .values("player__user__username")
+        .annotate(total=Sum("amount"))
         .order_by("-total")
-        .select_related("player", "player__user")
-        .values("player__user__username", "total")
     )
 
 
@@ -126,4 +126,6 @@ def picks_for_result_updates(week: Week, team: Team) -> QuerySet[Pick]:
 
 
 def no_picks_for_result_update(week: Week) -> QuerySet[Pick]:
-    return Pick.objects.filter(week=week, team__isnull=True, result__isnull=True)
+    return Pick.objects.filter(week=week, team__isnull=True, result__isnull=True).select_related(
+        "player"
+    )

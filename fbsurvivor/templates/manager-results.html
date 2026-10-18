@@ -4,6 +4,14 @@
         Results
     </div>
     <div class="container">
+        {% if no_picks %}
+            No Pick
+            <form action="{% url 'result_no_pick' season.year week.week_num %}" method="POST" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="result">Lost</button>
+            </form>
+            <br><br>
+        {% endif %}
         {% for team in teams %}
             {{ team }}
             <form action="{% url 'result' season.year week.week_num team 'W' %}" method="POST" class="inline-form">

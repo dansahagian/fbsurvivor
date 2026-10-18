@@ -582,9 +582,15 @@ def results(request, year, **kwargs):
     }
 
     current_week = get_current_week(season)
-    teams = picks_for_results(current_week) if current_week else []
+    if current_week:
+        no_picks = no_picks_for_result_update(current_week).count()
+        teams = picks_for_results(current_week)
+    else:
+        no_picks = 0
+        teams = []
 
     context["week"] = current_week
+    context["no_picks"] = no_picks > 0
     context["teams"] = teams
 
     return render(request, "manager-results.html", context=context)
@@ -600,7 +606,6 @@ def result(request, year, week, team, outcome, **kwargs):
     week = get_object_or_404(Week, season=season, week_num=week)
     team = get_object_or_404(Team, team_code=team, season=season)
 
-    no_picks_for_result_update(week).update(result="L")
     weekly_picks = picks_for_result_updates(week, team)
 
     # if it's a loss, query for the player statuses and set the is_survivor flag to false
@@ -610,6 +615,24 @@ def result(request, year, week, team, outcome, **kwargs):
         )
 
     weekly_picks.update(result=outcome)
+    _player_records_updated = update_player_records(year)
+    cache_board(season)
+
+    return redirect(reverse("results", args=[year]))
+
+
+@staff_member_required  # ty: ignore[no-matching-overload]
+@require_POST  # ty: ignore[invalid-argument-type]
+def result_no_pick(request, year, week, **kwargs):
+    season = get_object_or_404(Season, year=year)
+    week = get_object_or_404(Week, season=season, week_num=week)
+
+    no_picks = no_picks_for_result_update(week)
+    players = [x.player for x in no_picks]
+    no_picks.update(result="L")
+
+    PlayerStatus.objects.filter(player__in=players, season=season).update(is_survivor=False)
+
     _player_records_updated = update_player_records(year)
     cache_board(season)
 
