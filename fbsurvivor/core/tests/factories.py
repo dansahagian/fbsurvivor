@@ -7,7 +7,7 @@ from fbsurvivor.core.models import Pick, Player, PlayerStatus, Season, Team, Wee
 
 
 class UserFactory(DjangoModelFactory):
-    class Meta:
+    class Meta:  # ty:ignore[invalid-attribute-override]
         model = User
 
     username = Sequence(lambda n: f"Player{n + 1}")
@@ -15,7 +15,7 @@ class UserFactory(DjangoModelFactory):
 
 
 class PlayerFactory(DjangoModelFactory):
-    class Meta:
+    class Meta:  # ty:ignore[invalid-attribute-override]
         model = Player
 
     user = SubFactory(UserFactory)
@@ -23,8 +23,7 @@ class PlayerFactory(DjangoModelFactory):
 
 
 class SeasonFactory(DjangoModelFactory):
-    # pyrefly: ignore  # bad-override
-    class Meta:
+    class Meta:  # ty:ignore[invalid-attribute-override]
         model = Season
 
     year = Sequence(lambda n: n + 2017)
@@ -33,8 +32,7 @@ class SeasonFactory(DjangoModelFactory):
 
 
 class WeekFactory(DjangoModelFactory):
-    # pyrefly: ignore  # bad-override
-    class Meta:
+    class Meta:  # ty:ignore[invalid-attribute-override]
         model = Week
 
     season = SubFactory(SeasonFactory)
@@ -43,8 +41,7 @@ class WeekFactory(DjangoModelFactory):
 
 
 class TeamFactory(DjangoModelFactory):
-    # pyrefly: ignore  # bad-override
-    class Meta:
+    class Meta:  # ty:ignore[invalid-attribute-override]
         model = Team
 
     season = SubFactory(SeasonFactory)
@@ -53,8 +50,7 @@ class TeamFactory(DjangoModelFactory):
 
 
 class PickFactory(DjangoModelFactory):
-    # pyrefly: ignore  # bad-override
-    class Meta:
+    class Meta:  # ty:ignore[invalid-attribute-override]
         model = Pick
 
     player = SubFactory(PlayerFactory)
@@ -63,8 +59,7 @@ class PickFactory(DjangoModelFactory):
 
 
 class PlayerStatusFactory(DjangoModelFactory):
-    # pyrefly: ignore  # bad-override
-    class Meta:
+    class Meta:  # ty:ignore[invalid-attribute-override]
         model = PlayerStatus
 
     player = SubFactory(PlayerFactory)
