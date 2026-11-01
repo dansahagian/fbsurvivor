@@ -13,7 +13,6 @@ SERVER        := "oyuki"
 SETTINGS      := PROJECT + ".settings"
 PROD_DIR      := SERVER + ":/opt/" + PROJECT
 LOCAL_DB_FILE := "tmp/database_file"
-SERVICE       := "wsgi-server-" + PROJECT + ".service"
 
 
 # CHECK
@@ -84,6 +83,7 @@ init-db:
 copy-db:
     #!/usr/bin/env bash
     set -euo pipefail
+    umask 077
 
     SOCK="$HOME/.ssh/deploy-%r@%h:%p"
 
@@ -91,7 +91,8 @@ copy-db:
     ssh -fNM -S "$SOCK" "{{SERVER}}"
     trap 'ssh -S "$SOCK" -O exit "{{SERVER}}" 2>/dev/null' EXIT
 
-    ssh -S "$SOCK" "{{SERVER}}" "pg_dump -U {{DB_USER}} {{DB_NAME}}" > "{{LOCAL_DB_FILE}}"
+    # -w: never prompt; the password comes from ~/.pgpass on the server
+    ssh -S "$SOCK" "{{SERVER}}" "pg_dump -w -U {{DB_USER}} {{DB_NAME}}" > "{{LOCAL_DB_FILE}}"
 
 # Load the dev database from LOCAL_DB_FILE
 [group('database')]
