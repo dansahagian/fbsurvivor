@@ -3,6 +3,6 @@ repos:
     hooks:
       - id: check
         name: check
-        entry: bin/check
+        entry: just check
         language: system
         pass_filenames: false

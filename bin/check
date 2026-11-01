@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-bin/checks/audit
-bin/checks/lint
-bin/checks/format
-bin/checks/types
-bin/checks/test
