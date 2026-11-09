@@ -40,7 +40,7 @@ from fbsurvivor.core.queries import (
 )
 from fbsurvivor.core.utils.authentication import calculate_expires_at, generate_code, hash_code
 from fbsurvivor.core.utils.emails import (
-    send_email,
+    send_addressed_email,
     send_login_code,
     send_new_player_email,
 )
@@ -231,7 +231,7 @@ def play(request, year: int, **kwargs):
         cache_board(season)
 
         message = f"{user.username} in for {season.year}"
-        send_email("Survivor New Player!", [CONTACT], message)
+        send_addressed_email("Survivor New Player!", CONTACT, message)
 
         return redirect(reverse("board", args=[year]))
 
@@ -264,7 +264,7 @@ def buy_back(request, year: int, **kwargs):
         cache_board(season)
 
         message = f"{user.username} for {season.year}"
-        send_email("Survivor Buy-Back Accepted", [CONTACT], message)
+        send_addressed_email("Survivor Buy-Back Accepted", CONTACT, message)
 
         return redirect(reverse("board", args=[year]))
     else:
@@ -296,7 +296,7 @@ def decline_buy_back(request, year: int, **kwargs):
         cache_board(season)
 
         message = f"{user.username} for {season.year}"
-        send_email("Survivor Buy-Back Declined", [CONTACT], message)
+        send_addressed_email("Survivor Buy-Back Declined", CONTACT, message)
 
         return redirect(reverse("board", args=[year]))
     else:

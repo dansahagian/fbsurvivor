@@ -1,10 +1,10 @@
 from fbsurvivor.core.queries import (
     get_current_season,
+    get_emails_for_reminders,
     get_next_week,
-    get_player_statuses_for_reminders,
 )
 from fbsurvivor.core.utils.deadlines import get_reminder_message
-from fbsurvivor.core.utils.emails import send_email
+from fbsurvivor.core.utils.emails import send_bulk_email
 
 
 def send_reminders():
@@ -23,5 +23,5 @@ def send_reminders():
     warning = f"If you received this email, you have not submitted your pick for {week_text}."
     message = f"{warning}\n\n{week_text} Locks:\n\n" + message
 
-    if email_recipients := get_player_statuses_for_reminders(next_week):
-        send_email(subject, email_recipients, message)
+    if email_recipients := get_emails_for_reminders(next_week):
+        send_bulk_email(subject, email_recipients, message)

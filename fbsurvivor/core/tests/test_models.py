@@ -3,9 +3,9 @@ import pytest
 from fbsurvivor.core.models import Pick
 from fbsurvivor.core.queries import (
     get_current_week,
+    get_emails_for_reminders,
     get_locked_weeks_for_season,
     get_next_week,
-    get_player_statuses_for_reminders,
     picks_for_board,
     picks_for_player_season,
     picks_for_result_updates,
@@ -63,13 +63,13 @@ class TestReminders:
         pick.save()
 
     def test_for_email_reminders_with_picks(self, db, current_week):
-        assert get_player_statuses_for_reminders(current_week) == []
+        assert get_emails_for_reminders(current_week) == []
 
     def test_for_email_reminders_no_pick(self, db, current_week, players):
         self.clear_pick(players[0], current_week)
         self.clear_pick(players[1], current_week)
 
-        emails = get_player_statuses_for_reminders(current_week)
+        emails = get_emails_for_reminders(current_week)
 
         assert emails == [players[0].user.email, players[1].user.email]
 
@@ -81,7 +81,7 @@ class TestReminders:
         player_status.is_retired = True
         player_status.save()
 
-        emails = get_player_statuses_for_reminders(current_week)
+        emails = get_emails_for_reminders(current_week)
 
         assert emails == [players[1].user.email]
 
@@ -92,7 +92,7 @@ class TestReminders:
         players[1].has_email_reminders = False
         players[1].save()
 
-        emails = get_player_statuses_for_reminders(current_week)
+        emails = get_emails_for_reminders(current_week)
 
         assert emails == [players[0].user.email]
 

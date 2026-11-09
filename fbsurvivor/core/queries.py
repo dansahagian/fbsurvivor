@@ -62,7 +62,7 @@ def get_player_statuses_paid_buyback_for_season(season: Season) -> QuerySet[Play
     )
 
 
-def get_player_statuses_for_reminders(week: Week) -> list[PlayerStatus]:
+def get_emails_for_reminders(week: Week) -> list[str]:
     return list(
         week.season.player_statuses.filter(
             is_retired=False,
