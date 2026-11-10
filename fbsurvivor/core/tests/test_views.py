@@ -8,7 +8,7 @@ from fbsurvivor.core.models import EmailLogRecord, Pick, PlayerStatus, Week
 @pytest.fixture
 def code(monkeypatch):
     """Pin the emailed code so tests can submit it."""
-    monkeypatch.setattr("fbsurvivor.core.views.generate_code", lambda: "123456")
+    monkeypatch.setattr("fbsurvivor.core.views.accounts.generate_code", lambda: "123456")
     return "123456"
 
 

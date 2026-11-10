@@ -1,36 +1,30 @@
 from django.urls import path
 
-from fbsurvivor.core.views import (
+from fbsurvivor.core.views.accounts import (
     IndexView,
     LoginView,
-    assume_player,
-    board,
-    board_redirect,
-    buy_back,
-    cache_season,
     clean_session,
-    create_player,
-    decline_buy_back,
-    get_players,
     logout_view,
+    theme,
+    update_reminders,
+)
+from fbsurvivor.core.views.board import board, board_redirect, buy_back, decline_buy_back, play
+from fbsurvivor.core.views.manager import (
+    assume_player,
+    cache_season,
+    create_player,
+    get_players,
     manager,
     paid,
     paid_buyback,
-    payouts,
-    payouts_current,
-    pick,
-    picks,
-    play,
     result,
     result_no_pick,
     results,
-    rules,
-    seasons,
-    theme,
-    update_reminders,
     user_paid,
     user_paid_buyback,
 )
+from fbsurvivor.core.views.pages import payouts, payouts_current, rules, seasons
+from fbsurvivor.core.views.picks import pick, picks
 
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
