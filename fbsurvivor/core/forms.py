@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.forms import SetPasswordForm
 
 from fbsurvivor.core.models import Pick, Team
 
@@ -32,6 +33,13 @@ class CodeForm(forms.Form):
         max_length=6,
         widget=forms.TextInput(attrs={"autocomplete": "one-time-code", "inputmode": "numeric"}),
     )
+
+
+class NewPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["new_password1"].widget.attrs["placeholder"] = "new password"
+        self.fields["new_password2"].widget.attrs["placeholder"] = "confirm new password"
 
 
 class PlayerForm(forms.Form):

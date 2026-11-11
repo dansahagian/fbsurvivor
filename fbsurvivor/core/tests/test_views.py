@@ -283,6 +283,14 @@ class TestSetPassword:
         assert ("css/dark.css" in body) is dark
         assert ("css/light.css" in body) is not dark
 
+    def test_shows_password_rules_up_front(self, player_client):
+        body = player_client.get(reverse("set_password")).content.decode()
+
+        assert "at least 8 characters" in body
+        assert "commonly used password" in body
+        assert 'placeholder="new password"' in body
+        assert 'placeholder="confirm new password"' in body
+
     def test_works_for_staff_without_a_player(self, staff_client):
         assert staff_client.get(reverse("set_password")).status_code == 200
 

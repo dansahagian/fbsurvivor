@@ -25,7 +25,7 @@ def calculate_expires_at():
 
 
 PASSWORD_MAX_FAILURES = 5
-PASSWORD_LOCKOUT_SECONDS = 60 * 15
+PASSWORD_LOCKOUT_SECONDS = 60 * 60
 
 
 def find_user(identifier: str) -> User | None:

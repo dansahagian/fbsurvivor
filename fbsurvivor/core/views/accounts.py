@@ -3,7 +3,6 @@ from hmac import compare_digest
 
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.models import User
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -12,7 +11,7 @@ from django.utils import timezone
 from django.views import View
 from django.views.decorators.http import require_POST
 
-from fbsurvivor.core.forms import CodeForm, SignInForm
+from fbsurvivor.core.forms import CodeForm, NewPasswordForm, SignInForm
 from fbsurvivor.core.models import Player
 from fbsurvivor.core.utils.authentication import (
     calculate_expires_at,
@@ -146,7 +145,7 @@ def set_password(request):
     has_password = bool(request.user.password) and request.user.has_usable_password()
     # Passed so base.html applies the player's theme; staff may not have a Player.
     player = Player.objects.filter(user=request.user).first()
-    form = SetPasswordForm(request.user, request.POST or None)
+    form = NewPasswordForm(request.user, request.POST or None)
 
     if request.method == "POST" and form.is_valid():
         user = form.save()
