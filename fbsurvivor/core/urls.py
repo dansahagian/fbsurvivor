@@ -5,6 +5,7 @@ from fbsurvivor.core.views.accounts import (
     LoginView,
     clean_session,
     logout_view,
+    set_password,
     theme,
     update_reminders,
 )
@@ -31,6 +32,7 @@ urlpatterns = [
     path("login", LoginView.as_view(), name="login"),
     path("clean-session", clean_session, name="clean_session"),
     path("logout", logout_view, name="logout"),
+    path("set-password", set_password, name="set_password"),
     path("board", board_redirect, name="board_redirect"),
     path("board/<int:year>", board, name="board"),
     path("play/<int:year>", play, name="play"),

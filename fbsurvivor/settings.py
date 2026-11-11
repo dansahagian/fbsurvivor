@@ -120,6 +120,15 @@ SESSION_COOKIE_HTTPONLY = True
 
 CACHE_TTL = 60 * 15
 
+# Shared by all gunicorn workers, so the password lockout counts every attempt.
+# Create the table with `manage.py createcachetable` (run by `just migrate` and deploy).
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
+    }
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 

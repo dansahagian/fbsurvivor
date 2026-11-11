@@ -60,7 +60,7 @@ showmigrations: (manage "showmigrations")
 makemigrations: (manage "makemigrations")
 
 [group('django')]
-migrate: (manage "migrate")
+migrate: (manage "migrate") (manage "createcachetable")
 
 
 # DATABASE

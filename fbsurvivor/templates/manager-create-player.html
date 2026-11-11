@@ -5,10 +5,12 @@
         <form action="{% url 'create_player' %}" method="POST">
             {% csrf_token %}
             <p>Username</p>
+            {% if form.username.errors %}<div class="form-error">{{ form.username.errors }}</div>{% endif %}
             <div class="email-form">
                 {{ form.username }}
             </div>
             <p>Email</p>
+            {% if form.email.errors %}<div class="form-error">{{ form.email.errors }}</div>{% endif %}
             <div class="email-form">
                 {{ form.email }}
             </div>

@@ -77,3 +77,11 @@ def send_login_code(user: User, code: str) -> None:
     message = f"Use the code below to login. It expires in {expiration}.\n\n{code}"
 
     send_addressed_email(subject, user.email, message)
+
+
+def send_password_changed(user: User) -> None:
+    subject = "Survivor Password Changed"
+    ps = f"If you didn't do this, please email Dan at {settings.CONTACT}"
+    message = f"The password for your survivor account was just set.\n\n{ps}"
+
+    send_addressed_email(subject, user.email, message)

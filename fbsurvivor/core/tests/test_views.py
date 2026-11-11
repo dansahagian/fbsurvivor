@@ -31,7 +31,7 @@ def staff_client(client, db):
 
 
 def request_code(client, email):
-    return client.post(reverse("index"), {"email": email})
+    return client.post(reverse("index"), {"identifier": email})
 
 
 class TestLoginView:
@@ -42,7 +42,7 @@ class TestLoginView:
 
         assert response.status_code == 302
         assert "_auth_user_id" in client.session
-        for key in ("email", "code_hash", "code_tries", "code_expires_at", "user_id"):
+        for key in ("identifier", "code_hash", "code_tries", "code_expires_at", "user_id"):
             assert key not in client.session
 
     def test_unknown_email_behaves_like_a_wrong_code(self, client, db, code):
@@ -64,6 +64,20 @@ class TestLoginView:
         request_code(client, players[0].user.email)
 
         assert EmailLogRecord.objects.count() == 1
+
+    def test_username_gets_a_code_at_their_email(self, client, players, code):
+        user = players[0].user
+
+        response = request_code(client, user.username)
+
+        assert EmailLogRecord.objects.filter(email=user.email).count() == 1
+        assert user.email not in client.get(response.url).content.decode()
+        assert client.post(reverse("login"), {"code": code}).status_code == 302
+
+    def test_unknown_username_is_not_emailed(self, client, db):
+        request_code(client, "nobody")
+
+        assert EmailLogRecord.objects.count() == 0
 
     def test_padded_code_is_accepted(self, client, players, code):
         request_code(client, players[0].user.email)
@@ -130,6 +144,216 @@ class TestLoginView:
         assert 'inputmode="numeric"' in body
         assert 'minlength="6"' in body
         assert 'maxlength="6"' in body
+
+
+PASSWORD = "correct-horse-battery"
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    from django.core.cache import cache
+
+    cache.clear()
+
+
+@pytest.fixture
+def password_user(players):
+    user = players[0].user
+    user.set_password(PASSWORD)
+    user.save()
+    return user
+
+
+def password_login(client, email, password):
+    return client.post(reverse("index"), {"identifier": email, "password": password})
+
+
+class TestPasswordLogin:
+    def test_correct_password_logs_in(self, client, password_user):
+        response = password_login(client, password_user.email, PASSWORD)
+
+        assert response.status_code == 302
+        assert response.url == reverse("board_redirect")
+        assert "_auth_user_id" in client.session
+        assert EmailLogRecord.objects.count() == 0
+
+    def test_wrong_password_is_rejected(self, client, password_user):
+        response = password_login(client, password_user.email, "nope")
+
+        assert response.status_code == 200
+        assert "_auth_user_id" not in client.session
+        assert "Incorrect login or password" in response.content.decode()
+
+    def test_unknown_account_looks_like_wrong_password(self, client, db):
+        response = password_login(client, "nobody@example.com", "nope")
+
+        assert response.status_code == 200
+        assert "Incorrect login or password" in response.content.decode()
+
+    def test_user_without_password_cannot_log_in_with_one(self, client, players):
+        response = password_login(client, players[0].user.email, "")
+
+        # A blank password falls through to the code flow instead.
+        assert response.status_code == 302
+        assert response.url == reverse("login")
+        assert "_auth_user_id" not in client.session
+
+    def test_lockout_after_repeated_failures(self, client, password_user):
+        for _ in range(5):
+            password_login(client, password_user.email, "nope")
+
+        response = password_login(client, password_user.email, PASSWORD)
+
+        assert response.status_code == 200
+        assert "_auth_user_id" not in client.session
+        assert "Too many attempts" in response.content.decode()
+
+    def test_lockout_survives_a_new_session(self, client, password_user):
+        for _ in range(5):
+            password_login(client, password_user.email, "nope")
+        client.cookies.clear()
+
+        response = password_login(client, password_user.email.upper(), PASSWORD)
+
+        assert "_auth_user_id" not in client.session
+        assert "Too many attempts" in response.content.decode()
+
+    def test_code_login_still_works_when_locked_out(self, client, password_user, code):
+        for _ in range(5):
+            password_login(client, password_user.email, "nope")
+
+        request_code(client, password_user.email)
+
+        assert client.post(reverse("login"), {"code": code}).status_code == 302
+
+    def test_username_logs_in_ignoring_case(self, client, password_user):
+        response = password_login(client, password_user.username.upper(), PASSWORD)
+
+        assert response.status_code == 302
+        assert client.session["_auth_user_id"] == str(password_user.pk)
+
+    def test_email_logs_in_ignoring_case(self, client, password_user):
+        response = password_login(client, password_user.email.upper(), PASSWORD)
+
+        assert response.status_code == 302
+
+    def test_email_and_username_share_one_lockout(self, client, password_user):
+        for i in range(5):
+            ident = password_user.email if i % 2 else password_user.username
+            password_login(client, ident, "nope")
+
+        response = password_login(client, password_user.username, PASSWORD)
+
+        assert "_auth_user_id" not in client.session
+        assert "Too many attempts" in response.content.decode()
+
+    def test_index_has_password_manager_hints(self, client, db):
+        body = client.get(reverse("index")).content.decode()
+
+        assert 'autocomplete="username"' in body
+        assert 'autocomplete="current-password"' in body
+
+
+class TestSetPassword:
+    def test_requires_login(self, client, db):
+        response = client.get(reverse("set_password"))
+
+        assert response.status_code == 302
+
+    def test_sets_password_and_stays_logged_in(self, player_client, players):
+        response = player_client.post(
+            reverse("set_password"),
+            {"new_password1": PASSWORD, "new_password2": PASSWORD},
+        )
+
+        assert response.status_code == 200
+        players[0].user.refresh_from_db()
+        assert players[0].user.check_password(PASSWORD)
+        assert "_auth_user_id" in player_client.session
+        assert player_client.get(reverse("set_password")).status_code == 200
+        assert EmailLogRecord.objects.filter(email=players[0].user.email).count() == 1
+
+    @pytest.mark.parametrize("dark", [True, False])
+    def test_uses_player_theme(self, player_client, players, dark):
+        players[0].is_dark_mode = dark
+        players[0].save()
+
+        body = player_client.get(reverse("set_password")).content.decode()
+
+        assert ("css/dark.css" in body) is dark
+        assert ("css/light.css" in body) is not dark
+
+    def test_works_for_staff_without_a_player(self, staff_client):
+        assert staff_client.get(reverse("set_password")).status_code == 200
+
+    def test_rejects_mismatched_passwords(self, player_client, players):
+        response = player_client.post(
+            reverse("set_password"),
+            {"new_password1": PASSWORD, "new_password2": PASSWORD + "x"},
+        )
+
+        assert response.status_code == 200
+        players[0].user.refresh_from_db()
+        assert not players[0].user.check_password(PASSWORD)
+
+    def test_rejects_weak_password(self, player_client, players):
+        response = player_client.post(
+            reverse("set_password"),
+            {"new_password1": "password", "new_password2": "password"},
+        )
+
+        assert response.status_code == 200
+        players[0].user.refresh_from_db()
+        assert not players[0].user.check_password("password")
+
+
+class TestPasswordLabel:
+    def test_board_says_set_without_a_password(self, player_client, year):
+        body = player_client.get(reverse("board", args=[year])).content.decode()
+
+        assert "set password" in body
+        assert "change password" not in body
+
+    def test_board_says_change_with_a_password(self, client, password_user, year):
+        client.force_login(password_user)
+
+        body = client.get(reverse("board", args=[year])).content.decode()
+
+        assert "change password" in body
+
+    def test_page_says_change_with_a_password(self, client, password_user):
+        client.force_login(password_user)
+
+        body = client.get(reverse("set_password")).content.decode()
+
+        assert "Change the password" in body
+
+
+class TestCreatePlayer:
+    def test_creates_player(self, staff_client):
+        response = staff_client.post(
+            reverse("create_player"), {"username": "newbie", "email": "newbie@example.com"}
+        )
+
+        assert response.status_code == 200
+        assert User.objects.filter(username="newbie").exists()
+
+    def test_rejects_at_in_username(self, staff_client):
+        response = staff_client.post(
+            reverse("create_player"), {"username": "dan@home", "email": "dan@example.com"}
+        )
+
+        assert response.status_code == 200
+        assert "contain @" in response.content.decode()
+        assert not User.objects.filter(email="dan@example.com").exists()
+
+    def test_invalid_form_rerenders_instead_of_erroring(self, staff_client):
+        response = staff_client.post(
+            reverse("create_player"), {"username": "newbie", "email": "not-an-email"}
+        )
+
+        assert response.status_code == 200
+        assert not User.objects.filter(username="newbie").exists()
 
 
 class TestBoardView:

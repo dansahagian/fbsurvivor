@@ -3,7 +3,7 @@
     <div class="container login">
         Check your email for the code!<br>
         Check spam if you can't find it.
-        <p>{{ email }} <span><a href="{% url 'index' %}">use another email?</a></span></p>
+        <p>{{ identifier }} <span><a href="{% url 'index' %}">not you?</a></span></p>
         <p>Enter the login code:</p>
         <form action="{% url 'login' %}" method="POST">
             {% csrf_token %}

@@ -51,7 +51,7 @@ def create_player(request, **kwargs):
 
             try:
                 user = User.objects.create(username=username, email=email)
-                player, created = Player.objects.get_or_create(user=user)
+                _player, created = Player.objects.get_or_create(user=user)
             except IntegrityError:
                 return render(request, "manager-create-player-error.html")
 
@@ -60,6 +60,8 @@ def create_player(request, **kwargs):
                 return render(request, "manager-create-player-success.html")
 
             return render(request, "manager-create-player-error.html")
+
+        return render(request, "manager-create-player.html", context={"form": form})
 
 
 @staff_member_required

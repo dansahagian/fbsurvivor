@@ -239,13 +239,14 @@ td {
     width: 18em;
     border-radius: 8px;
     background-color: var(--background);
-    margin: 0 auto;
+    margin: 0 auto 0.75rem;
     padding: 0;
     display: flex;
 }
 
 .email-form input[type="email"],
-.email-form input[type="text"] {
+.email-form input[type="text"],
+.email-form input[type="password"] {
     width: 90%;
     padding: 16px 20px;
     text-align: center;
@@ -255,4 +256,13 @@ td {
     background-color: var(--background);
     color: var(--color);
     font-family: "Roboto Mono", ui-monospace;
+}
+
+.form-hint {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.form-error {
+    color: var(--loss-color);
 }

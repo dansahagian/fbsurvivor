@@ -3,8 +3,26 @@ from django import forms
 from fbsurvivor.core.models import Pick, Team
 
 
-class EmailForm(forms.Form):
-    email = forms.EmailField(label="email")
+class SignInForm(forms.Form):
+    identifier = forms.CharField(
+        label="email or username",
+        max_length=254,
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "username",
+                "autocapitalize": "none",
+                "placeholder": "email or username",
+            }
+        ),
+    )
+    password = forms.CharField(
+        label="password",
+        required=False,
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={"autocomplete": "current-password", "placeholder": "password (optional)"}
+        ),
+    )
 
 
 class CodeForm(forms.Form):
@@ -19,6 +37,13 @@ class CodeForm(forms.Form):
 class PlayerForm(forms.Form):
     username = forms.CharField(label="username", max_length=20)
     email = forms.EmailField(label="email")
+
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+        # Sign-in treats anything with an @ as an email, so this player could never use it.
+        if "@" in username:
+            raise forms.ValidationError("Usernames can't contain @.")
+        return username
 
 
 class PickForm(forms.Form):

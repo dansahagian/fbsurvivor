@@ -13,6 +13,7 @@ echo "\nStopping services...\n"
 sudo systemctl stop wsgi-server-fbsurvivor.service
 
 /home/dan/.cargo/bin/uv run --no-dev python manage.py migrate
+/home/dan/.cargo/bin/uv run --no-dev python manage.py createcachetable
 /home/dan/.cargo/bin/uv run --no-dev python manage.py collectstatic --clear --no-input
 /home/dan/.cargo/bin/uv run --no-dev python manage.py check --deploy
 

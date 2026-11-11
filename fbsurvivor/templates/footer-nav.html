@@ -27,6 +27,7 @@
                 </form>
             {% endif %}
         </div>
+        <div class="vertical-link"><a href="{% url 'set_password' %}">{% if user.password and user.has_usable_password %}change{% else %}set{% endif %} password</a></div>
         <div class="vertical-link"><a href="{% url 'logout' %}">logout</a></div>
     </div>
 {% endpartialdef %}

@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container login">
     Login Error
-    <p>{{ email }} <span>wrong email?</span></p>
+    <p>{{ identifier }}</p>
     <p>Incorrect code. {{ tries }} tries remaining.</p>
     <form action="{% url 'login' %}" method="POST">
         {% csrf_token %}
