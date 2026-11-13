@@ -168,3 +168,5 @@ STATIC_URL = "/static/"
 STATIC_ROOT = "/srv/www/fbsurvivor/static/"  # noqa
 
 APPEND_SLASH = False
+
+LOGIN_URL = "/"

@@ -7,7 +7,7 @@ from fbsurvivor.core.models import Pick, Player, PlayerStatus, Season, Team, Wee
 
 
 class UserFactory(DjangoModelFactory):
-    class Meta:  # ty:ignore[invalid-attribute-override]
+    class Meta:  # ty:ignore[incompatible-attribute-override]
         model = User
 
     username = Sequence(lambda n: f"Player{n + 1}")
@@ -15,7 +15,7 @@ class UserFactory(DjangoModelFactory):
 
 
 class PlayerFactory(DjangoModelFactory):
-    class Meta:  # ty:ignore[invalid-attribute-override]
+    class Meta:  # ty:ignore[incompatible-attribute-override]
         model = Player
 
     user = SubFactory(UserFactory)
@@ -23,7 +23,7 @@ class PlayerFactory(DjangoModelFactory):
 
 
 class SeasonFactory(DjangoModelFactory):
-    class Meta:  # ty:ignore[invalid-attribute-override]
+    class Meta:  # ty:ignore[incompatible-attribute-override]
         model = Season
 
     year = Sequence(lambda n: n + 2017)
@@ -32,7 +32,7 @@ class SeasonFactory(DjangoModelFactory):
 
 
 class WeekFactory(DjangoModelFactory):
-    class Meta:  # ty:ignore[invalid-attribute-override]
+    class Meta:  # ty:ignore[incompatible-attribute-override]
         model = Week
 
     season = SubFactory(SeasonFactory)
@@ -41,7 +41,7 @@ class WeekFactory(DjangoModelFactory):
 
 
 class TeamFactory(DjangoModelFactory):
-    class Meta:  # ty:ignore[invalid-attribute-override]
+    class Meta:  # ty:ignore[incompatible-attribute-override]
         model = Team
 
     season = SubFactory(SeasonFactory)
@@ -50,7 +50,7 @@ class TeamFactory(DjangoModelFactory):
 
 
 class PickFactory(DjangoModelFactory):
-    class Meta:  # ty:ignore[invalid-attribute-override]
+    class Meta:  # ty:ignore[incompatible-attribute-override]
         model = Pick
 
     player = SubFactory(PlayerFactory)
@@ -59,7 +59,7 @@ class PickFactory(DjangoModelFactory):
 
 
 class PlayerStatusFactory(DjangoModelFactory):
-    class Meta:  # ty:ignore[invalid-attribute-override]
+    class Meta:  # ty:ignore[incompatible-attribute-override]
         model = PlayerStatus
 
     player = SubFactory(PlayerFactory)
