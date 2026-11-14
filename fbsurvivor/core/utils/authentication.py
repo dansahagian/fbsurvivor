@@ -10,10 +10,45 @@ from django.utils import timezone
 from fbsurvivor.settings import SECRET_KEY
 
 CODE_EXPIRATION_MINUTES = 15
+CODE_MAX_TRIES = 3
+
+# Each code allows CODE_MAX_TRIES guesses, so this caps guesses per account at
+# CODE_SEND_MAX * CODE_MAX_TRIES per window and stops anyone flooding an inbox.
+CODE_SEND_MAX = 5
+CODE_SEND_WINDOW_SECONDS = 60 * 60
 
 
 def generate_code() -> str:
     return f"{secrets.randbelow(1000000):06d}"
+
+
+def generate_code_id() -> str:
+    return secrets.token_urlsafe(16)
+
+
+def _claim_slot(prefix: str, count: int, seconds: int) -> int | None:
+    """Take the first free numbered slot, returning its number, or None if all are taken.
+
+    add() inserts a new row, and the database's primary key lets only one concurrent
+    caller win it. Counting with get()/incr() or with the session would let parallel
+    requests all read the same count and share a single attempt.
+    """
+    for n in range(1, count + 1):
+        if cache.add(f"{prefix}:{n}", True, seconds):
+            return n
+    return None
+
+
+def claim_code_try(code_id: str) -> int | None:
+    """Use up one guess at a code. Returns which guess this is, or None once none are left."""
+    # code_id is random and never reused, so these rows are always brand new inserts.
+    return _claim_slot(f"login-code-tries:{code_id}", CODE_MAX_TRIES, CODE_EXPIRATION_MINUTES * 60)
+
+
+def claim_code_send(user: User | None, identifier: str) -> bool:
+    """Count one code send against the account. False if it has hit the limit."""
+    prefix = f"login-code-sends:{_account_suffix(user, identifier)}"
+    return _claim_slot(prefix, CODE_SEND_MAX, CODE_SEND_WINDOW_SECONDS) is not None
 
 
 def hash_code(code: str) -> str:
@@ -35,10 +70,14 @@ def find_user(identifier: str) -> User | None:
     return User.objects.filter(username__iexact=identifier).first()
 
 
-def password_failures_key(user: User | None, identifier: str) -> str:
+def _account_suffix(user: User | None, identifier: str) -> str:
     # Key on the account when there is one, so its email and username share a single limit.
-    suffix = f"user:{user.pk}" if user else f"unknown:{identifier.lower()}"
-    return f"password-failures:{suffix}"
+    # Unknown identifiers get limits too, so hitting one doesn't reveal that an account exists.
+    return f"user:{user.pk}" if user else f"unknown:{identifier.lower()}"
+
+
+def password_failures_key(user: User | None, identifier: str) -> str:
+    return f"password-failures:{_account_suffix(user, identifier)}"
 
 
 def is_password_locked_out(key: str) -> bool:

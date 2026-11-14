@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 
 from fbsurvivor.core.models import EmailLogRecord, Pick, PlayerStatus, Week
+from fbsurvivor.core.utils.authentication import CODE_SEND_MAX
 
 
 @pytest.fixture
@@ -42,7 +43,7 @@ class TestLoginView:
 
         assert response.status_code == 302
         assert "_auth_user_id" in client.session
-        for key in ("identifier", "code_hash", "code_tries", "code_expires_at", "user_id"):
+        for key in ("identifier", "code_hash", "code_id", "code_expires_at", "user_id"):
             assert key not in client.session
 
     def test_unknown_email_behaves_like_a_wrong_code(self, client, db, code):
@@ -95,8 +96,10 @@ class TestLoginView:
         response = client.post(reverse("login"), {"code": bad_code})
 
         assert response.status_code == 200
-        assert client.session["code_tries"] == 0
         assert 'id="id_code_error"' in response.content.decode()
+        # All three tries are still there: two misses, then the right code.
+        client.post(reverse("login"), {"code": "000000"})
+        client.post(reverse("login"), {"code": "000000"})
         assert client.post(reverse("login"), {"code": code}).status_code == 302
 
     def test_wrong_code_burns_a_try(self, client, players, code):
@@ -105,7 +108,7 @@ class TestLoginView:
         response = client.post(reverse("login"), {"code": "000000"})
 
         assert response.status_code == 200
-        assert client.session["code_tries"] == 1
+        assert response.context["tries"] == 2
         assert "_auth_user_id" not in client.session
 
     def test_three_wrong_codes_discard_the_code(self, client, players, code):
@@ -117,6 +120,31 @@ class TestLoginView:
         assert "code_hash" not in client.session
         assert client.post(reverse("login"), {"code": code}).status_code == 200
         assert "_auth_user_id" not in client.session
+
+    def test_replayed_session_cannot_reuse_tries(self, client, players, code):
+        # Parallel requests all load the session before any saves it. Replaying the
+        # pre-guess session stands in for that race: the tries must still be used up.
+        request_code(client, players[0].user.email)
+        pending = dict(client.session.items())
+
+        for _ in range(3):
+            client.post(reverse("login"), {"code": "000000"})
+
+        session = client.session
+        session.update(pending)
+        session.save()
+
+        response = client.post(reverse("login"), {"code": code})
+
+        assert response.status_code == 200
+        assert "_auth_user_id" not in client.session
+
+    def test_new_request_drops_the_earlier_account(self, client, players):
+        request_code(client, players[0].user.email)
+
+        request_code(client, "nobody@example.com")
+
+        assert "user_id" not in client.session
 
     def test_expired_code_is_rejected(self, client, players, code):
         request_code(client, players[0].user.email)
@@ -144,6 +172,55 @@ class TestLoginView:
         assert 'inputmode="numeric"' in body
         assert 'minlength="6"' in body
         assert 'maxlength="6"' in body
+
+
+class TestCodeSendLimit:
+    def test_limit_stops_sending_codes(self, client, players):
+        email = players[0].user.email
+        for _ in range(CODE_SEND_MAX):
+            assert request_code(client, email).status_code == 302
+
+        response = request_code(client, email)
+
+        assert response.status_code == 200
+        assert "Too many login codes requested" in response.content.decode()
+        assert EmailLogRecord.objects.count() == CODE_SEND_MAX
+
+    def test_limit_survives_a_new_session(self, client, players):
+        email = players[0].user.email
+        for _ in range(CODE_SEND_MAX):
+            request_code(client, email)
+        client.cookies.clear()
+
+        assert request_code(client, email).status_code == 200
+
+    def test_email_and_username_share_one_limit(self, client, players):
+        user = players[0].user
+        for _ in range(CODE_SEND_MAX):
+            request_code(client, user.email)
+
+        assert request_code(client, user.username.upper()).status_code == 200
+
+    def test_unknown_account_hits_the_same_limit(self, client, db):
+        # Otherwise the limit message would reveal which accounts exist.
+        for _ in range(CODE_SEND_MAX):
+            request_code(client, "nobody@example.com")
+
+        response = request_code(client, "nobody@example.com")
+
+        assert "Too many login codes requested" in response.content.decode()
+
+    def test_limit_is_per_account(self, client, players):
+        for _ in range(CODE_SEND_MAX):
+            request_code(client, players[0].user.email)
+
+        assert request_code(client, players[1].user.email).status_code == 302
+
+    def test_password_login_still_works_when_limited(self, client, password_user):
+        for _ in range(CODE_SEND_MAX):
+            request_code(client, password_user.email)
+
+        assert password_login(client, password_user.email, PASSWORD).status_code == 302
 
 
 PASSWORD = "correct-horse-battery"

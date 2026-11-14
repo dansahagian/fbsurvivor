@@ -3,6 +3,7 @@ from django.http import FileResponse, HttpRequest
 from django.urls import include, path
 from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET
+from django.views.generic import RedirectView
 
 from fbsurvivor import settings
 
@@ -23,7 +24,8 @@ def font(request: HttpRequest) -> FileResponse:
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("admin/login", RedirectView.as_view(url="/")),
+    path("admin/", admin.site.urls, name="admin"),
     path("", include("fbsurvivor.core.urls")),
 ]
 

@@ -1,10 +1,9 @@
 {% partialdef footer-nav %}
     <div class="container">
-        <div class="vertical-link">
-            {% if user.is_staff and season %}
-                <a href="{% url 'manager' season.year %}">admin</a>
-            {% endif %}
-        </div>
+        {% if user.is_staff and season %}
+            <div class="vertical-link"><a href="/admin/">admin</a></div>
+            <div class="vertical-link"><a href="{% url 'manager' season.year %}">manage</a></div>
+        {% endif %}
         <div class="vertical-link"><a href="{% url 'seasons' %}">seasons</a></div>
         <div class="vertical-link"><a href="{% url 'payouts' %}">payouts</a></div>
         <div class="vertical-link"><a href="{% url 'rules' %}">rules</a></div>

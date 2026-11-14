@@ -14,10 +14,14 @@ from django.views.decorators.http import require_POST
 from fbsurvivor.core.forms import CodeForm, NewPasswordForm, SignInForm
 from fbsurvivor.core.models import Player
 from fbsurvivor.core.utils.authentication import (
+    CODE_MAX_TRIES,
     calculate_expires_at,
+    claim_code_send,
+    claim_code_try,
     clear_password_failures,
     find_user,
     generate_code,
+    generate_code_id,
     hash_code,
     is_password_locked_out,
     password_failures_key,
@@ -31,7 +35,7 @@ def clean_session_data(request):
     request.session.pop("user_id", None)
     request.session.pop("identifier", None)
     request.session.pop("code_hash", None)
-    request.session.pop("code_tries", None)
+    request.session.pop("code_id", None)
     request.session.pop("code_expires_at", None)
 
 
@@ -55,6 +59,12 @@ class IndexView(View):
         if password := form.cleaned_data["password"]:
             return self.password_login(request, form, user, identifier, password)
 
+        if not claim_code_send(user, identifier):
+            error = "Too many login codes requested. Try again in an hour."
+            return render(request, "index.html", context={"form": form, "error": error})
+
+        # Drop any earlier pending login so a stale user_id can't pair with this code.
+        clean_session_data(request)
         code = generate_code()
 
         if user:
@@ -63,7 +73,7 @@ class IndexView(View):
 
         request.session["identifier"] = identifier
         request.session["code_hash"] = hash_code(code)
-        request.session["code_tries"] = 0
+        request.session["code_id"] = generate_code_id()
         request.session["code_expires_at"] = calculate_expires_at().isoformat()
 
         return redirect(reverse("login"))
@@ -98,7 +108,7 @@ class LoginView(View):
         return render(request, "login-sent.html", context=context)
 
     def post(self, request):
-        if "identifier" not in request.session:
+        if "identifier" not in request.session or "code_id" not in request.session:
             clean_session_data(request)
             return render(request, "login-error-code.html")
 
@@ -106,12 +116,17 @@ class LoginView(View):
             clean_session_data(request)
             return render(request, "login-error-code.html")
 
-        code_tries = request.session["code_tries"] + 1
         form = CodeForm(request.POST)
 
         if not form.is_valid():
             context = {"form": form, "identifier": request.session["identifier"]}
             return render(request, "login-sent.html", context=context)
+
+        # Count the try before checking the code, so parallel guesses can't share one.
+        code_try = claim_code_try(request.session["code_id"])
+        if code_try is None:
+            clean_session_data(request)
+            return render(request, "login-error-code-tries.html")
 
         if (user_id := request.session.get("user_id", None)) and compare_digest(
             request.session["code_hash"], hash_code(form.cleaned_data["code"])
@@ -121,15 +136,14 @@ class LoginView(View):
                 clean_session_data(request)
                 return redirect(reverse("board_redirect"))
 
-        if code_tries > 2:
+        if code_try >= CODE_MAX_TRIES:
             clean_session_data(request)
             return render(request, "login-error-code-tries.html")
 
-        request.session["code_tries"] = code_tries
         context = {
             "form": CodeForm(),
             "identifier": request.session["identifier"],
-            "tries": 3 - code_tries,
+            "tries": CODE_MAX_TRIES - code_try,
         }
         return render(request, "login-error-code-retry.html", context=context)
 

@@ -126,6 +126,10 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
         "LOCATION": "django_cache",
+        # Past MAX_ENTRIES (default 300) Django deletes a third of all keys, lockout
+        # counters included. Anyone can add keys by trying made-up logins, so a low
+        # limit would let them wipe every lockout.
+        "OPTIONS": {"MAX_ENTRIES": 1_000_000},
     }
 }
 
@@ -170,3 +174,4 @@ STATIC_ROOT = "/srv/www/fbsurvivor/static/"  # noqa
 APPEND_SLASH = False
 
 LOGIN_URL = "/"
+LOGOUT_REDIRECT_URL = "/logout"
