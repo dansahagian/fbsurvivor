@@ -295,6 +295,40 @@ class TestPasswordLogin:
         assert "_auth_user_id" not in client.session
         assert "Too many attempts" in response.content.decode()
 
+    def test_parallel_guesses_each_use_an_attempt(self, client, password_user, monkeypatch):
+        # Simulate 10 overlapping requests: each guess fires the next one while it is
+        # still checking the password, so every request starts before any has finished.
+        # Checking a failure count up front would let all 10 through.
+        from django.test import Client
+
+        checked = []
+        real_check = User.check_password
+
+        def overlapping_check(self, raw):
+            checked.append(raw)
+            if len(checked) < 10:
+                password_login(Client(), password_user.email, "nope")
+            return real_check(self, raw)
+
+        monkeypatch.setattr(User, "check_password", overlapping_check)
+
+        password_login(client, password_user.email, "nope")
+        for _ in range(9):  # in case nesting stopped early, keep guessing
+            password_login(client, password_user.email, "nope")
+
+        assert len(checked) == 5
+
+    def test_success_resets_the_attempts(self, client, password_user):
+        for _ in range(4):
+            password_login(client, password_user.email, "nope")
+        assert password_login(client, password_user.email, PASSWORD).status_code == 302
+        client.logout()
+
+        for _ in range(4):
+            password_login(client, password_user.email, "nope")
+
+        assert password_login(client, password_user.email, PASSWORD).status_code == 302
+
     def test_code_login_still_works_when_locked_out(self, client, password_user, code):
         for _ in range(5):
             password_login(client, password_user.email, "nope")
@@ -329,6 +363,34 @@ class TestPasswordLogin:
 
         assert 'autocomplete="username"' in body
         assert 'autocomplete="current-password"' in body
+
+
+class TestAdminLogin:
+    @pytest.mark.parametrize("method", ["get", "post"])
+    def test_admin_login_redirects_to_app_login(self, client, db, method):
+        response = getattr(client, method)(reverse("admin:login"))
+
+        assert response.status_code == 302
+        assert response["Location"] == reverse("index")
+
+    def test_cannot_log_in_through_admin_form(self, client, db):
+        User.objects.create_superuser("boss", "boss@example.com", PASSWORD)
+
+        client.post(reverse("admin:login"), {"username": "boss", "password": PASSWORD})
+
+        assert "_auth_user_id" not in client.session
+
+    def test_staff_pages_send_anonymous_users_to_app_login(self, client, db):
+        response = client.get(reverse("manager", args=[2020]), follow=True)
+
+        assert response.redirect_chain[-1][0] == reverse("index")
+
+    def test_admin_works_after_app_login(self, client, db):
+        User.objects.create_superuser("boss", "boss@example.com", PASSWORD)
+
+        password_login(client, "boss", PASSWORD)
+
+        assert client.get(reverse("admin:index")).status_code == 200
 
 
 class TestSetPassword:

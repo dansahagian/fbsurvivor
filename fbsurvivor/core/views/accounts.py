@@ -18,14 +18,12 @@ from fbsurvivor.core.utils.authentication import (
     calculate_expires_at,
     claim_code_send,
     claim_code_try,
-    clear_password_failures,
+    claim_password_attempt,
+    clear_password_attempts,
     find_user,
     generate_code,
     generate_code_id,
     hash_code,
-    is_password_locked_out,
-    password_failures_key,
-    record_password_failure,
 )
 from fbsurvivor.core.utils.emails import send_login_code, send_password_changed
 from fbsurvivor.core.views.board import board_redirect
@@ -79,9 +77,7 @@ class IndexView(View):
         return redirect(reverse("login"))
 
     def password_login(self, request, form, user, identifier, password):
-        key = password_failures_key(user, identifier)
-
-        if is_password_locked_out(key):
+        if not claim_password_attempt(user, identifier):
             error = "Too many attempts. Leave the password blank to get a login code."
             return render(request, "index.html", context={"form": form, "error": error})
 
@@ -89,11 +85,10 @@ class IndexView(View):
             # Hash anyway so an unknown account takes as long as a wrong password.
             User().set_password(password)
         elif user.check_password(password):
-            clear_password_failures(key)
+            clear_password_attempts(user, identifier)
             login(request, user)
             return redirect(reverse("board_redirect"))
 
-        record_password_failure(key)
         error = "Incorrect login or password. Leave the password blank to get a login code."
         return render(request, "index.html", context={"form": form, "error": error})
 

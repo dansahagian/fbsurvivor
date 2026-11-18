@@ -76,22 +76,21 @@ def _account_suffix(user: User | None, identifier: str) -> str:
     return f"user:{user.pk}" if user else f"unknown:{identifier.lower()}"
 
 
-def password_failures_key(user: User | None, identifier: str) -> str:
-    return f"password-failures:{_account_suffix(user, identifier)}"
+def _password_attempts_prefix(user: User | None, identifier: str) -> str:
+    return f"password-attempts:{_account_suffix(user, identifier)}"
 
 
-def is_password_locked_out(key: str) -> bool:
-    return cache.get(key, 0) >= PASSWORD_MAX_FAILURES
+def claim_password_attempt(user: User | None, identifier: str) -> bool:
+    """Count an attempt before the password is checked. False if the account is locked out.
+
+    Claiming first means parallel guesses each use up an attempt; checking a count and
+    recording the failure afterwards let them all slip past the check together.
+    Each attempt expires PASSWORD_LOCKOUT_SECONDS after it was made.
+    """
+    prefix = _password_attempts_prefix(user, identifier)
+    return _claim_slot(prefix, PASSWORD_MAX_FAILURES, PASSWORD_LOCKOUT_SECONDS) is not None
 
 
-def record_password_failure(key: str) -> None:
-    # add() is a no-op if the key exists, so the lockout window starts at the first failure.
-    cache.add(key, 0, PASSWORD_LOCKOUT_SECONDS)
-    try:
-        cache.incr(key)
-    except ValueError:
-        cache.set(key, 1, PASSWORD_LOCKOUT_SECONDS)
-
-
-def clear_password_failures(key: str) -> None:
-    cache.delete(key)
+def clear_password_attempts(user: User | None, identifier: str) -> None:
+    prefix = _password_attempts_prefix(user, identifier)
+    cache.delete_many([f"{prefix}:{n}" for n in range(1, PASSWORD_MAX_FAILURES + 1)])

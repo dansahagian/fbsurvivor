@@ -24,7 +24,9 @@ def font(request: HttpRequest) -> FileResponse:
 
 
 urlpatterns = [
-    path("admin/login", RedirectView.as_view(url="/")),
+    # Send admin sign-ins through the app's login, which has lockouts. The slash matters:
+    # Django's admin login is admin/login/, and APPEND_SLASH is off.
+    path("admin/login/", RedirectView.as_view(url="/")),
     path("admin/", admin.site.urls, name="admin"),
     path("", include("fbsurvivor.core.urls")),
 ]
