@@ -1,9 +1,38 @@
 [Unit]
 Description=fbsurvivor wsgi
+After=network.target postgresql.service
 
 [Service]
-User=dan
-ExecStart=/usr/bin/zsh /usr/local/bin/run-wsgi-server-fbsurvivor
+User=fbsurvivor
+Group=fbsurvivor
+WorkingDirectory=/opt/fbsurvivor
+Environment=DJANGO_SETTINGS_MODULE=fbsurvivor.settings
+# The code is read-only to this user, so don't try to write .pyc files.
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/fbsurvivor/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8000 fbsurvivor.wsgi
+Restart=on-failure
+UMask=0027
+
+# Sandboxing
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+SystemCallArchitectures=native
 
 [Install]
 WantedBy=multi-user.target

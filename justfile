@@ -145,7 +145,8 @@ deploy: check
 
     RSH="ssh -S $SOCK"
 
-    rsync -a -e "$RSH" \
+    # --no-group: don't copy the Mac's `staff` group; infra/deploy fixes perms on the server
+    rsync -a --no-group -e "$RSH" \
       "./{{PROJECT}}" ./pyproject.toml ./uv.lock ./manage.py ./infra/deploy ./uploads \
       "{{PROD_DIR}}"
 
