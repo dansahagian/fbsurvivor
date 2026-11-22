@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 cd /opt/fbsurvivor
 .venv/bin/python ./manage.py cache_current_board

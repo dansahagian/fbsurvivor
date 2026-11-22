@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 /home/dan/.cargo/bin/uv run python ./manage.py load_weeks 2025 ./uploads/2025_weeks.txt
 /home/dan/.cargo/bin/uv run python ./manage.py load_teams 2025 ./uploads/2025_teams.txt
