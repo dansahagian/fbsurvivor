@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 # Used to deploy on server
 
 set -euo pipefail
@@ -12,26 +12,31 @@ cd /opt/fbsurvivor
 # rsync copies the Mac's modes (world-readable). Reset what it just pushed:
 # group fbsurvivor can read, nobody else can, directories stay setgid.
 SYNCED=(fbsurvivor pyproject.toml uv.lock manage.py deploy uploads)
-chgrp -R fbsurvivor $SYNCED
-chmod -R u+rwX,g+rX,g-w,o-rwx $SYNCED
-find $SYNCED -type d -exec chmod g+s {} +
+chgrp -R web "${SYNCED[@]}"
+chmod -R u+rwX,g+rX,g-w,o-rwx "${SYNCED[@]}"
+find "${SYNCED[@]}" -type d -exec chmod g+s {} +
 
-/home/dan/.cargo/bin/uv sync --no-dev
+/root/.local/bin/uv sync --no-dev
 
-trap 'sudo systemctl start wsgi-server-fbsurvivor.service' EXIT
+# uv runs as root under umask 027, so the venv and interpreter come out root:root.
+# The service user reads them through group web.
+chgrp -R web .venv /opt/uv-python
+chmod -R g+rX,g-w,o-rwx .venv /opt/uv-python
+
+trap 'sudo systemctl start fbsurvivor.service' EXIT
 
 echo "\nStopping services...\n"
-sudo systemctl stop wsgi-server-fbsurvivor.service
+sudo systemctl stop fbsurvivor.service
 
-/home/dan/.cargo/bin/uv run --no-dev python manage.py migrate
-/home/dan/.cargo/bin/uv run --no-dev python manage.py createcachetable
+/root/.local/bin/uv run --no-dev python manage.py migrate
+/root/.local/bin/uv run --no-dev python manage.py createcachetable
 
 # Static files go to /srv/www and nginx has to read them, so they need the normal umask.
-(umask 022; /home/dan/.cargo/bin/uv run --no-dev python manage.py collectstatic --clear --no-input)
-/home/dan/.cargo/bin/uv run --no-dev python manage.py check --deploy
+(umask 022; /root/.local/bin/uv run --no-dev python manage.py collectstatic --clear --no-input)
+/root/.local/bin/uv run --no-dev python manage.py check --deploy
 
 echo "\nStarting services...\n"
-sudo systemctl start wsgi-server-fbsurvivor.service
+sudo systemctl start fbsurvivor.service
 
 trap - EXIT
 

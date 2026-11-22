@@ -3,8 +3,8 @@ Description=fbsurvivor wsgi
 After=network.target postgresql.service
 
 [Service]
-User=fbsurvivor
-Group=fbsurvivor
+User=web
+Group=web
 WorkingDirectory=/opt/fbsurvivor
 Environment=DJANGO_SETTINGS_MODULE=fbsurvivor.settings
 # The code is read-only to this user, so don't try to write .pyc files.

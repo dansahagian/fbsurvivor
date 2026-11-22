@@ -8,7 +8,7 @@ PROJECT       := "fbsurvivor"
 DB_USER       := "fbsurvivor2"
 DB_NAME       := "fbsurvivor2"
 DOMAIN        := "fbsurvivor.com"
-SERVER        := "oyuki"
+SERVER        := "fbsurvivor"
 
 SETTINGS      := PROJECT + ".settings"
 PROD_DIR      := SERVER + ":/opt/" + PROJECT
@@ -92,7 +92,7 @@ copy-db:
     trap 'ssh -S "$SOCK" -O exit "{{SERVER}}" 2>/dev/null' EXIT
 
     # -w: never prompt; the password comes from ~/.pgpass on the server
-    ssh -S "$SOCK" "{{SERVER}}" "pg_dump -w -U {{DB_USER}} {{DB_NAME}}" > "{{LOCAL_DB_FILE}}"
+    ssh -S "$SOCK" "{{SERVER}}" "pg_dump -h 127.0.0.1 -w -U {{DB_USER}} {{DB_NAME}}" > "{{LOCAL_DB_FILE}}"
 
 # Load the dev database from LOCAL_DB_FILE
 [group('database')]
@@ -111,6 +111,13 @@ load-db:
     psql -d {{DB_NAME}} -c "DROP SCHEMA IF EXISTS public;"
     psql -d {{DB_NAME}} -c "CREATE SCHEMA public AUTHORIZATION {{DB_USER}};"
     psql -v ON_ERROR_STOP=1 {{DB_NAME}} < "{{LOCAL_DB_FILE}}"
+
+# backup the prod database
+[group('database')]
+backup-db:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    ssh fbsurvivor "pg_dump -Fc -w -h 127.0.0.1 -U fbsurvivor2 fbsurvivor2" > tmp/fbsurvivor2.dump
 
 
 # SETUP
@@ -146,7 +153,7 @@ deploy: check
     RSH="ssh -S $SOCK"
 
     # --no-group: don't copy the Mac's `staff` group; infra/deploy fixes perms on the server
-    rsync -a --no-group -e "$RSH" \
+    rsync -a --no-owner --no-group -e "$RSH" \
       "./{{PROJECT}}" ./pyproject.toml ./uv.lock ./manage.py ./infra/deploy ./uploads \
       "{{PROD_DIR}}"
 

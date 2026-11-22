@@ -1,4 +1,4 @@
-# sudo crontab -u fbsurvivor -e
+# crontab -u web -e
 
 0 10 * * 0 /opt/fbsurvivor/fbsurvivor/bin/cache-current-board
 30 13,16 * 9,10,11,12,1 4 /opt/fbsurvivor/fbsurvivor/bin/send-reminders
