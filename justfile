@@ -48,7 +48,7 @@ manage *ARGS:
     DJANGO_SETTINGS_MODULE={{SETTINGS}} uv run python manage.py {{ARGS}}
 
 [group('django')]
-runserver: (manage "runserver")
+runserver: (manage "runserver 0.0.0.0:8000")
 
 [group('django')]
 shell_plus: (manage "shell_plus")
